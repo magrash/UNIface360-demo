@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unauthorized Areas List - Unauthorized Area Dashboard</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body class="dashboard">
+    {% include 'unauthorized/_navbar.html' %}
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'unauthorized/_sidebar.html' %}
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Unauthorized Areas List</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="btnExportCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#areaModal"><i class="fa-solid fa-plus"></i> Add Area</button>
+                    </div>
+                </div>
+
+                <!-- KPIs -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">🚫</div>
+                            <div>
+                                <div class="value">24</div>
+                                <div class="label">Total Restricted Areas</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">✅</div>
+                            <div>
+                                <div class="value">18</div>
+                                <div class="label">Active</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">🔧</div>
+                            <div>
+                                <div class="value">4</div>
+                                <div class="label">Under Maintenance</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon info">🔒</div>
+                            <div>
+                                <div class="value">2</div>
+                                <div class="label">Restricted</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Areas Table -->
+                <div class="glass-card p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="section-title">Restricted Areas</div>
+                        <input type="text" class="form-control form-control-sm" style="width:250px;" placeholder="Search areas..." id="searchAreas">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-darkish align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Area Name</th>
+                                    <th>Access Level</th>
+                                    <th>Authorized Personnel</th>
+                                    <th>Work Permit Times</th>
+                                    <th>Status</th>
+                                    <th>Violations</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">Warehouse Zone A</div>
+                                        <div class="text-muted small">Building A, Floor 2</div>
+                                    </td>
+                                    <td><span class="badge bg-danger">Level 4 - Critical</span></td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <span class="chip small">Operations Manager</span>
+                                            <span class="chip small">Warehouse Supervisor</span>
+                                            <span class="chip small">+3 more</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="small">Mon-Fri: 8:00 AM - 5:00 PM</div>
+                                        <div class="text-muted" style="font-size:0.7rem;">Requires permit</div>
+                                    </td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td><span class="badge bg-danger">15</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#areaDetailModal" title="View"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#areaModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">Chemical Storage</div>
+                                        <div class="text-muted small">Building B, Basement</div>
+                                    </td>
+                                    <td><span class="badge bg-warning">Level 3 - High</span></td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <span class="chip small">HSE Officer</span>
+                                            <span class="chip small">Chemist</span>
+                                            <span class="chip small">+2 more</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="small">Mon-Fri: 9:00 AM - 4:00 PM</div>
+                                        <div class="text-muted" style="font-size:0.7rem;">Requires permit</div>
+                                    </td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td><span class="badge bg-warning">12</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#areaDetailModal" title="View"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#areaModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">Confined Space #3</div>
+                                        <div class="text-muted small">Building C, Ground Floor</div>
+                                    </td>
+                                    <td><span class="badge bg-warning">Level 3 - High</span></td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <span class="chip small">Maintenance Lead</span>
+                                            <span class="chip small">Safety Officer</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="small">24/7 with permit</div>
+                                        <div class="text-muted" style="font-size:0.7rem;">Emergency access only</div>
+                                    </td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td><span class="badge bg-warning">9</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#areaDetailModal" title="View"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#areaModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">High Voltage Room</div>
+                                        <div class="text-muted small">Building A, Floor 1</div>
+                                    </td>
+                                    <td><span class="badge bg-info">Level 2 - Medium</span></td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <span class="chip small">Electrician</span>
+                                            <span class="chip small">Facilities Manager</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="small">Mon-Fri: 7:00 AM - 6:00 PM</div>
+                                        <div class="text-muted" style="font-size:0.7rem;">Requires permit</div>
+                                    </td>
+                                    <td><span class="badge bg-warning">Under Maintenance</span></td>
+                                    <td><span class="badge bg-info">7</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#areaDetailModal" title="View"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#areaModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">Roof Access Point</div>
+                                        <div class="text-muted small">Building A, Roof</div>
+                                    </td>
+                                    <td><span class="badge bg-info">Level 2 - Medium</span></td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <span class="chip small">Maintenance Team</span>
+                                            <span class="chip small">Facilities</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="small">Mon-Fri: 6:00 AM - 7:00 PM</div>
+                                        <div class="text-muted" style="font-size:0.7rem;">Weather dependent</div>
+                                    </td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td><span class="badge bg-info">6</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#areaDetailModal" title="View"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#areaModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Area Modal -->
+    <div class="modal fade" id="areaModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background:var(--card);border:1px solid var(--card-border);">
+                <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
+                    <h5 class="modal-title">Add/Edit Restricted Area</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Area Name</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Location</label>
+                                <input type="text" class="form-control" placeholder="Building, Floor" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Access Level</label>
+                                <select class="form-select" required>
+                                    <option>Level 1 - Low</option>
+                                    <option>Level 2 - Medium</option>
+                                    <option>Level 3 - High</option>
+                                    <option>Level 4 - Critical</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" required>
+                                    <option>Active</option>
+                                    <option>Under Maintenance</option>
+                                    <option>Restricted</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Authorized Personnel</label>
+                                <select class="form-select" multiple size="5">
+                                    <option>Operations Manager</option>
+                                    <option>Warehouse Supervisor</option>
+                                    <option>HSE Officer</option>
+                                    <option>Maintenance Lead</option>
+                                    <option>Safety Officer</option>
+                                </select>
+                                <small class="text-muted">Hold Ctrl/Cmd to select multiple</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Work Permit Required</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" checked>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Permit Times</label>
+                                <input type="text" class="form-control" placeholder="e.g., Mon-Fri: 8:00 AM - 5:00 PM">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Special Instructions</label>
+                                <textarea class="form-control" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--card-border);">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-gradient">Save Area</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Area Detail Modal -->
+    <div class="modal fade" id="areaDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background:var(--card);border:1px solid var(--card-border);">
+                <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
+                    <h5 class="modal-title">Area Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="glass-card p-3">
+                                <h6>Basic Information</h6>
+                                <div class="mb-2"><strong>Name:</strong> Warehouse Zone A</div>
+                                <div class="mb-2"><strong>Location:</strong> Building A, Floor 2</div>
+                                <div class="mb-2"><strong>Access Level:</strong> <span class="badge bg-danger">Level 4 - Critical</span></div>
+                                <div class="mb-2"><strong>Status:</strong> <span class="badge bg-success">Active</span></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="glass-card p-3">
+                                <h6>Access Control</h6>
+                                <div class="mb-2"><strong>Work Permit:</strong> Required</div>
+                                <div class="mb-2"><strong>Permit Times:</strong> Mon-Fri: 8:00 AM - 5:00 PM</div>
+                                <div class="mb-2"><strong>Total Violations:</strong> 15</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="glass-card p-3">
+                                <h6>Authorized Personnel</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="chip">Operations Manager</span>
+                                    <span class="chip">Warehouse Supervisor</span>
+                                    <span class="chip">HSE Officer</span>
+                                    <span class="chip">Security Lead</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--card-border);">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

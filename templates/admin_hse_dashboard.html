@@ -1,0 +1,3347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin HSE Performance Dashboard</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <!-- DataTables (Bootstrap 5) -->
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    <!-- Shared site dashboard styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+
+    <style>
+        /* Enhanced HSE Dashboard Styles */
+        :root { 
+            --brand-green: var(--primary, #009879);
+            --brand-teal: var(--primary-2, #00c4a7);
+            --safety-green: #10b981;
+            --warning-amber: #f59e0b;
+            --danger-red: #ef4444;
+        }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        .animated-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .floating-icon {
+            position: absolute;
+            opacity: 0.03;
+            color: var(--brand-green);
+            font-size: 3rem;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        .floating-icon:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+            font-size: 2.5rem;
+        }
+        
+        .floating-icon:nth-child(2) {
+            top: 20%;
+            right: 15%;
+            animation-delay: 2s;
+            font-size: 3.5rem;
+        }
+        
+        .floating-icon:nth-child(3) {
+            top: 50%;
+            left: 5%;
+            animation-delay: 4s;
+            font-size: 2rem;
+        }
+        
+        .floating-icon:nth-child(4) {
+            top: 60%;
+            right: 10%;
+            animation-delay: 6s;
+            font-size: 3rem;
+        }
+        
+        .floating-icon:nth-child(5) {
+            top: 80%;
+            left: 20%;
+            animation-delay: 8s;
+            font-size: 2.8rem;
+        }
+        
+        .floating-icon:nth-child(6) {
+            top: 30%;
+            right: 30%;
+            animation-delay: 10s;
+            font-size: 2.2rem;
+        }
+        
+        .floating-icon:nth-child(7) {
+            top: 70%;
+            left: 50%;
+            animation-delay: 12s;
+            font-size: 3.2rem;
+        }
+        
+        .floating-icon:nth-child(8) {
+            top: 15%;
+            left: 60%;
+            animation-delay: 14s;
+            font-size: 2.4rem;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-30px) rotate(5deg);
+            }
+            50% {
+                transform: translateY(-60px) rotate(0deg);
+            }
+            75% {
+                transform: translateY(-30px) rotate(-5deg);
+            }
+        }
+        
+        /* Ensure content is above background */
+        .container-fluid,
+        .navbar {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Dashboard Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+        
+        /* Sidebar Animation */
+        .sidebar {
+            animation: fadeInLeft 0.8s ease-out;
+        }
+        
+        /* KPI Cards Animation */
+        .card.custom-card {
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+        
+        .card.custom-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+        
+        .card.custom-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .card.custom-card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+        
+        .card.custom-card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+        
+        /* KPI Icons Animation */
+        .kpi-icon {
+            animation: scaleIn 0.8s ease-out 0.5s backwards;
+        }
+        
+        .kpi-icon i {
+            animation: pulse 2s ease-in-out infinite;
+            animation-delay: 1s;
+        }
+        
+        /* Chart Cards Animation */
+        .chart-card {
+            animation: fadeInUp 0.8s ease-out backwards;
+        }
+        
+        .chart-card:nth-of-type(1) {
+            animation-delay: 0.2s;
+        }
+        
+        .chart-card:nth-of-type(2) {
+            animation-delay: 0.4s;
+        }
+        
+        .chart-card:nth-of-type(3) {
+            animation-delay: 0.6s;
+        }
+        
+        /* Table Rows Animation */
+        .table tbody tr {
+            animation: fadeInLeft 0.5s ease-out backwards;
+        }
+        
+        .table tbody tr:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+        
+        .table tbody tr:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .table tbody tr:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+        
+        .table tbody tr:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+        
+        .table tbody tr:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+        
+        .table tbody tr:nth-child(n+6) {
+            animation-delay: 0.6s;
+        }
+        
+        /* List Items Animation */
+        .list-group-item {
+            animation: fadeInRight 0.5s ease-out backwards;
+        }
+        
+        .list-group-item:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+        
+        .list-group-item:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .list-group-item:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+        
+        .list-group-item:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+        
+        /* Activity Timeline Items */
+        .activity-item {
+            animation: fadeInLeft 0.6s ease-out backwards;
+        }
+        
+        .activity-item:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+        
+        .activity-item:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .activity-item:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+        
+        .activity-item:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+        
+        .activity-item:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+        
+        /* Progress Bars Animation */
+        .progress-bar {
+            animation: fadeInLeft 1s ease-out 0.5s backwards;
+        }
+        
+        /* Buttons Animation */
+        .btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px) scale(1.02);
+        }
+        
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        /* Quick Actions Buttons */
+        .row.g-2 .col-6 {
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+        
+        .row.g-2 .col-6:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+        
+        .row.g-2 .col-6:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .row.g-2 .col-6:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+        
+        .row.g-2 .col-6:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+        
+        /* Header Animation */
+        h2 {
+            animation: fadeInDown 0.6s ease-out;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Badge Animation */
+        .badge {
+            animation: scaleIn 0.5s ease-out backwards;
+        }
+        
+        /* Safety Score Circle Animation */
+        #safetyCircle {
+            animation: fadeIn 1s ease-out 0.5s backwards;
+        }
+        
+        /* Numbers Count Up Effect */
+        .h4.mb-0,
+        .h3.mb-0 {
+            animation: countUp 0.8s ease-out;
+        }
+        
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        /* Sparkline Canvas Animation */
+        .kpi-sparkline {
+            animation: fadeIn 1s ease-out 0.8s backwards;
+        }
+        
+        /* Card Hover Enhanced */
+        .card.custom-card:hover {
+            animation: none;
+        }
+        
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        .navbar { 
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            animation: slideInDown 0.6s ease-out;
+        }
+        
+        .brand-badge { 
+            background: linear-gradient(135deg, var(--brand-green), var(--brand-teal));
+            color: #fff;
+            font-weight: 800;
+            padding: 8px 14px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 152, 121, 0.3);
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        
+        .brand-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 152, 121, 0.4);
+        }
+        
+        .sidebar { 
+            min-height: calc(100vh - 56px);
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid var(--card-border);
+            position: sticky;
+            top: 56px;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card.custom-card { 
+            background: var(--card);
+            border: 1px solid var(--card-border) !important;
+            border-radius: 16px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .card.custom-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--brand-green), var(--brand-teal));
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+        
+        .card.custom-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            border-color: rgba(0, 152, 121, 0.3);
+        }
+        
+        .card.custom-card:hover::before {
+            opacity: 1;
+        }
+        
+        /* Keep card visible even when not hovering - remove disappearing effect */
+        .card.custom-card::before {
+            opacity: 0.5 !important;
+        }
+        
+        /* Remove any hover effects that hide content */
+        .card.custom-card:hover {
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+        }
+        
+        .card.custom-card .card-body { 
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .kpi-icon { 
+            width: 52px;
+            height: 52px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(0, 152, 121, 0.15), rgba(0, 196, 167, 0.15));
+            color: var(--brand-green);
+            font-size: 1.4rem;
+            box-shadow: 0 4px 12px rgba(0, 152, 121, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .kpi-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .card.custom-card:hover .kpi-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 6px 20px rgba(0, 152, 121, 0.3);
+        }
+        
+        .card.custom-card:hover .kpi-icon::before {
+            opacity: 1;
+        }
+        
+        .trend-up { 
+            color: var(--safety-green);
+            font-weight: 700;
+            animation: pulse-green 2s ease-in-out infinite;
+        }
+        
+        .trend-down { 
+            color: var(--danger-red);
+            font-weight: 700;
+            animation: pulse-red 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .table thead th { 
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            background: rgba(0, 152, 121, 0.1);
+            border-bottom: 2px solid var(--brand-green);
+        }
+        
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(0, 152, 121, 0.05);
+            transform: scale(1.01);
+        }
+        
+        footer { 
+            border-top: 1px solid var(--card-border);
+            color: var(--muted, #94a3b8);
+            padding: 1.5rem 0;
+        }
+        
+        .avatar { 
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(0, 152, 121, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .avatar:hover {
+            border-color: var(--brand-green);
+            box-shadow: 0 0 15px rgba(0, 152, 121, 0.4);
+            transform: scale(1.1);
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            margin-bottom: 0.25rem;
+        }
+        
+        .nav-pills .nav-link:hover {
+            background: rgba(0, 152, 121, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .nav-pills .nav-link.active { 
+            background: linear-gradient(135deg, var(--brand-green), var(--brand-teal));
+            box-shadow: 0 4px 12px rgba(0, 152, 121, 0.3);
+        }
+        
+        .form-switch .form-check-input { 
+            cursor: pointer;
+            width: 3rem;
+            height: 1.5rem;
+        }
+        
+        .chart-card { 
+            height: 380px;
+            position: relative;
+        }
+        
+        .chart-card canvas { 
+            height: 320px !important;
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .card.custom-card {
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+        
+        .card.custom-card:nth-child(1) { animation-delay: 0.1s; }
+        .card.custom-card:nth-child(2) { animation-delay: 0.2s; }
+        .card.custom-card:nth-child(3) { animation-delay: 0.3s; }
+        .card.custom-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        .h4.mb-0 {
+            animation: countUp 0.8s ease-out;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--text), rgba(255, 255, 255, 0.9));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* KPI Card number styling */
+        .card.custom-card .h4 {
+            font-size: 2rem;
+            line-height: 1.2;
+        }
+        
+        /* Enhanced KPI card layout */
+        .card.custom-card .d-flex {
+            align-items: center;
+        }
+        
+        .card.custom-card .text-end {
+            flex: 1;
+        }
+        
+        .card.custom-card .small.text-muted {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .card.custom-card .small:not(.text-muted) {
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+        
+        /* Button enhancements */
+        .btn-outline-success {
+            border-color: var(--brand-green);
+            color: var(--brand-green);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-success:hover {
+            background: linear-gradient(135deg, var(--brand-green), var(--brand-teal));
+            border-color: var(--brand-green);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 152, 121, 0.3);
+        }
+        
+        .btn-outline-primary, .btn-outline-danger {
+            transition: all 0.2s ease;
+        }
+        
+        .btn-outline-primary:hover {
+            transform: scale(1.1);
+        }
+        
+        .btn-outline-danger:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Badge enhancements */
+        .badge {
+            padding: 0.4em 0.8em;
+            font-weight: 600;
+            border-radius: 8px;
+            letter-spacing: 0.3px;
+        }
+        
+        /* Chart container enhancements */
+        .chart-card {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent, rgba(0, 152, 121, 0.02));
+            pointer-events: none;
+        }
+        
+        /* Dropdown menu enhancements */
+        .dropdown-menu {
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+        }
+        
+        .dropdown-item {
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            margin: 0.125rem 0;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(0, 152, 121, 0.15);
+            transform: translateX(5px);
+        }
+        
+        /* Navbar enhancements */
+        .navbar-brand {
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.02);
+        }
+        
+        /* Logout button enhancement */
+        .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.2);
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-light:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--danger-red);
+            color: var(--danger-red);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Chart title enhancements */
+        .chart-card h6 {
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            color: var(--text);
+        }
+        
+        .chart-card .fa-chart-line,
+        .chart-card .fa-chart-column,
+        .chart-card .fa-circle-half-stroke,
+        .chart-card .fa-chart-area {
+            color: var(--brand-green);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-card:hover .fa-chart-line,
+        .chart-card:hover .fa-chart-column,
+        .chart-card:hover .fa-circle-half-stroke,
+        .chart-card:hover .fa-chart-area {
+            transform: scale(1.2) rotate(5deg);
+        }
+        
+        /* Quick Actions Panel */
+        .btn-outline-success, .btn-outline-primary, .btn-outline-warning, .btn-outline-info {
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .btn-outline-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 152, 121, 0.3);
+        }
+        
+        .btn-outline-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-outline-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-outline-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Safety Score Circle */
+        .transform-rotate-90 {
+            transform: rotate(-90deg);
+        }
+        
+        #safetyCircle {
+            filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
+        }
+        
+        /* Activity Timeline */
+        .activity-timeline {
+            position: relative;
+        }
+        
+        .activity-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--card-border);
+        }
+        
+        .activity-item {
+            position: relative;
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            z-index: 1;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover .activity-icon {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Status Badge */
+        #statusBadge {
+            animation: pulse-status 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-status {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Refresh Button Animation */
+        #refreshBtn:hover i {
+            animation: spin 0.6s ease-in-out;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Progress Bar Animation */
+        .progress-bar {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* Critical Alerts */
+        .list-group-item {
+            transition: all 0.2s ease;
+        }
+        
+        .list-group-item:hover {
+            background: rgba(0, 152, 121, 0.05) !important;
+            transform: translateX(5px);
+        }
+        
+        /* Header Enhancements */
+        h2 {
+            background: linear-gradient(135deg, var(--text), rgba(255, 255, 255, 0.8));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Export Dropdown */
+        .dropdown-menu {
+            min-width: 180px;
+        }
+        
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Filter Select */
+        #reportFilter {
+            min-width: 140px;
+        }
+        
+        /* Mini Sparkline in KPI Cards */
+        .kpi-sparkline {
+            width: 100%;
+            height: 30px;
+            margin-top: 0.5rem;
+            opacity: 0.6;
+        }
+        
+        /* KPI Card Sparkline Container */
+        .kpi-card-sparkline {
+            position: absolute;
+            bottom: 0.75rem;
+            left: 0.75rem;
+            right: 0.75rem;
+            height: 30px;
+        }
+        
+        /* Enhanced KPI Card */
+        .card.custom-card {
+            position: relative;
+            min-height: 140px;
+        }
+        
+        /* Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Notification Bell */
+        .notification-bell {
+            position: relative;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            background: var(--danger-red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: white;
+            font-weight: 700;
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+        
+        /* Tooltip enhancements */
+        [data-bs-toggle="tooltip"] {
+            cursor: pointer;
+        }
+        
+        /* Modal enhancements */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(6px);
+            opacity: 1 !important;
+        }
+        
+        .modal-backdrop.show {
+            opacity: 1 !important;
+        }
+        
+        .modal-content {
+            border-radius: 16px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+            background: var(--card) !important;
+            border: 2px solid rgba(0, 152, 121, 0.3) !important;
+            opacity: 1 !important;
+            position: relative;
+            z-index: 1056;
+        }
+        
+        .modal.show .modal-dialog {
+            transform: none;
+            z-index: 1056;
+        }
+        
+        .modal-header {
+            border-radius: 16px 16px 0 0;
+            background: linear-gradient(135deg, rgba(0, 152, 121, 0.2), rgba(0, 196, 167, 0.15)) !important;
+            border-bottom: 2px solid rgba(0, 152, 121, 0.3);
+            padding: 1.25rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .modal-title {
+            color: var(--text) !important;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-body {
+            background: var(--card) !important;
+            color: var(--text) !important;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .modal-footer {
+            border-radius: 0 0 16px 16px;
+            background: linear-gradient(135deg, rgba(0, 152, 121, 0.1), rgba(0, 196, 167, 0.05)) !important;
+            border-top: 2px solid rgba(0, 152, 121, 0.3);
+            padding: 1.25rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid var(--card-border) !important;
+            color: var(--text) !important;
+            opacity: 1 !important;
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4) !important;
+            opacity: 1;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: var(--brand-green) !important;
+            color: var(--text) !important;
+            box-shadow: 0 0 0 0.2rem rgba(0, 152, 121, 0.25);
+            outline: none;
+        }
+        
+        .form-label {
+            color: var(--text) !important;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            opacity: 1 !important;
+        }
+        
+        .form-check-label {
+            color: var(--text) !important;
+            opacity: 1 !important;
+        }
+        
+        .form-check-input {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: var(--card-border);
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--brand-green);
+            border-color: var(--brand-green);
+        }
+        
+        .list-group-item {
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.03) !important;
+        }
+        
+        .text-muted {
+            color: rgba(255, 255, 255, 0.6) !important;
+            opacity: 1 !important;
+        }
+        
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+            opacity: 0.8;
+        }
+        
+        .btn-close:hover {
+            opacity: 1;
+        }
+        
+        /* Ensure modal is on top */
+        .modal {
+            z-index: 1055 !important;
+        }
+        
+        .modal-backdrop {
+            z-index: 1050 !important;
+        }
+        
+        .modal-dialog {
+            z-index: 1056 !important;
+            position: relative;
+        }
+        
+        /* Force modal to be visible above all */
+        body.modal-open .navbar,
+        body.modal-open .sidebar,
+        body.modal-open main {
+            filter: blur(3px);
+            opacity: 0.3;
+            pointer-events: none;
+            transition: filter 0.3s ease, opacity 0.3s ease;
+        }
+        
+        /* Additional modal visibility */
+        .modal.fade .modal-dialog {
+            transition: transform 0.3s ease-out;
+            transform: translate(0, -50px);
+        }
+        
+        .modal.show .modal-dialog {
+            transform: translate(0, 0);
+        }
+        
+        /* Employee list container in training modal */
+        .employee-list-container {
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+        
+        /* Small text in modals */
+        small.text-muted {
+            opacity: 1 !important;
+        }
+        
+        /* File input styling */
+        .form-control[type="file"] {
+            padding: 0.5rem;
+        }
+        
+        .form-control[type="file"]::file-selector-button {
+            background: var(--brand-green);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            margin-right: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .form-control[type="file"]::file-selector-button:hover {
+            background: var(--brand-teal);
+        }
+        
+        /* Ensure modal overlay is always on top */
+        .modal.fade {
+            opacity: 1 !important;
+        }
+        
+        .modal.show {
+            display: block !important;
+        }
+        
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            padding-right: 0 !important;
+        }
+        
+        /* Make sure modal content is fully opaque */
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--card);
+            border-radius: 16px;
+            z-index: -1;
+            opacity: 1;
+        }
+        
+        /* Stronger visual separation */
+        .modal-content {
+            transform: scale(1);
+            animation: modalAppear 0.3s ease-out;
+        }
+        
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="dashboard">
+    <!-- Animated Background -->
+    <div class="animated-background">
+        <i class="fa-solid fa-helmet-safety floating-icon"></i>
+        <i class="fa-solid fa-shield-halved floating-icon"></i>
+        <i class="fa-solid fa-hard-hat floating-icon"></i>
+        <i class="fa-solid fa-triangle-exclamation floating-icon"></i>
+        <i class="fa-solid fa-user-shield floating-icon"></i>
+        <i class="fa-solid fa-clipboard-check floating-icon"></i>
+        <i class="fa-solid fa-fire-extinguisher floating-icon"></i>
+        <i class="fa-solid fa-circle-check floating-icon"></i>
+    </div>
+    
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('admin_hse_dashboard') }}">
+                <span class="brand-badge">HSE</span>
+                <span class="fw-semibold">Performance Dashboard</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav" aria-controls="topNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="topNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item me-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="themeToggle">
+                            <label class="form-check-label" for="themeToggle">Light/Dark</label>
+                        </div>
+                    </li>
+                    <li class="nav-item me-2">
+                        <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://i.pravatar.cc/100?img=12" alt="avatar" class="avatar" />
+                            <span class="fw-semibold">Admin User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_hse_settings') }}">Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <aside class="col-12 col-lg-2 sidebar p-3">
+                <h6 class="text-uppercase text-muted px-2">Navigation</h6>
+                <ul class="nav nav-pills flex-column gap-1 mt-2">
+                    <li class="nav-item">
+                        <a class="nav-link active d-flex align-items-center gap-2" aria-current="page" href="{{ url_for('admin_hse_dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard Overview</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_incidents') }}"><i class="fa-solid fa-triangle-exclamation"></i> Incidents & Accidents</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_inspections') }}"><i class="fa-solid fa-clipboard-check"></i> Inspections & Audits</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_risks') }}"><i class="fa-solid fa-shield-halved"></i> Risk Assessment</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_trainings') }}"><i class="fa-solid fa-chalkboard-user"></i> Training & Certification</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_ppe') }}"><i class="fa-solid fa-hard-hat"></i> PPE & Equipment</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_environmental') }}"><i class="fa-solid fa-leaf"></i> Environmental</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_medical') }}"><i class="fa-solid fa-user-doctor"></i> Occupational Health</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_reports') }}"><i class="fa-regular fa-file-lines"></i> Reports & Analytics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_employees') }}"><i class="fa-solid fa-users"></i> Employees</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_tracking') }}"><i class="fa-solid fa-chart-line"></i> Tracking</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_monthly_dashboard') }}"><i class="fa-solid fa-calendar-alt"></i> Monthly Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('hse_company_dashboard') }}"><i class="fa-solid fa-building"></i> Company Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_settings') }}"><i class="fa-solid fa-gear"></i> Core Settings</a>
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <!-- Header with Quick Actions -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1" style="font-weight: 800; letter-spacing: -0.5px;">HSE Performance Dashboard</h2>
+                        <p class="text-muted mb-0 small">Last updated: <span id="lastUpdate">Just now</span> <span class="badge bg-success ms-2" id="statusBadge"><i class="fa-solid fa-circle" style="font-size: 0.5rem;"></i> Live</span></p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-success btn-sm" id="refreshBtn">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-success btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fa-solid fa-download"></i> Export
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file-excel me-2"></i>Export to Excel</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file-pdf me-2"></i>Export to PDF</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file-csv me-2"></i>Export to CSV</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Panel -->
+                <div class="card custom-card mb-3 p-3 mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2 pt-4">
+                        <h6 class="mb-0"><i class="fa-solid fa-bolt me-2"></i>Quick Actions</h6>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <button class="btn btn-outline-danger w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#newIncidentModal">
+                                <i class="fa-solid fa-triangle-exclamation me-1"></i> New Incident
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <button class="btn btn-outline-success w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#newReportModal">
+                                <i class="fa-solid fa-file-circle-plus me-1"></i> New Report
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('admin_hse_inspections') }}" class="btn btn-outline-info w-100 btn-sm">
+                                <i class="fa-solid fa-clipboard-check me-1"></i> New Inspection
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('admin_hse_risks') }}" class="btn btn-outline-warning w-100 btn-sm">
+                                <i class="fa-solid fa-shield-halved me-1"></i> Risk Assessment
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('admin_hse_trainings') }}" class="btn btn-outline-primary w-100 btn-sm">
+                                <i class="fa-solid fa-calendar-check me-1"></i> Schedule Training
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('admin_hse_ppe') }}" class="btn btn-outline-secondary w-100 btn-sm">
+                                <i class="fa-solid fa-hard-hat me-1"></i> PPE Management
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('admin_hse_environmental') }}" class="btn btn-outline-success w-100 btn-sm">
+                                <i class="fa-solid fa-leaf me-1"></i> Environmental
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('admin_hse_medical') }}" class="btn btn-outline-info w-100 btn-sm">
+                                <i class="fa-solid fa-user-doctor me-1"></i> Medical Check
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('admin_hse_employees') }}" class="btn btn-outline-primary w-100 btn-sm">
+                                <i class="fa-solid fa-user-plus me-1"></i> Add Employee
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <button class="btn btn-outline-warning w-100 btn-sm notification-bell" data-bs-toggle="modal" data-bs-target="#viewAlertsModal">
+                                <i class="fa-solid fa-bell me-1"></i> View Alerts
+                                <span class="notification-badge">3</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="card custom-card shadow-sm rounded-3 p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="kpi-icon"><i class="fa-solid fa-helmet-safety"></i></div>
+                                <div class="text-end">
+                                    <div class="small text-muted">Total Incidents</div>
+                                    <div class="h4 mb-0" id="kpiIncidents">0</div>
+                                    <div class="small"><span id="trendIncidents" class="trend-up">↑</span> vs last month</div>
+                                </div>
+                            </div>
+                            <canvas class="kpi-sparkline" id="sparkline1"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="card custom-card shadow-sm rounded-3 p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="kpi-icon"><i class="fa-solid fa-user-injured"></i></div>
+                                <div class="text-end">
+                                    <div class="small text-muted">Lost Time Injuries (LTI)</div>
+                                    <div class="h4 mb-0" id="kpiLti">0</div>
+                                    <div class="small"><span id="trendLti" class="trend-down">↓</span> vs last month</div>
+                                </div>
+                            </div>
+                            <canvas class="kpi-sparkline" id="sparkline2"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="card custom-card shadow-sm rounded-3 p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="kpi-icon"><i class="fa-solid fa-exclamation-triangle"></i></div>
+                                <div class="text-end">
+                                    <div class="small text-muted">Near Miss Reports</div>
+                                    <div class="h4 mb-0" id="kpiNearMiss">0</div>
+                                    <div class="small"><span id="trendNearMiss" class="trend-up">↑</span> vs last month</div>
+                                </div>
+                            </div>
+                            <canvas class="kpi-sparkline" id="sparkline3"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="card custom-card shadow-sm rounded-3 p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="kpi-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
+                                <div class="text-end">
+                                    <div class="small text-muted">Safety Trainings</div>
+                                    <div class="h4 mb-0" id="kpiTrainings">0</div>
+                                    <div class="small"><span id="trendTrainings" class="trend-up">↑</span> completion</div>
+                                </div>
+                            </div>
+                            <canvas class="kpi-sparkline" id="sparkline4"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional KPI Cards Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="card custom-card shadow-sm rounded-3 p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="kpi-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                                <div class="text-end">
+                                    <div class="small text-muted">Inspections</div>
+                                    <div class="h4 mb-0" id="kpiInspections">0</div>
+                                    <div class="small"><span id="trendInspections" class="trend-up">↑</span> this month</div>
+                                </div>
+                            </div>
+                            <canvas class="kpi-sparkline" id="sparkline5"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="card custom-card shadow-sm rounded-3 p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="kpi-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                                <div class="text-end">
+                                    <div class="small text-muted">High Risks</div>
+                                    <div class="h4 mb-0" id="kpiRisks">0</div>
+                                    <div class="small"><span id="trendRisks" class="trend-down">↓</span> vs last month</div>
+                                </div>
+                            </div>
+                            <canvas class="kpi-sparkline" id="sparkline6"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="card custom-card shadow-sm rounded-3 p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="kpi-icon"><i class="fa-solid fa-hard-hat"></i></div>
+                                <div class="text-end">
+                                    <div class="small text-muted">PPE Compliance</div>
+                                    <div class="h4 mb-0" id="kpiPPE">0%</div>
+                                    <div class="small"><span id="trendPPE" class="trend-up">↑</span> compliance rate</div>
+                                </div>
+                            </div>
+                            <canvas class="kpi-sparkline" id="sparkline7"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="card custom-card shadow-sm rounded-3 p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="kpi-icon"><i class="fa-solid fa-leaf"></i></div>
+                                <div class="text-end">
+                                    <div class="small text-muted">Environmental</div>
+                                    <div class="h4 mb-0" id="kpiEnvironmental">0</div>
+                                    <div class="small"><span id="trendEnvironmental" class="trend-up">↑</span> incidents</div>
+                                </div>
+                            </div>
+                            <canvas class="kpi-sparkline" id="sparkline8"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Safety Score & Critical Alerts -->
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-lg-4">
+                        <div class="card custom-card p-3">
+                            <h6 class="mb-3"><i class="fa-solid fa-shield-halved me-2"></i>Safety Score</h6>
+                            <div class="text-center mb-3">
+                                <div class="position-relative d-inline-block">
+                                    <svg width="120" height="120" class="transform-rotate-90">
+                                        <circle cx="60" cy="60" r="50" stroke="rgba(255,255,255,0.1)" stroke-width="8" fill="none"/>
+                                        <circle cx="60" cy="60" r="50" stroke="url(#safetyGradient)" stroke-width="8" fill="none" 
+                                                stroke-dasharray="314" stroke-dashoffset="94" stroke-linecap="round" 
+                                                id="safetyCircle" style="transition: stroke-dashoffset 2s ease;">
+                                            <animate attributeName="stroke-dashoffset" from="314" to="94" dur="2s" fill="freeze"/>
+                                        </circle>
+                                        <defs>
+                                            <linearGradient id="safetyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                                                <stop offset="100%" style="stop-color:#009879;stop-opacity:1" />
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                    <div class="position-absolute top-50 start-50 translate-middle">
+                                        <div class="h3 mb-0" id="safetyScore">70</div>
+                                        <div class="small text-muted">Score</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="progress mb-2" style="height: 8px; border-radius: 10px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 70%; transition: width 2s ease;" id="safetyProgress"></div>
+                            </div>
+                            <div class="d-flex justify-content-between small">
+                                <span class="text-muted">Target: 85</span>
+                                <span class="text-success"><i class="fa-solid fa-arrow-up me-1"></i>+5% this month</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-8">
+                        <div class="card custom-card p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0"><i class="fa-solid fa-triangle-exclamation me-2 text-warning"></i>Critical Alerts</h6>
+                                <span class="badge bg-danger" id="alertCount">3</span>
+                            </div>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item bg-transparent border-0 px-0 py-2 d-flex align-items-start">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="rounded-circle bg-danger d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <i class="fa-solid fa-exclamation text-white" style="font-size: 0.75rem;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small">High Severity Incident - Operations</div>
+                                        <div class="text-muted small">Reported 2 hours ago • Requires immediate attention</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-eye"></i></button>
+                                </div>
+                                <div class="list-group-item bg-transparent border-0 px-0 py-2 d-flex align-items-start">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="rounded-circle bg-warning d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <i class="fa-solid fa-clock text-white" style="font-size: 0.75rem;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small">Training Certificate Expiring Soon</div>
+                                        <div class="text-muted small">5 employees • Expires in 7 days</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-warning"><i class="fa-solid fa-eye"></i></button>
+                                </div>
+                                <div class="list-group-item bg-transparent border-0 px-0 py-2 d-flex align-items-start">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="rounded-circle bg-info d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <i class="fa-solid fa-info text-white" style="font-size: 0.75rem;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small">Near Miss Report Pending Review</div>
+                                        <div class="text-muted small">3 reports awaiting approval</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-info"><i class="fa-solid fa-eye"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-xl-6">
+                        <div class="card custom-card shadow-sm rounded-3 p-3 chart-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Incident Rate per Month</h6>
+                                <i class="fa-solid fa-chart-line text-success"></i>
+                            </div>
+                            <canvas id="lineIncident"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <div class="card custom-card shadow-sm rounded-3 p-3 chart-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Incidents by Department</h6>
+                                <i class="fa-solid fa-chart-column text-success"></i>
+                            </div>
+                            <canvas id="barDept"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <div class="card custom-card shadow-sm rounded-3 p-3 chart-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Severity Distribution</h6>
+                                <i class="fa-solid fa-circle-half-stroke text-success"></i>
+                            </div>
+                            <canvas id="pieSeverity"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <div class="card custom-card shadow-sm rounded-3 p-3 chart-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Training Completion</h6>
+                                <i class="fa-solid fa-chart-area text-success"></i>
+                            </div>
+                            <canvas id="doughnutTraining"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity & Table Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-lg-4">
+                        <div class="card custom-card p-3">
+                            <h6 class="mb-3"><i class="fa-solid fa-clock-rotate-left me-2"></i>Recent Activity</h6>
+                            <div class="activity-timeline">
+                                <div class="activity-item d-flex mb-3">
+                                    <div class="activity-icon bg-success me-3">
+                                        <i class="fa-solid fa-check"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="small fw-semibold">Report Approved</div>
+                                        <div class="text-muted small">Operations - Incident #1234</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">5 minutes ago</div>
+                                    </div>
+                                </div>
+                                <div class="activity-item d-flex mb-3">
+                                    <div class="activity-icon bg-primary me-3">
+                                        <i class="fa-solid fa-user-plus"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="small fw-semibold">New Employee Added</div>
+                                        <div class="text-muted small">John Doe - Maintenance</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">1 hour ago</div>
+                                    </div>
+                                </div>
+                                <div class="activity-item d-flex mb-3">
+                                    <div class="activity-icon bg-warning me-3">
+                                        <i class="fa-solid fa-exclamation"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="small fw-semibold">Near Miss Reported</div>
+                                        <div class="text-muted small">Logistics Department</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">2 hours ago</div>
+                                    </div>
+                                </div>
+                                <div class="activity-item d-flex">
+                                    <div class="activity-icon bg-info me-3">
+                                        <i class="fa-solid fa-graduation-cap"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="small fw-semibold">Training Completed</div>
+                                        <div class="text-muted small">Safety Protocol - 12 employees</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">3 hours ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-8">
+                        <div class="card custom-card shadow-sm rounded-3 p-3" id="reports">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0"><i class="fa-solid fa-file-lines me-2"></i>Recent HSE Reports</h6>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm" style="width: auto;" id="reportFilter">
+                                        <option value="">All Types</option>
+                                        <option value="Incident">Incident</option>
+                                        <option value="Near Miss">Near Miss</option>
+                                        <option value="LTI">LTI</option>
+                                    </select>
+                                    <button class="btn btn-sm btn-outline-success"><i class="fa-solid fa-plus me-1"></i>New Report</button>
+                                </div>
+                            </div>
+                    <div class="table-responsive">
+                        <table id="reportsTable" class="table table-striped" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Department</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                </div>
+
+                <!-- Inspections & Audits Section -->
+                <div class="card custom-card mb-3 p-3" id="inspections">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0"><i class="fa-solid fa-clipboard-check me-2"></i>Recent Inspections & Audits</h6>
+                        <button class="btn btn-sm btn-outline-info"><i class="fa-solid fa-plus me-1"></i>New Inspection</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Score</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2025-06-03</td>
+                                    <td>Daily Inspection</td>
+                                    <td>Site A - Building 1</td>
+                                    <td><span class="badge bg-success">Passed</span></td>
+                                    <td>95%</td>
+                                    <td><button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye"></i></button></td>
+                                </tr>
+                                <tr>
+                                    <td>2025-06-02</td>
+                                    <td>Weekly Audit</td>
+                                    <td>Site B - Warehouse</td>
+                                    <td><span class="badge bg-warning">Needs Action</span></td>
+                                    <td>72%</td>
+                                    <td><button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Risk Assessment Section -->
+                <div class="card custom-card mb-3 p-3" id="risks">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0"><i class="fa-solid fa-shield-halved me-2"></i>Active Risk Assessments</h6>
+                        <button class="btn btn-sm btn-outline-warning"><i class="fa-solid fa-plus me-1"></i>New Risk Assessment</button>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="card border-danger border-2 p-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted">High Risk</small>
+                                        <div class="fw-semibold">Electrical Work - Site C</div>
+                                        <small class="text-danger">Severity: High | Likelihood: Medium</small>
+                                    </div>
+                                    <i class="fa-solid fa-triangle-exclamation text-danger fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="card border-warning border-2 p-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted">Medium Risk</small>
+                                        <div class="fw-semibold">Chemical Storage</div>
+                                        <small class="text-warning">Severity: Medium | Likelihood: Low</small>
+                                    </div>
+                                    <i class="fa-solid fa-exclamation-triangle text-warning fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="card border-success border-2 p-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted">Low Risk</small>
+                                        <div class="fw-semibold">Office Safety</div>
+                                        <small class="text-success">Severity: Low | Likelihood: Low</small>
+                                    </div>
+                                    <i class="fa-solid fa-circle-check text-success fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PPE & Equipment Section -->
+                <div class="card custom-card mb-3 p-3" id="ppe">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0"><i class="fa-solid fa-hard-hat me-2"></i>PPE & Safety Equipment Status</h6>
+                        <button class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-plus me-1"></i>Manage PPE</button>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fa-solid fa-hard-hat fa-2x mb-2 text-primary"></i>
+                                <div class="fw-semibold">Hard Hats</div>
+                                <div class="small text-muted">Available: 245</div>
+                                <div class="small text-success">Status: Good</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fa-solid fa-vest fa-2x mb-2 text-warning"></i>
+                                <div class="fw-semibold">Safety Vests</div>
+                                <div class="small text-muted">Available: 180</div>
+                                <div class="small text-warning">Status: Low Stock</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fa-solid fa-goggles fa-2x mb-2 text-info"></i>
+                                <div class="fw-semibold">Safety Glasses</div>
+                                <div class="small text-muted">Available: 320</div>
+                                <div class="small text-success">Status: Good</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fa-solid fa-fire-extinguisher fa-2x mb-2 text-danger"></i>
+                                <div class="fw-semibold">Fire Extinguishers</div>
+                                <div class="small text-muted">Total: 45</div>
+                                <div class="small text-warning">3 Need Inspection</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Environmental Management Section -->
+                <div class="card custom-card mb-3 p-3" id="environmental">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0"><i class="fa-solid fa-leaf me-2"></i>Environmental Monitoring</h6>
+                        <button class="btn btn-sm btn-outline-success"><i class="fa-solid fa-plus me-1"></i>New Record</button>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">CO₂ Emissions</small>
+                                    <i class="fa-solid fa-cloud text-muted"></i>
+                                </div>
+                                <div class="h5 mb-0">125.5</div>
+                                <small class="text-success">↓ 5% vs last month</small>
+                                <div class="small text-muted">tons/month</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">Waste Generated</small>
+                                    <i class="fa-solid fa-trash text-muted"></i>
+                                </div>
+                                <div class="h5 mb-0">2.8</div>
+                                <small class="text-warning">↑ 2% vs last month</small>
+                                <div class="small text-muted">tons/month</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">Water Consumption</small>
+                                    <i class="fa-solid fa-droplet text-muted"></i>
+                                </div>
+                                <div class="h5 mb-0">1,250</div>
+                                <small class="text-success">↓ 8% vs last month</small>
+                                <div class="small text-muted">m³/month</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">Spill Incidents</small>
+                                    <i class="fa-solid fa-triangle-exclamation text-muted"></i>
+                                </div>
+                                <div class="h5 mb-0">0</div>
+                                <small class="text-success">No incidents</small>
+                                <div class="small text-muted">this month</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Occupational Health Section -->
+                <div class="card custom-card mb-3 p-3" id="medical">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0"><i class="fa-solid fa-user-doctor me-2"></i>Occupational Health Status</h6>
+                        <button class="btn btn-sm btn-outline-info"><i class="fa-solid fa-plus me-1"></i>Schedule Medical</button>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <div class="p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">Pending Medicals</small>
+                                    <span class="badge bg-warning">12</span>
+                                </div>
+                                <div class="small">Employees requiring medical checkup</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">Fitness to Work</small>
+                                    <span class="badge bg-success">98%</span>
+                                </div>
+                                <div class="small">Employees fit for duty</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">Expiring Certificates</small>
+                                    <span class="badge bg-danger">5</span>
+                                </div>
+                                <div class="small">Medical certificates expiring soon</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <footer class="mt-4 py-3 text-center small">
+                    © {{ current_year }} HSE Dashboard — All Rights Reserved
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- New Report Modal -->
+    <div class="modal fade" id="newReportModal" tabindex="-1" aria-labelledby="newReportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newReportModalLabel"><i class="fa-solid fa-file-circle-plus me-2"></i>New HSE Report</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newReportForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Report Type <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Type</option>
+                                    <option value="Incident">Incident</option>
+                                    <option value="Near Miss">Near Miss</option>
+                                    <option value="LTI">Lost Time Injury (LTI)</option>
+                                    <option value="Hazard">Hazard Identification</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Department <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Operations">Operations</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                    <option value="Logistics">Logistics</option>
+                                    <option value="Drilling">Drilling</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Severity <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Severity</option>
+                                    <option value="Minor">Minor</option>
+                                    <option value="Major">Major</option>
+                                    <option value="Critical">Critical</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date & Time <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Location <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Enter location" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" rows="4" placeholder="Describe the incident/report in detail..." required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Immediate Actions Taken</label>
+                                <textarea class="form-control" rows="3" placeholder="Describe immediate actions taken..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Attachments</label>
+                                <input type="file" class="form-control" multiple accept="image/*,.pdf,.doc,.docx">
+                                <small class="text-muted">You can attach photos, documents, or other files</small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="submitNewReport()">
+                        <i class="fa-solid fa-paper-plane me-1"></i>Submit Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Employee Modal -->
+    <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEmployeeModalLabel"><i class="fa-solid fa-user-plus me-2"></i>Add New Employee</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addEmployeeForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Enter full name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Employee ID <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Enter employee ID" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" placeholder="employee@company.com" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" placeholder="+1234567890">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Department <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Operations">Operations</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                    <option value="Logistics">Logistics</option>
+                                    <option value="Drilling">Drilling</option>
+                                    <option value="HSE">HSE</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Position <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Enter position" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Hire Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Safety Training Status</label>
+                                <select class="form-select">
+                                    <option value="Pending">Pending</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-control" rows="3" placeholder="Additional notes about the employee..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitAddEmployee()">
+                        <i class="fa-solid fa-user-plus me-1"></i>Add Employee
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Training Modal -->
+    <div class="modal fade" id="scheduleTrainingModal" tabindex="-1" aria-labelledby="scheduleTrainingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="scheduleTrainingModalLabel"><i class="fa-solid fa-calendar-check me-2"></i>Schedule Safety Training</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="scheduleTrainingForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Training Type <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Training Type</option>
+                                    <option value="Safety Protocol">Safety Protocol</option>
+                                    <option value="First Aid">First Aid</option>
+                                    <option value="Fire Safety">Fire Safety</option>
+                                    <option value="Equipment Operation">Equipment Operation</option>
+                                    <option value="Hazard Identification">Hazard Identification</option>
+                                    <option value="Emergency Response">Emergency Response</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Department</label>
+                                <select class="form-select">
+                                    <option value="">All Departments</option>
+                                    <option value="Operations">Operations</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                    <option value="Logistics">Logistics</option>
+                                    <option value="Drilling">Drilling</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Training Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Training Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Duration (hours) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" min="1" max="8" value="2" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Location <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Training location" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Instructor</label>
+                                <input type="text" class="form-control" placeholder="Instructor name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Max Participants</label>
+                                <input type="number" class="form-control" min="1" value="20">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" rows="3" placeholder="Training description and objectives..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Select Employees</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAll">
+                                    <label class="form-check-label" for="selectAll">
+                                        Select All Employees
+                                    </label>
+                                </div>
+                                <div class="mt-2 p-2 employee-list-container" style="max-height: 150px; overflow-y: auto;">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="emp1">
+                                        <label class="form-check-label" for="emp1">John Doe - Operations</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="emp2">
+                                        <label class="form-check-label" for="emp2">Jane Smith - Maintenance</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="emp3">
+                                        <label class="form-check-label" for="emp3">Mike Johnson - Logistics</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" onclick="submitScheduleTraining()">
+                        <i class="fa-solid fa-calendar-check me-1"></i>Schedule Training
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Alerts Modal -->
+    <div class="modal fade" id="viewAlertsModal" tabindex="-1" aria-labelledby="viewAlertsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewAlertsModalLabel"><i class="fa-solid fa-bell me-2"></i>HSE Alerts & Notifications</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="badge bg-danger me-2">3 Critical</span>
+                            <span class="badge bg-warning me-2">5 Warnings</span>
+                            <span class="badge bg-info">2 Info</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-success" onclick="markAllAsRead()">
+                                <i class="fa-solid fa-check-double me-1"></i>Mark All as Read
+                            </button>
+                        </div>
+                    </div>
+                    <div class="list-group">
+                        <div class="list-group-item bg-transparent border-0 px-0 py-3 mb-2" style="background: rgba(239, 68, 68, 0.1) !important; border-left: 3px solid var(--danger-red) !important;">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="rounded-circle bg-danger d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fa-solid fa-exclamation text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <div>
+                                            <h6 class="mb-0">High Severity Incident - Operations</h6>
+                                            <small class="text-muted">Reported 2 hours ago</small>
+                                        </div>
+                                        <span class="badge bg-danger">Critical</span>
+                                    </div>
+                                    <p class="mb-2 small">A high severity incident has been reported in the Operations department. Immediate attention required.</p>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fa-solid fa-eye me-1"></i>View Details
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="fa-solid fa-check me-1"></i>Mark as Read
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent border-0 px-0 py-3 mb-2" style="background: rgba(245, 158, 11, 0.1) !important; border-left: 3px solid var(--warning-amber) !important;">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="rounded-circle bg-warning d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fa-solid fa-clock text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <div>
+                                            <h6 class="mb-0">Training Certificate Expiring Soon</h6>
+                                            <small class="text-muted">5 employees • Expires in 7 days</small>
+                                        </div>
+                                        <span class="badge bg-warning">Warning</span>
+                                    </div>
+                                    <p class="mb-2 small">5 employees have safety training certificates that will expire within 7 days. Please schedule renewal training.</p>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-warning">
+                                            <i class="fa-solid fa-eye me-1"></i>View Employees
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="fa-solid fa-check me-1"></i>Mark as Read
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent border-0 px-0 py-3 mb-2" style="background: rgba(59, 130, 246, 0.1) !important; border-left: 3px solid #3b82f6 !important;">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="rounded-circle bg-info d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fa-solid fa-info text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <div>
+                                            <h6 class="mb-0">Near Miss Report Pending Review</h6>
+                                            <small class="text-muted">3 reports awaiting approval</small>
+                                        </div>
+                                        <span class="badge bg-info">Info</span>
+                                    </div>
+                                    <p class="mb-2 small">There are 3 near miss reports pending administrative review and approval.</p>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-info">
+                                            <i class="fa-solid fa-eye me-1"></i>View Reports
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="fa-solid fa-check me-1"></i>Mark as Read
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Incident Modal -->
+    <div class="modal fade" id="newIncidentModal" tabindex="-1" aria-labelledby="newIncidentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newIncidentModalLabel"><i class="fa-solid fa-triangle-exclamation me-2"></i>Report New Incident</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newIncidentForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Incident Type <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Type</option>
+                                    <option value="Injury">Injury</option>
+                                    <option value="Near Miss">Near Miss</option>
+                                    <option value="Property Damage">Property Damage</option>
+                                    <option value="Fire">Fire</option>
+                                    <option value="Spill">Spill</option>
+                                    <option value="Explosion">Explosion</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Severity <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Severity</option>
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                    <option value="Critical">Critical</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date & Time <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Location <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Site/Location" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" rows="4" placeholder="Describe the incident in detail..." required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Upload Photos/Evidence</label>
+                                <input type="file" class="form-control" multiple accept="image/*">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="submitNewIncident()">
+                        <i class="fa-solid fa-paper-plane me-1"></i>Submit Incident
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Inspection Modal -->
+    <div class="modal fade" id="newInspectionModal" tabindex="-1" aria-labelledby="newInspectionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newInspectionModalLabel"><i class="fa-solid fa-clipboard-check me-2"></i>New Inspection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newInspectionForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Inspection Type <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Type</option>
+                                    <option value="Daily">Daily</option>
+                                    <option value="Weekly">Weekly</option>
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="Annual">Annual</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Location <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Site/Location" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Inspector <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Inspector Name" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Checklist Items</label>
+                                <textarea class="form-control" rows="5" placeholder="Enter checklist items (one per line)..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-info" onclick="submitNewInspection()">
+                        <i class="fa-solid fa-save me-1"></i>Save Inspection
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Assessment Modal -->
+    <div class="modal fade" id="newRiskModal" tabindex="-1" aria-labelledby="newRiskModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newRiskModalLabel"><i class="fa-solid fa-shield-halved me-2"></i>New Risk Assessment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newRiskForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Hazard Description <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Describe the hazard" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Location <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Site/Location" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Severity <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Severity</option>
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Likelihood <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Likelihood</option>
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Control Measures</label>
+                                <textarea class="form-control" rows="4" placeholder="Describe control measures to mitigate the risk..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" onclick="submitNewRisk()">
+                        <i class="fa-solid fa-save me-1"></i>Save Assessment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PPE Management Modal -->
+    <div class="modal fade" id="ppeModal" tabindex="-1" aria-labelledby="ppeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ppeModalLabel"><i class="fa-solid fa-hard-hat me-2"></i>PPE & Equipment Management</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="ppeForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Equipment Type <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Type</option>
+                                    <option value="Hard Hat">Hard Hat</option>
+                                    <option value="Safety Vest">Safety Vest</option>
+                                    <option value="Safety Glasses">Safety Glasses</option>
+                                    <option value="Fire Extinguisher">Fire Extinguisher</option>
+                                    <option value="First Aid Kit">First Aid Kit</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" placeholder="Enter quantity" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Location <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Storage location" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Next Inspection Date</label>
+                                <input type="date" class="form-control">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" onclick="submitPPE()">
+                        <i class="fa-solid fa-save me-1"></i>Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Environmental Modal -->
+    <div class="modal fade" id="environmentalModal" tabindex="-1" aria-labelledby="environmentalModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="environmentalModalLabel"><i class="fa-solid fa-leaf me-2"></i>Environmental Record</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="environmentalForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Record Type <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Type</option>
+                                    <option value="Emission">Emission</option>
+                                    <option value="Waste">Waste</option>
+                                    <option value="Water">Water Consumption</option>
+                                    <option value="Spill">Spill Incident</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Value/Quantity <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" class="form-control" placeholder="Enter value" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Unit</label>
+                                <input type="text" class="form-control" placeholder="e.g., tons, m³">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-control" rows="3" placeholder="Additional notes..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="submitEnvironmental()">
+                        <i class="fa-solid fa-save me-1"></i>Save Record
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Check Modal -->
+    <div class="modal fade" id="medicalModal" tabindex="-1" aria-labelledby="medicalModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="medicalModalLabel"><i class="fa-solid fa-user-doctor me-2"></i>Schedule Medical Check</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="medicalForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Employee <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Employee</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Check Type <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Type</option>
+                                    <option value="Pre-employment">Pre-employment</option>
+                                    <option value="Annual">Annual</option>
+                                    <option value="Periodic">Periodic</option>
+                                    <option value="Fitness to Work">Fitness to Work</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Scheduled Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Medical Facility</label>
+                                <input type="text" class="form-control" placeholder="Clinic/Hospital name">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-info" onclick="submitMedical()">
+                        <i class="fa-solid fa-calendar-check me-1"></i>Schedule
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS libs -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        // Dummy Data
+        const kpis = {
+            incidents: 25,
+            lti: 2,
+            nearMiss: 6,
+            trainings: 40,
+        };
+
+        const incidentTrend = ['Jan','Feb','Mar','Apr','May','Jun'];
+        const incidentValues = [3,5,4,6,2,5];
+
+        const deptData = {
+            labels: ['Operations','Maintenance','Logistics','Drilling'],
+            values: [8,5,4,6]
+        };
+
+        const severityData = {
+            labels: ['Minor','Major','Critical'],
+            values: [12,8,5]
+        };
+
+        const reports = [
+            { date: '2025-06-03', dept: 'Operations', type: 'Incident', severity: 'Major', status: 'Open' },
+            { date: '2025-06-02', dept: 'Maintenance', type: 'Near Miss', severity: 'Minor', status: 'Closed' },
+            { date: '2025-06-01', dept: 'Logistics', type: 'LTI', severity: 'Critical', status: 'In Review' },
+            { date: '2025-05-30', dept: 'Drilling', type: 'Incident', severity: 'Minor', status: 'Open' },
+            { date: '2025-05-29', dept: 'Operations', type: 'Near Miss', severity: 'Major', status: 'Closed' },
+            { date: '2025-05-28', dept: 'Maintenance', type: 'Incident', severity: 'Minor', status: 'Open' },
+            { date: '2025-05-27', dept: 'Logistics', type: 'Incident', severity: 'Major', status: 'In Review' },
+            { date: '2025-05-26', dept: 'Drilling', type: 'Near Miss', severity: 'Minor', status: 'Closed' },
+        ];
+
+        // Theme helpers
+        const brandGreen = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#009879';
+
+        function setTheme(light) {
+            if (light) {
+                document.body.classList.add('light-theme');
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+            } else {
+                document.body.classList.remove('light-theme');
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+            }
+            // Update charts colors
+            const textColor = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#e2e8f0';
+            [lineChart, barChart, pieChart, doughnutChart].forEach(ch => {
+                if (!ch) return;
+                ch.options.scales && Object.values(ch.options.scales).forEach(scale => {
+                    scale.ticks = scale.ticks || {}; scale.grid = scale.grid || {};
+                    scale.ticks.color = textColor;
+                    scale.grid.color = 'rgba(125,125,125,0.15)';
+                });
+                ch.options.plugins.legend.labels.color = textColor;
+                ch.update();
+            });
+        }
+
+        // Animated counter function
+        function animateCounter(element, target, duration = 1500) {
+            const start = 0;
+            const increment = target / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 16);
+        }
+        
+        // Init KPI values with animation
+        function renderKpis() {
+            const incidentsEl = document.getElementById('kpiIncidents');
+            const ltiEl = document.getElementById('kpiLti');
+            const nearMissEl = document.getElementById('kpiNearMiss');
+            const trainingsEl = document.getElementById('kpiTrainings');
+            
+            // Animate counters with staggered delays
+            setTimeout(() => animateCounter(incidentsEl, kpis.incidents), 200);
+            setTimeout(() => animateCounter(ltiEl, kpis.lti), 400);
+            setTimeout(() => animateCounter(nearMissEl, kpis.nearMiss), 600);
+            setTimeout(() => animateCounter(trainingsEl, kpis.trainings), 800);
+        }
+
+        // Charts
+        let lineChart, barChart, pieChart, doughnutChart;
+
+        function createCharts() {
+            const textColor = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#e2e8f0';
+
+            const ctxLine = document.getElementById('lineIncident');
+            const ctxBar = document.getElementById('barDept');
+            const ctxPie = document.getElementById('pieSeverity');
+            const ctxDoughnut = document.getElementById('doughnutTraining');
+
+            lineChart = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: incidentTrend,
+                    datasets: [{
+                        label: 'Incidents',
+                        data: incidentValues,
+                        borderColor: brandGreen,
+                        backgroundColor: 'rgba(0,152,121,0.2)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: brandGreen,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointHoverBackgroundColor: brandGreen,
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    },
+                    plugins: { 
+                        legend: { 
+                            labels: { 
+                                color: textColor,
+                                font: { size: 12, weight: 600 }
+                            } 
+                        } 
+                    },
+                    scales: {
+                        x: { 
+                            ticks: { color: textColor },
+                            grid: { 
+                                color: 'rgba(125,125,125,0.1)',
+                                drawBorder: false
+                            }
+                        },
+                        y: { 
+                            ticks: { color: textColor },
+                            grid: { 
+                                color: 'rgba(125,125,125,0.1)',
+                                drawBorder: false
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+
+            barChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: deptData.labels,
+                    datasets: [{
+                        label: 'Incidents',
+                        data: deptData.values,
+                        backgroundColor: deptData.values.map((val, idx) => {
+                            const colors = [
+                                'rgba(0,152,121,0.8)',
+                                'rgba(0,196,167,0.8)',
+                                'rgba(16,185,129,0.8)',
+                                'rgba(5,150,105,0.8)'
+                            ];
+                            return colors[idx % colors.length];
+                        }),
+                        borderRadius: 10,
+                        borderSkipped: false,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutBounce'
+                    },
+                    plugins: { 
+                        legend: { 
+                            display: false
+                        } 
+                    },
+                    scales: {
+                        x: { 
+                            ticks: { color: textColor },
+                            grid: { display: false },
+                            border: { display: false }
+                        },
+                        y: { 
+                            ticks: { color: textColor },
+                            grid: { 
+                                color: 'rgba(125,125,125,0.1)',
+                                drawBorder: false
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            pieChart = new Chart(ctxPie, {
+                type: 'pie',
+                data: {
+                    labels: severityData.labels,
+                    datasets: [{
+                        data: severityData.values,
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.9)',
+                            'rgba(245, 158, 11, 0.9)',
+                            'rgba(239, 68, 68, 0.9)'
+                        ],
+                        borderColor: [
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444'
+                        ],
+                        borderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 2000
+                    },
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom',
+                            labels: { 
+                                color: textColor,
+                                font: { size: 11, weight: 600 },
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 13, weight: 600 },
+                            bodyFont: { size: 12 },
+                            borderColor: brandGreen,
+                            borderWidth: 1,
+                            cornerRadius: 8
+                        }
+                    }
+                }
+            });
+
+            const completed = 76; // percent
+            const brandTeal = getComputedStyle(document.documentElement).getPropertyValue('--primary-2').trim() || '#00c4a7';
+            doughnutChart = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Pending'],
+                    datasets: [{
+                        data: [completed, 100 - completed],
+                        backgroundColor: [
+                            brandGreen,
+                            'rgba(229, 231, 235, 0.3)'
+                        ],
+                        borderColor: [
+                            brandGreen,
+                            'rgba(229, 231, 235, 0.5)'
+                        ],
+                        borderWidth: 2,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    cutout: '75%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 2000
+                    },
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom',
+                            labels: { 
+                                color: textColor,
+                                font: { size: 11, weight: 600 },
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Table
+        function renderTable() {
+            const tbody = document.querySelector('#reportsTable tbody');
+            tbody.innerHTML = '';
+            reports.slice(0, 8).forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${r.date}</td>
+                    <td>${r.dept}</td>
+                    <td>${r.type}</td>
+                    <td>${r.severity}</td>
+                    <td>
+                        <span class="badge ${r.status === 'Open' ? 'text-bg-warning' : r.status === 'Closed' ? 'text-bg-success' : 'text-bg-info'}">${r.status}</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1"><i class="fa-regular fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-outline-danger"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            // Initialize DataTable
+            const dt = new DataTable('#reportsTable', {
+                order: [[0, 'desc']],
+                pageLength: 6,
+            });
+        }
+
+        // Smooth scroll and intersection observer for animations
+        function initScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            document.querySelectorAll('.card.custom-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+        }
+        
+        // Update last update time
+        function updateLastUpdate() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('lastUpdate').textContent = timeStr;
+        }
+        
+        // Refresh functionality
+        function handleRefresh() {
+            const btn = document.getElementById('refreshBtn');
+            const icon = btn.querySelector('i');
+            icon.style.animation = 'spin 0.6s ease-in-out';
+            
+            setTimeout(() => {
+                renderKpis();
+                createCharts();
+                renderTable();
+                updateLastUpdate();
+                // Show success feedback
+                btn.classList.add('btn-success');
+                btn.classList.remove('btn-outline-success');
+                setTimeout(() => {
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-success');
+                }, 1000);
+            }, 600);
+        }
+        
+        // Animate safety score
+        function animateSafetyScore() {
+            const score = 70;
+            const target = score;
+            const circle = document.getElementById('safetyCircle');
+            const progress = document.getElementById('safetyProgress');
+            const scoreEl = document.getElementById('safetyScore');
+            
+            const circumference = 2 * Math.PI * 50;
+            const offset = circumference - (target / 100) * circumference;
+            
+            circle.style.strokeDashoffset = offset;
+            progress.style.width = target + '%';
+            
+            let current = 0;
+            const increment = target / 30;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    scoreEl.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    scoreEl.textContent = Math.floor(current);
+                }
+            }, 50);
+        }
+        
+        // Filter table
+        function setupTableFilter() {
+            const filter = document.getElementById('reportFilter');
+            if (!filter) return;
+            
+            filter.addEventListener('change', (e) => {
+                const value = e.target.value;
+                const table = $('#reportsTable').DataTable();
+                if (value === '') {
+                    table.column(2).search('').draw();
+                } else {
+                    table.column(2).search(value).draw();
+                }
+            });
+        }
+        
+        // Create mini sparkline charts for KPI cards
+        function createSparklines() {
+            const sparklineData = [
+                [3, 5, 4, 6, 2, 5, 4], // Incidents trend
+                [2, 1, 3, 2, 1, 2, 2], // LTI trend
+                [1, 2, 1, 3, 2, 1, 2], // Near Miss trend
+                [35, 38, 40, 42, 40, 38, 40] // Trainings trend
+            ];
+            
+            const colors = [brandGreen, '#ef4444', '#f59e0b', '#10b981'];
+            
+            sparklineData.forEach((data, idx) => {
+                const canvas = document.getElementById(`sparkline${idx + 1}`);
+                if (!canvas) return;
+                
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width = canvas.offsetWidth;
+                const height = canvas.height = 30;
+                
+                const max = Math.max(...data);
+                const min = Math.min(...data);
+                const range = max - min || 1;
+                
+                ctx.clearRect(0, 0, width, height);
+                ctx.strokeStyle = colors[idx];
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                data.forEach((val, i) => {
+                    const x = (i / (data.length - 1)) * width;
+                    const y = height - ((val - min) / range) * height;
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                
+                ctx.stroke();
+                
+                // Fill area
+                ctx.fillStyle = colors[idx] + '20';
+                ctx.lineTo(width, height);
+                ctx.lineTo(0, height);
+                ctx.closePath();
+                ctx.fill();
+            });
+        }
+        
+        // Modal form submission handlers
+        function submitNewReport() {
+            const form = document.getElementById('newReportForm');
+            if (form.checkValidity()) {
+                // Show success message
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newReportModal'));
+                modal.hide();
+                
+                // Show toast/alert (you can replace with your notification system)
+                alert('Report submitted successfully!');
+                
+                // Here you would typically send data to backend
+                // fetch('/hse/admin/reports/new', { method: 'POST', body: new FormData(form) })
+                
+                // Refresh table
+                setTimeout(() => {
+                    renderTable();
+                    renderKpis();
+                }, 500);
+            } else {
+                form.reportValidity();
+            }
+        }
+        
+        function submitAddEmployee() {
+            const form = document.getElementById('addEmployeeForm');
+            if (form.checkValidity()) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal'));
+                modal.hide();
+                alert('Employee added successfully!');
+                // Here you would typically send data to backend
+            } else {
+                form.reportValidity();
+            }
+        }
+        
+        function submitScheduleTraining() {
+            const form = document.getElementById('scheduleTrainingForm');
+            if (form.checkValidity()) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleTrainingModal'));
+                modal.hide();
+                alert('Training scheduled successfully!');
+                // Here you would typically send data to backend
+            } else {
+                form.reportValidity();
+            }
+        }
+        
+        function submitNewIncident() {
+            const form = document.getElementById('newIncidentForm');
+            if (form.checkValidity()) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newIncidentModal'));
+                modal.hide();
+                alert('Incident reported successfully!');
+                setTimeout(() => {
+                    renderKpis();
+                    renderTable();
+                }, 500);
+            } else {
+                form.reportValidity();
+            }
+        }
+        
+        function submitNewInspection() {
+            const form = document.getElementById('newInspectionForm');
+            if (form.checkValidity()) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newInspectionModal'));
+                modal.hide();
+                alert('Inspection created successfully!');
+            } else {
+                form.reportValidity();
+            }
+        }
+        
+        function submitNewRisk() {
+            const form = document.getElementById('newRiskForm');
+            if (form.checkValidity()) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newRiskModal'));
+                modal.hide();
+                alert('Risk assessment saved successfully!');
+            } else {
+                form.reportValidity();
+            }
+        }
+        
+        function submitPPE() {
+            const form = document.getElementById('ppeForm');
+            if (form.checkValidity()) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('ppeModal'));
+                modal.hide();
+                alert('PPE record saved successfully!');
+            } else {
+                form.reportValidity();
+            }
+        }
+        
+        function submitEnvironmental() {
+            const form = document.getElementById('environmentalForm');
+            if (form.checkValidity()) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('environmentalModal'));
+                modal.hide();
+                alert('Environmental record saved successfully!');
+            } else {
+                form.reportValidity();
+            }
+        }
+        
+        function submitMedical() {
+            const form = document.getElementById('medicalForm');
+            if (form.checkValidity()) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('medicalModal'));
+                modal.hide();
+                alert('Medical check scheduled successfully!');
+            } else {
+                form.reportValidity();
+            }
+        }
+        
+        function markAllAsRead() {
+            // Mark all alerts as read
+            document.querySelectorAll('#viewAlertsModal .list-group-item').forEach(item => {
+                item.style.opacity = '0.6';
+            });
+            document.getElementById('alertCount').textContent = '0';
+            document.querySelector('.notification-badge').textContent = '0';
+            alert('All alerts marked as read');
+        }
+        
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            // Select all employees checkbox
+            const selectAll = document.getElementById('selectAll');
+            if (selectAll) {
+                selectAll.addEventListener('change', (e) => {
+                    document.querySelectorAll('#scheduleTrainingModal input[type="checkbox"]:not(#selectAll)').forEach(cb => {
+                        cb.checked = e.target.checked;
+                    });
+                });
+            }
+            
+            // Theme default: dark
+            setTheme(false);
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.addEventListener('change', (e) => setTheme(e.target.checked));
+
+            renderKpis();
+            createCharts();
+            createSparklines();
+            renderTable();
+            initScrollAnimations();
+            animateSafetyScore();
+            updateLastUpdate();
+            setupTableFilter();
+            
+            // Refresh button
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', handleRefresh);
+            }
+            
+            // Update time every minute
+            setInterval(updateLastUpdate, 60000);
+        });
+    </script>
+</body>
+</html>
+
+

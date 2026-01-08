@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Tracking – UNIface360</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <style>
+        .tracking-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 1.5rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1200px) {
+            .tracking-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .cameras-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .sidebar {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 1rem;
+        }
+
+        .sidebar-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #22d3ee;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .person-card {
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .person-card:hover {
+            background: rgba(34, 211, 238, 0.2);
+            border-color: #22d3ee;
+            transform: translateX(4px);
+        }
+
+        .person-card.active {
+            background: rgba(34, 211, 238, 0.25);
+            border-color: #22d3ee;
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+        }
+
+        .person-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .person-name {
+            font-weight: 600;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .person-badge {
+            padding: 2px 8px;
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            border-radius: 999px;
+            font-size: 0.7rem;
+            color: #86efac;
+            text-transform: uppercase;
+        }
+
+        .person-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .person-stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .identified-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 0.5rem 1rem;
+            background: rgba(34, 197, 94, 0.9);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .unknown-badge {
+            background: rgba(239, 68, 68, 0.9);
+        }
+
+        .face-list {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .face-tag {
+            padding: 4px 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .face-tag.known {
+            border: 1px solid rgba(34, 197, 94, 0.7);
+            color: #86efac;
+        }
+
+        .face-tag.unknown {
+            border: 1px solid rgba(239, 68, 68, 0.7);
+            color: #fca5a5;
+        }
+
+        .cameras-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+        }
+
+        .no-cameras-message {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px dashed rgba(148, 163, 184, 0.3);
+            border-radius: 12px;
+            grid-column: 1 / -1;
+        }
+
+        .no-cameras-message a {
+            color: #22d3ee;
+            text-decoration: none;
+        }
+
+        .person-detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .person-detail-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #22d3ee;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            color: #94a3b8;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .person-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-card {
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid rgba(34, 211, 238, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #22d3ee;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .summary-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .logs-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .log-camera {
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .log-time {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
+        .log-confidence {
+            padding: 2px 8px;
+            background: rgba(34, 197, 94, 0.2);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: #86efac;
+        }
+    </style>
+</head>
+
+<body data-page="live-tracking">
+    <div id="particles-js" style="position: fixed; inset: 0; z-index: -2;"></div>
+    <div class="uf-layout">
+        <header class="uf-header">
+            <a href="{{ url_for('demo_welcome') }}" style="text-decoration: none; color: inherit;">
+                <div class="uf-logo">
+                    <img src="{{ url_for('static', filename='logo6.png') }}" alt="UNIface360 logo" />
+                    <span class="uf-logo-text">UNIface360</span>
+                </div>
+            </a>
+            <nav class="uf-nav" aria-label="Primary" style="display: flex; gap: 0.75rem;">
+                <span class="uf-nav-item uf-nav-pill">Live Tracking</span>
+                <a href="{{ url_for('demo_evacuation') }}" class="uf-btn uf-btn-secondary"
+                    style="text-decoration: none;">
+                    🚨 Evacuation
+                </a>
+                <a href="/analytics" class="uf-btn uf-btn-secondary" style="text-decoration: none;">
+                    📊 Analytics
+                </a>
+            </nav>
+        </header>
+
+        <main class="uf-main">
+            <section class="uf-section">
+                <header class="uf-section-header">
+                    <h2>🎯 Live Tracking - Face Recognition</h2>
+                    <p>
+                        Real-time face recognition and person identification. Click on any person in the sidebar to view
+                        their detailed logs and activity history.
+                    </p>
+                </header>
+
+                <div class="tracking-layout">
+                    <!-- Main Camera Section -->
+                    <div>
+                        <!-- Toolbar -->
+                        <div class="cameras-toolbar">
+                            <span style="color: #94a3b8; font-size: 0.9rem;">
+                                <strong id="camera-count" style="color: #22d3ee;">0</strong> cameras active |
+                                <strong id="identified-count" style="color: #22c55e;">0</strong> persons identified
+                            </span>
+                            <div style="display: flex; gap: 0.75rem;">
+                                <button id="refresh-btn" class="uf-btn uf-btn-secondary">⟳ Refresh</button>
+                                <button id="start-btn" class="uf-btn uf-btn-primary">▶ Start Tracking</button>
+                                <a href="/manage" class="uf-btn uf-btn-secondary" style="text-decoration: none;">⚙️
+                                    Manage</a>
+                            </div>
+                        </div>
+
+                        <!-- Cameras Grid -->
+                        <div class="cameras-section" id="cameras-container">
+                            <!-- Cameras will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Sidebar - Identified Persons -->
+                    <div class="sidebar">
+                        <div class="sidebar-title">
+                            <span>👤</span> Identified Persons
+                        </div>
+                        <div id="persons-list">
+                            <div style="text-align: center; padding: 2rem; color: #64748b;">
+                                Start tracking to see identified persons
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <!-- Person Detail Modal -->
+    <div class="person-detail-modal" id="person-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-person-name">Person Name</div>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="person-summary" id="modal-summary">
+                <!-- Summary cards -->
+            </div>
+            <h4 style="color: #94a3b8; margin-bottom: 1rem;">Recent Activity</h4>
+            <div class="logs-list" id="modal-logs">
+                <!-- Log items -->
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='particles-init.js') }}"></script>
+    <script>
+        (function () {
+            "use strict";
+
+            const MODEL_TYPE = 'live_tracking';
+            let modelCameras = {};
+            let checkIntervals = {};
+            let isRunning = false;
+            let identifiedPersons = {};
+
+            async function loadModelCameras() {
+                try {
+                    // Try live_tracking first, fall back to evacuation
+                    let res = await fetch(`/api/model-cameras/${MODEL_TYPE}`);
+                    let data = await res.json();
+
+                    if (data.ok && Object.keys(data.cameras || {}).length > 0) {
+                        modelCameras = data.cameras;
+                    } else {
+                        // Fall back to evacuation cameras
+                        res = await fetch('/api/model-cameras/evacuation');
+                        data = await res.json();
+                        if (data.ok) {
+                            modelCameras = data.cameras || {};
+                        }
+                    }
+                    renderCameras();
+                } catch (err) {
+                    console.error('Failed to load cameras:', err);
+                }
+            }
+
+            function renderCameras() {
+                const container = document.getElementById('cameras-container');
+                const activeCameras = Object.entries(modelCameras).filter(([id, cam]) => cam.enabled);
+
+                document.getElementById('camera-count').textContent = activeCameras.length;
+
+                if (activeCameras.length === 0) {
+                    container.innerHTML = `
+            <div class="no-cameras-message">
+              <p>No tracking cameras configured. <a href="/manage">Add cameras</a> and enable them for Live Tracking.</p>
+            </div>
+          `;
+                } else {
+                    container.innerHTML = activeCameras.map(([camId, cam]) => `
+            <div class="uf-cam-card" data-camera-id="${camId}" style="position: relative;">
+              <div class="identified-badge" id="badge-${camId}" style="display: none;">
+                <span>✓</span>
+                <span id="badge-name-${camId}">-</span>
+              </div>
+              <header class="uf-cam-header">
+                <span class="uf-pill uf-pill--info">Live Tracking</span>
+                <span class="uf-cam-label">${cam.name || 'Camera ' + camId}</span>
+              </header>
+              <div class="uf-cam-body" style="position: relative;">
+                <img id="cam-feed-${camId}" style="width: 100%; height: auto; min-height: 200px; background: #0a0a0f; object-fit: cover;">
+                <div class="face-list" id="faces-${camId}"></div>
+              </div>
+              <footer class="uf-cam-footer">
+                <span id="cam-status-${camId}" class="uf-caption">Ready</span>
+              </footer>
+            </div>
+          `).join('');
+                }
+            }
+
+            function updatePersonsList() {
+                const container = document.getElementById('persons-list');
+                const persons = Object.entries(identifiedPersons);
+
+                document.getElementById('identified-count').textContent = persons.length;
+
+                if (persons.length === 0) {
+                    container.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #64748b;">
+              No persons identified yet
+            </div>
+          `;
+                    return;
+                }
+
+                container.innerHTML = persons.map(([name, data]) => `
+          <div class="person-card" onclick="showPersonDetail('${name}')">
+            <div class="person-header">
+              <span class="person-name">${name}</span>
+              <span class="person-badge">Identified</span>
+            </div>
+            <div class="person-stats">
+              <span>📍 ${data.cameras.size} camera(s)</span>
+              <span>🕐 ${formatTime(data.lastSeen)}</span>
+            </div>
+          </div>
+        `).join('');
+            }
+
+            function formatTime(isoString) {
+                if (!isoString) return '-';
+                const date = new Date(isoString);
+                return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            function startAllCameras() {
+                const activeCameras = Object.entries(modelCameras).filter(([id, cam]) => cam.enabled);
+
+                activeCameras.forEach(([camId, cam], index) => {
+                    const feedEl = document.getElementById(`cam-feed-${camId}`);
+                    const statusEl = document.getElementById(`cam-status-${camId}`);
+
+                    if (feedEl) {
+                        feedEl.src = `/video_feed/${camId}`;
+                        if (statusEl) statusEl.textContent = 'Connecting...';
+                    }
+
+                    if (checkIntervals[camId]) clearInterval(checkIntervals[camId]);
+
+                    setTimeout(() => {
+                        if (statusEl) statusEl.textContent = 'Scanning...';
+                        // Check every 3 seconds for face recognition (slower but more intensive)
+                        checkIntervals[camId] = setInterval(() => performCheck(camId, cam.name), 3000);
+                        performCheck(camId, cam.name);
+                    }, index * 800);
+                });
+
+                isRunning = true;
+                document.getElementById('start-btn').textContent = '⏹ Stop';
+                document.getElementById('start-btn').onclick = stopAllCameras;
+            }
+
+            function stopAllCameras() {
+                Object.keys(checkIntervals).forEach(camId => {
+                    clearInterval(checkIntervals[camId]);
+                    delete checkIntervals[camId];
+                });
+
+                Object.entries(modelCameras).filter(([id, cam]) => cam.enabled).forEach(([camId]) => {
+                    const feedEl = document.getElementById(`cam-feed-${camId}`);
+                    const statusEl = document.getElementById(`cam-status-${camId}`);
+                    const badgeEl = document.getElementById(`badge-${camId}`);
+                    const facesEl = document.getElementById(`faces-${camId}`);
+
+                    if (feedEl) feedEl.src = '';
+                    if (statusEl) statusEl.textContent = 'Stopped';
+                    if (badgeEl) badgeEl.style.display = 'none';
+                    if (facesEl) facesEl.innerHTML = '';
+                });
+
+                isRunning = false;
+                document.getElementById('start-btn').textContent = '▶ Start Tracking';
+                document.getElementById('start-btn').onclick = startAllCameras;
+            }
+
+            async function performCheck(camId, camName) {
+                try {
+                    const res = await fetch('/api/demo/live-tracking/check', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ camera_index: parseInt(camId) })
+                    });
+
+                    const data = await res.json();
+
+                    const statusEl = document.getElementById(`cam-status-${camId}`);
+                    const badgeEl = document.getElementById(`badge-${camId}`);
+                    const badgeNameEl = document.getElementById(`badge-name-${camId}`);
+                    const facesEl = document.getElementById(`faces-${camId}`);
+
+                    if (data.ok) {
+                        // Update status
+                        if (statusEl) {
+                            statusEl.textContent = `${data.person_count} person(s) | ${data.identified_persons.length} identified`;
+                        }
+
+                        // Update badge
+                        if (data.identified_persons.length > 0) {
+                            if (badgeEl) {
+                                badgeEl.style.display = 'flex';
+                                badgeEl.classList.remove('unknown-badge');
+                            }
+                            if (badgeNameEl) {
+                                badgeNameEl.textContent = data.identified_persons.join(', ');
+                            }
+
+                            // Update identified persons list
+                            data.identified_persons.forEach(name => {
+                                if (!identifiedPersons[name]) {
+                                    identifiedPersons[name] = { cameras: new Set(), lastSeen: null, sightings: 0 };
+                                }
+                                identifiedPersons[name].cameras.add(camId);
+                                identifiedPersons[name].lastSeen = new Date().toISOString();
+                                identifiedPersons[name].sightings++;
+                            });
+                            updatePersonsList();
+
+                        } else if (data.person_count > 0) {
+                            if (badgeEl) {
+                                badgeEl.style.display = 'flex';
+                                badgeEl.classList.add('unknown-badge');
+                            }
+                            if (badgeNameEl) badgeNameEl.textContent = `${data.unknown_count} Unknown`;
+                        } else {
+                            if (badgeEl) badgeEl.style.display = 'none';
+                        }
+
+                        // Update face tags
+                        if (facesEl && data.face_details) {
+                            facesEl.innerHTML = data.face_details.map(face => `
+                <span class="face-tag ${face.name !== 'Unknown' ? 'known' : 'unknown'}">
+                  ${face.name !== 'Unknown' ? '✓' : '?'} ${face.name} (${Math.round(face.confidence * 100)}%)
+                </span>
+              `).join('');
+                        }
+                    }
+
+                } catch (err) {
+                    console.error(`[TRACKING CAM ${camId}] Check error:`, err);
+                }
+            }
+
+            window.showPersonDetail = async function (personName) {
+                const modal = document.getElementById('person-modal');
+                document.getElementById('modal-person-name').textContent = personName;
+
+                try {
+                    const res = await fetch(`/api/person-logs/${encodeURIComponent(personName)}`);
+                    const data = await res.json();
+
+                    if (data.ok) {
+                        // Update summary
+                        const summary = data.summary || {};
+                        document.getElementById('modal-summary').innerHTML = `
+              <div class="summary-card">
+                <div class="summary-value">${summary.total_sightings || 0}</div>
+                <div class="summary-label">Total Sightings</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-value">${(summary.cameras_seen || []).length}</div>
+                <div class="summary-label">Cameras Seen</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-value">${summary.last_seen ? formatTime(summary.last_seen) : '-'}</div>
+                <div class="summary-label">Last Seen</div>
+              </div>
+            `;
+
+                        // Update logs
+                        const logs = data.logs || [];
+                        document.getElementById('modal-logs').innerHTML = logs.length === 0
+                            ? '<div style="text-align: center; color: #64748b; padding: 1rem;">No logs found</div>'
+                            : logs.map(log => `
+                <div class="log-item">
+                  <div>
+                    <div class="log-camera">${log.camera_name || 'Camera ' + log.camera_id}</div>
+                    <div class="log-time">${new Date(log.timestamp).toLocaleString()}</div>
+                  </div>
+                  <div class="log-confidence">${Math.round(log.confidence * 100)}%</div>
+                </div>
+              `).join('');
+                    }
+                } catch (err) {
+                    console.error('Failed to load person detail:', err);
+                }
+
+                modal.classList.add('active');
+            };
+
+            window.closeModal = function () {
+                document.getElementById('person-modal').classList.remove('active');
+            };
+
+            // Close modal on escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                loadModelCameras();
+                document.getElementById('start-btn').addEventListener('click', startAllCameras);
+                document.getElementById('refresh-btn').addEventListener('click', loadModelCameras);
+            });
+        })();
+    </script>
+</body>
+
+</html>

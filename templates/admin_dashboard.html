@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style> .ltr { direction: ltr; }</style>
+    <script defer src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</head>
+<body class="dashboard">
+    <nav class="navbar navbar-expand-lg navbar-dark hr-navbar-fixed" style="background:rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border-bottom:1px solid rgba(255,255,255,0.12)">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="{{ url_for('static', filename='logo6.png') }}" alt="Logo" style="height:34px; margin-inline-end:6px;">
+                <span class="fw-semibold">Admin Dashboard</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav2">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="nav2">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item me-3">
+                    <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="themeToggleAdmin">
+                            <label class="form-check-label" for="themeToggleAdmin">Light/Dark</label>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://i.pravatar.cc/100?img=12" alt="avatar" class="avatar" />
+                            <span class="fw-semibold">Admin</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_settings') }}">Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar (match HSE) -->
+            <aside class="col-12 col-lg-2 sidebar p-3">
+                <h6 class="text-uppercase text-muted px-2">Navigation</h6>
+                <ul class="nav nav-pills flex-column gap-1 mt-2">
+                    <li class="nav-item">
+                        <a class="nav-link active d-flex align-items-center gap-2" aria-current="page" href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard Overview</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_approvals') }}"><i class="fa-regular fa-file-lines"></i> Approvals</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_employees') }}"><i class="fa-solid fa-users"></i> Employees</a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <div class="text-uppercase text-muted px-2 small">HR Suite</div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('hr_home') }}"><i class="fa-solid fa-people-group"></i> HR Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('hr_attendance') }}"><i class="fa-regular fa-calendar-check"></i> Attendance</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('hr_leaves') }}"><i class="fa-regular fa-paper-plane"></i> Leaves</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('hr_payroll') }}"><i class="fa-solid fa-money-bill-wave"></i> Payroll</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('hr_hse') }}"><i class="fa-solid fa-helmet-safety"></i> HSE</a>
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- Main content -->
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-lg-3">
+                <div class="glass-card p-3 kpi">
+                    <div class="icon success">👥</div>
+                    <div>
+                        <div class="value">64</div>
+                        <div class="label">Online Now</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="glass-card p-3 kpi">
+                    <div class="icon primary">📆</div>
+                    <div>
+                        <div class="value">312</div>
+                        <div class="label">Monthly Check-ins</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="glass-card p-3 kpi">
+                    <div class="icon warning">⏱️</div>
+                    <div>
+                        <div class="value">27</div>
+                        <div class="label">Late</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="glass-card p-3 kpi">
+                    <div class="icon danger">🚫</div>
+                    <div>
+                        <div class="value">19</div>
+                        <div class="label">Absences</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-lg-8">
+                <div class="glass-card p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="section-title">Daily Org Attendance</div>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" style="width:auto">
+                                <option>Current Month</option>
+                                <option>Last Month</option>
+                            </select>
+                            <select class="form-select form-select-sm" style="width:auto">
+                                <option>All Departments</option>
+                                <option>IT</option>
+                                <option>HR</option>
+                                <option>Finance</option>
+                            </select>
+                        </div>
+                    </div>
+                    <canvas id="orgDailyChart" height="110" class="ltr"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card p-3 h-100">
+                    <div class="section-title mb-2">Departments</div>
+                    <canvas id="deptStacked" height="220" class="ltr"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6">
+                <div class="glass-card p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="section-title">Company Monthly Report</div>
+                        <div class="d-flex gap-2">
+                            <input type="month" id="reportMonth" class="form-control" style="width:auto">
+                            <button class="btn btn-outline" id="dlCsv">CSV</button>
+                            <button class="btn btn-gradient" id="dlPdf">PDF</button>
+                        </div>
+                    </div>
+                    <div class="text-muted">Download timesheet for all employees for the selected month.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <div class="glass-card p-3">
+                    <div class="section-title mb-2">First Arrived Today</div>
+                    <div class="d-flex align-items-center gap-3">
+                        <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="">
+                        <div>
+                            <div class="h5 m-0">Dalia</div>
+                            <div class="text-muted">Checked in at 07:54</div>
+                        </div>
+                        <span class="ms-auto chip">IT</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="glass-card p-3">
+                    <div class="section-title mb-2">Last Left Yesterday</div>
+                    <div class="d-flex align-items-center gap-3">
+                        <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="">
+                        <div>
+                            <div class="h5 m-0">Yousef</div>
+                            <div class="text-muted">Checked out at 18:22</div>
+                        </div>
+                        <span class="ms-auto chip">Finance</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6">
+                <div class="glass-card p-3 h-100 d-flex flex-column">
+                    <div class="section-title mb-2">Recent Check-ins</div>
+                    <ul class="list-group flex-grow-1">
+                        <li class="list-group-item d-flex align-items-center gap-2">
+                            <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt=""> Dalia
+                            <span class="ms-auto">08:01</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center gap-2">
+                            <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt=""> Yousef
+                            <span class="ms-auto">08:03</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center gap-2">
+                            <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt=""> Mahmoud
+                            <span class="ms-auto">08:05</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center gap-2">
+                            <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt=""> Ragab
+                            <span class="ms-auto">08:12</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center gap-2">
+                            <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt=""> Mostafa
+                            <span class="ms-auto">08:15</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="glass-card p-3 h-100 d-flex flex-column">
+                    <div class="section-title mb-2">Late Arrivals (Today)</div>
+                    <div class="table-responsive flex-grow-1">
+                        <table class="table table-darkish align-middle mb-0">
+                            <thead><tr><th>Employee</th><th>Time</th><th>Dept</th></tr></thead>
+                            <tbody>
+                                <tr><td>Mahmoud</td><td>08:19</td><td>Ops</td></tr>
+                                <tr><td>Ragab</td><td>08:21</td><td>IT</td></tr>
+                                <tr><td>Hagar</td><td>08:25</td><td>HR</td></tr>
+                                <tr><td>Gamila</td><td>08:28</td><td>Admin</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-lg-4">
+                <div class="glass-card p-3">
+                    <div class="section-title mb-3">Attendance Rate</div>
+                    <canvas id="attendanceRateChart" height="180"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card p-3">
+                    <div class="section-title mb-3">Department Performance</div>
+                    <canvas id="deptPerformanceChart" height="180"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card p-3">
+                    <div class="section-title mb-3">Weekly Trend</div>
+                    <canvas id="weeklyTrendChart" height="180"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-lg-8">
+                <div class="glass-card p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="section-title">Monthly Attendance Overview</div>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" style="width:auto" id="monthSelect">
+                                <option value="current">Current Month</option>
+                                <option value="last">Last Month</option>
+                                <option value="3months">Last 3 Months</option>
+                            </select>
+                            <button class="btn btn-outline btn-sm" id="exportMonthlyCsv"><i class="fa-solid fa-download"></i> CSV</button>
+                            <button class="btn btn-gradient btn-sm" id="exportMonthlyPdf"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                        </div>
+                    </div>
+                    <canvas id="monthlyOverviewChart" height="100"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card p-3 h-100">
+                    <div class="section-title mb-3">Top Performers</div>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center justify-content-between p-2" style="background:rgba(16,185,129,0.1); border-radius:8px;">
+                            <div class="d-flex align-items-center gap-2">
+                                <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="">
+                                <div>
+                                    <div class="fw-semibold">Dalia</div>
+                                    <div class="text-muted small">IT Department</div>
+                                </div>
+                            </div>
+                            <span class="chip" style="background:rgba(16,185,129,0.2);">98%</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between p-2" style="background:rgba(16,185,129,0.1); border-radius:8px;">
+                            <div class="d-flex align-items-center gap-2">
+                                <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="">
+                                <div>
+                                    <div class="fw-semibold">Yousef</div>
+                                    <div class="text-muted small">Finance</div>
+                                </div>
+                            </div>
+                            <span class="chip" style="background:rgba(16,185,129,0.2);">96%</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between p-2" style="background:rgba(16,185,129,0.1); border-radius:8px;">
+                            <div class="d-flex align-items-center gap-2">
+                                <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="">
+                                <div>
+                                    <div class="fw-semibold">Mahmoud</div>
+                                    <div class="text-muted small">Operations</div>
+                                </div>
+                            </div>
+                            <span class="chip" style="background:rgba(16,185,129,0.2);">94%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-6">
+                <div class="glass-card p-3">
+                    <div class="section-title mb-3">Activity Heatmap</div>
+                    <div class="calendar" id="activityCalendar"></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="glass-card p-3 h-100 d-flex flex-column">
+                    <div class="section-title mb-3">Alerts & Notifications</div>
+                    <ul class="list-group flex-grow-1">
+                        <li class="list-group-item d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-bell text-warning"></i>
+                            <span>3 pending approvals require your review</span>
+                            <span class="ms-auto chip">Today</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-shield-halved text-success"></i>
+                            <span>Security backup completed successfully</span>
+                            <span class="ms-auto chip">1h ago</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-user-clock text-primary"></i>
+                            <span>5 employees late today vs 9 yesterday</span>
+                            <span class="ms-auto chip">Stats</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+                            <span>Incident reported at Field Site B</span>
+                            <span class="ms-auto chip">HSE</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            function build(monthStr, fmt){
+                if(!monthStr){ return null; }
+                const [y,m] = monthStr.split('-');
+                return `/export_company_month?year=${y}&month=${m}&format=${fmt}`;
+            }
+            const inp = document.getElementById('reportMonth');
+            const csv = document.getElementById('dlCsv');
+            const pdf = document.getElementById('dlPdf');
+            const now = new Date();
+            const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            if(inp) inp.value = ym;
+            if(csv) csv.addEventListener('click', ()=>{ const u = build(inp.value,'csv'); if(u) window.location = u; });
+            if(pdf) pdf.addEventListener('click', ()=>{ const u = build(inp.value,'pdf'); if(u) window.location = u; });
+
+            // Additional Charts
+            const ctx1 = document.getElementById('attendanceRateChart');
+            if(ctx1) {
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Present', 'Late', 'Absent'],
+                        datasets: [{
+                            data: [85, 10, 5],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                        }]
+                    },
+                    options: { plugins: { legend: { labels: { color: '#ddd' } } } }
+                });
+            }
+
+            const ctx2 = document.getElementById('deptPerformanceChart');
+            if(ctx2) {
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['IT', 'HR', 'Finance', 'Ops', 'HSE'],
+                        datasets: [{
+                            label: 'Attendance %',
+                            data: [96, 92, 94, 88, 90],
+                            backgroundColor: '#24c1d9'
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { color: '#aaa' } }, x: { ticks: { color: '#aaa' } } }
+                    }
+                });
+            }
+
+            const ctx3 = document.getElementById('weeklyTrendChart');
+            if(ctx3) {
+                new Chart(ctx3, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Attendance',
+                            data: [92, 94, 93, 95, 91, 88, 85],
+                            borderColor: '#24c1d9',
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        scales: { y: { ticks: { color: '#aaa' } }, x: { ticks: { color: '#aaa' } } }
+                    }
+                });
+            }
+
+            const ctx4 = document.getElementById('monthlyOverviewChart');
+            if(ctx4) {
+                new Chart(ctx4, {
+                    type: 'line',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [
+                            { label: 'Present', data: [88, 90, 92, 91], borderColor: '#10b981', tension: 0.3 },
+                            { label: 'Late', data: [8, 7, 6, 7], borderColor: '#f59e0b', tension: 0.3 },
+                            { label: 'Absent', data: [4, 3, 2, 2], borderColor: '#ef4444', tension: 0.3 }
+                        ]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        scales: { y: { ticks: { color: '#aaa' } }, x: { ticks: { color: '#aaa' } } }
+                    }
+                });
+            }
+
+            // Activity Calendar
+            const cal = document.getElementById('activityCalendar');
+            if(cal) {
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                days.forEach(d => {
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'day';
+                    dayEl.textContent = d;
+                    cal.appendChild(dayEl);
+                });
+                for(let i=1; i<=28; i++) {
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'day ' + (Math.random() > 0.3 ? 'ok' : Math.random() > 0.5 ? 'late' : 'miss');
+                    dayEl.textContent = i;
+                    cal.appendChild(dayEl);
+                }
+            }
+
+            // Export handlers
+            const expCsv = document.getElementById('exportMonthlyCsv');
+            const expPdf = document.getElementById('exportMonthlyPdf');
+            if(expCsv) expCsv.addEventListener('click', () => {
+                const csv = 'Month,Present,Late,Absent\nCurrent,312,27,19';
+                const blob = new Blob([csv], {type:'text/csv'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'monthly_attendance.csv';
+                a.click();
+            });
+            if(expPdf) expPdf.addEventListener('click', () => window.print());
+        })();
+    </script>
+    <script>
+        (function(){
+            const body = document.body;
+            const toggle = document.getElementById('themeToggleAdmin');
+            if (!toggle) return;
+            function applyTheme(){
+                if (toggle.checked) {
+                    body.classList.add('light-theme');
+                    document.documentElement.setAttribute('data-bs-theme', 'light');
+                } else {
+                    body.classList.remove('light-theme');
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                }
+            }
+            toggle.addEventListener('change', applyTheme);
+            // default to light for admin page
+            applyTheme();
+        })();
+    </script>
+</body>
+<!-- Note: Wire these templates to Flask routes later (frontend only for now). -->
+</html>
+
+

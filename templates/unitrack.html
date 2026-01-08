@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unitrack Camera</title>
+  <style>
+    video, canvas { max-width: 100%; }
+    #preview { width: 480px; height: 360px; background: #ddd; }
+  </style>
+</head>
+<body>
+  <h1>Unitrack Camera</h1>
+  <video id="video" autoplay playsinline width="480" height="360"></video>
+  <canvas id="canvas" width="480" height="360" style="display:none"></canvas>
+  <div>
+    <button id="capture">Capture</button>
+    <button id="submit" disabled>Submit for detection</button>
+  </div>
+  <pre id="result"></pre>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('capture');
+    const submitBtn = document.getElementById('submit');
+    const resultPre = document.getElementById('result');
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        video.srcObject = stream;
+      } catch (err) {
+        resultPre.textContent = 'Camera error: ' + err;
+      }
+    }
+
+    captureBtn.addEventListener('click', () => {
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      submitBtn.disabled = false;
+      resultPre.textContent = 'Captured image. Ready to submit.';
+    });
+
+    submitBtn.addEventListener('click', async () => {
+      submitBtn.disabled = true;
+      resultPre.textContent = 'Submitting...';
+      const dataUrl = canvas.toDataURL('image/png');
+
+      const form = new FormData();
+      form.append('image', dataUrl);
+
+      try {
+        const resp = await fetch('/detect', { method: 'POST', body: form });
+        const json = await resp.json();
+        resultPre.textContent = JSON.stringify(json, null, 2);
+      } catch (err) {
+        resultPre.textContent = 'Submit error: ' + err;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    startCamera();
+  </script>
+</body>
+</html>

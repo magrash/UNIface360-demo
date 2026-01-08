@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs for {{ name }}</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            color: #fff;
+        }
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .navbar-brand, .nav-link {
+            color: #fff !important;
+        }
+        .table {
+            color: #fff;
+        }
+        .table thead th {
+            background: rgba(33, 147, 176, 0.2);
+            border-bottom: 1px solid rgba(33, 147, 176, 0.3);
+            color: #fff;
+        }
+        .table tbody td {
+            border-color: rgba(33, 147, 176, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+        .table tbody tr:hover {
+            background: rgba(33, 147, 176, 0.1);
+        }
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #85e085);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #ff6b6b);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #ffe680);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="content-wrapper">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
+                    <img src="{{ url_for('static', filename='logo2.png') }}" alt="Logo" style="height:40px; margin-right:10px;">
+                    Uniface360
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('emergency_status') }}">Report</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('map') }}">Map</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('people_directory') }}">Directory</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="container mt-4">
+            <h1 class="mb-4">Logs for {{ name }}</h1>
+            <div class="mb-3">
+                <div class="dropdown me-2 d-inline-block">
+                    <button class="btn btn-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown">
+                        Export Report
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('export_logs', name=name, format='csv') }}">Export as CSV</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('export_logs', name=name, format='pdf') }}">Export as PDF</a></li>
+                    </ul>
+                </div>
+                <button id="deleteBtn" class="btn btn-danger me-2">Delete Selected</button>
+                <button id="hideBtn" class="btn btn-warning">Hide Selected</button>
+            </div>
+            <table class="table table-bordered table-hover" id="logsTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Time</th>
+                        <th>Evidence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr data-name="{{ log.name }}" data-location="{{ log.location }}" data-time="{{ log.time }}">
+                        <td><input type="checkbox" class="row-select"></td>
+                        <td>{{ log.name }}</td>
+                        <td>{{ log.location }}</td>
+                        <td>{{ log.time }}</td>
+                        <td>
+                            {% if log.image_path %}
+                            <img src="{{ url_for('serve_evidence', filename=log.image_path | basename) }}" alt="Evidence" class="img-fluid" style="max-width: 100px;">
+                            {% else %}
+                            No Image
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="{{ url_for('emergency_status') }}" class="btn btn-secondary">Back to Report</a>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS('particles-js', {
+            particles: {
+                number: {
+                    value: 300,
+                    density: {
+                        enable: true,
+                        value_area: 1000
+                    }
+                },
+                color: {
+                    value: '#ffffff'
+                },
+                shape: {
+                    type: 'circle',
+                    stroke: {
+                        width: 0,
+                        color: '#000000'
+                    }
+                },
+                opacity: {
+                    value: 0.3,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                size: {
+                    value: 2.5,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#ffffff',
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: true,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'grab'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 140,
+                        line_linked: {
+                            opacity: 0.5
+                        }
+                    },
+                    push: {
+                        particles_nb: 3
+                    }
+                }
+            },
+            retina_detect: true
+        });
+
+        // Select All functionality
+        const selectAll = document.getElementById('selectAll');
+        selectAll.addEventListener('change', () => {
+            const checkboxes = document.querySelectorAll('.row-select');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        });
+
+        // Delete selected rows
+        document.getElementById('deleteBtn').addEventListener('click', () => {
+            const rows = document.querySelectorAll('#logsTable tbody tr');
+            const selectedEntries = [];
+            
+            rows.forEach(row => {
+                const checkbox = row.querySelector('.row-select');
+                if (checkbox.checked) {
+                    selectedEntries.push({
+                        name: row.getAttribute('data-name'),
+                        location: row.getAttribute('data-location'),
+                        time: row.getAttribute('data-time')
+                    });
+                }
+            });
+
+            if (selectedEntries.length === 0) {
+                alert("No rows selected");
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete ${selectedEntries.length} row(s)? This will permanently remove them from the database.`)) {
+                return;
+            }
+
+            fetch(`/delete_log_rows/{{ name }}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(selectedEntries)
+            })
+            .then(response => {
+                if (response.ok) {
+                    rows.forEach(row => {
+                        const entry = {
+                            name: row.getAttribute('data-name'),
+                            location: row.getAttribute('data-location'),
+                            time: row.getAttribute('data-time')
+                        };
+                        if (selectedEntries.some(e => e.name === entry.name && e.location === entry.location && e.time === entry.time)) {
+                            row.remove();
+                        }
+                    });
+                    alert("Rows deleted successfully");
+                } else {
+                    alert("Failed to delete rows");
+                }
+            })
+            .catch(err => {
+                console.error('Delete failed:', err);
+                alert("Error deleting rows");
+            });
+        });
+
+        // Hide selected rows
+        document.getElementById('hideBtn').addEventListener('click', () => {
+            const rows = document.querySelectorAll('#logsTable tbody tr');
+            let hiddenCount = 0;
+            
+            rows.forEach(row => {
+                const checkbox = row.querySelector('.row-select');
+                if (checkbox.checked) {
+                    row.style.display = 'none';
+                    hiddenCount++;
+                }
+            });
+
+            if (hiddenCount === 0) {
+                alert("No rows selected");
+            } else {
+                alert(`${hiddenCount} row(s) hidden`);
+            }
+        });
+    </script>
+</body>
+</html>
+

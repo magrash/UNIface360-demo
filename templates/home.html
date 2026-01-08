@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Uniface360 – AI Security System</title>
+  <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <style>    
+    body {
+      margin: 0;
+      background: #00123E;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+      overflow-x: hidden;
+    }
+      .video-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    
+    .video-background iframe {
+      width: 100vw;
+      height: 56.25vw; /* Given a 16:9 aspect ratio */
+      min-height: 100vh;
+      min-width: 177.77vh; /* Given a 16:9 aspect ratio */
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+      .corner-logo {
+      position: fixed;
+      max-width: 120px;
+      z-index: 20;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
+    }
+    
+    .top-left-logo {
+      top: 20px;
+      left: 20px;
+    }
+    
+    .top-right-logo {
+      top: 20px;
+      right: 20px;
+    }
+    
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      z-index: 10;
+      position: relative;
+      padding: 2rem;
+    }
+
+    .logo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .hero-banner {
+      max-width: 200px;
+    }
+
+    .hero h1 {
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      max-width: 700px;
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .glow-button {
+      background: linear-gradient(135deg, #00c9ff, #92fe9d);
+      color: #000;
+      padding: 1rem 2.5rem;
+      border: none;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 201, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .glow-button:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(0, 201, 255, 0.6);
+      background: linear-gradient(135deg, #92fe9d, #00c9ff);
+    }
+
+    .features-section {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(4px);
+      padding: 4rem 2rem;
+      border-radius: 25px;
+      margin: 4rem auto;
+      max-width: 1000px;
+      z-index: 10;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(3, 7, 255, 0.3);
+    }
+
+    .features-title {
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .feature-box {
+      text-align: center;
+      padding: 2rem 1rem;
+      border-radius: 15px;
+      transition: transform 0.3s ease;
+    }
+
+    .feature-box i {
+      font-size: 2rem;
+      color: #92fe9d;
+      margin-bottom: 1rem;
+    }
+
+    .feature-box:hover {
+      transform: translateY(-10px);
+    }    .footer-note {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 2rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .feature-description {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 0.5rem;
+    }
+      /* Stats Section Styles */
+    .stats-section {
+      background: linear-gradient(135deg, rgba(0, 201, 255, 0.1) 0%, rgba(146, 254, 157, 0.1) 100%);
+      backdrop-filter: blur(10px);
+      padding: 3rem 0;
+      margin: 2rem auto 4rem;
+      max-width: 1200px;
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(0, 201, 255, 0.15);
+    }
+    
+    .stat-item {
+      padding: 1.5rem;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    
+    .stat-item:hover {
+      transform: translateY(-10px);
+    }
+    
+    .stat-number, .stat-percent, .stat-plus, .stat-text {
+      display: inline-block;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    
+    .stat-percent, .stat-plus, .stat-text {
+      font-size: 1.8rem;
+      margin-left: 5px;
+      color: #92fe9d;
+    }
+    
+    .stat-label {
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Benefits Section Styles */
+    .benefits-section {
+      background: rgba(0, 18, 62, 0.7);
+      backdrop-filter: blur(10px);
+      padding: 4rem 0;
+      margin: 4rem auto;
+      max-width: 1200px;
+      border-radius: 25px;
+      box-shadow: 0 8px 32px rgba(3, 7, 255, 0.2);
+    }
+    
+    .benefit-img-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+    }
+    
+    .benefit-icon {
+      font-size: 6rem;
+      color: #92fe9d;
+      opacity: 0.8;
+    }
+    
+    .benefit-title {
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    
+    .benefit-description {
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    
+    .benefit-list {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    
+    .benefit-list li {
+      margin-bottom: 0.8rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .benefit-list li i {
+      color: #92fe9d;
+      margin-right: 0.5rem;
+    }
+    
+    /* Testimonials Section Styles */
+    .testimonials-section {
+      padding: 4rem 0;
+      margin: 4rem auto;
+      max-width: 1200px;
+    }
+    
+    .testimonial-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(4px);
+      border-radius: 15px;
+      padding: 2rem;
+      height: 100%;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+    
+    .testimonial-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 10px 25px rgba(0, 201, 255, 0.2);
+    }
+    
+    .testimonial-stars {
+      margin-bottom: 1rem;
+      color: #FFD700;
+    }
+    
+    .testimonial-text {
+      font-style: italic;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    
+    .testimonial-author {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 1rem;
+    }
+    
+    .author-name {
+      font-weight: 600;
+      color: #ffffff;
+    }
+    
+    .author-role {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* CTA Section Styles */
+    .cta-section {
+      background: linear-gradient(135deg, rgba(0, 18, 62, 0.8) 0%, rgba(0, 36, 125, 0.8) 100%);
+      backdrop-filter: blur(4px);
+      padding: 4rem 2rem;
+      border-radius: 25px;
+      margin: 4rem auto;
+      max-width: 1000px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(3, 7, 255, 0.3);
+    }
+    
+    .cta-title {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    
+    .cta-description {
+      max-width: 700px;
+      margin: 0 auto 2rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.1rem;
+    }
+    
+    .cta-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .outline-button {
+      background: transparent;
+      color: #fff;
+      border: 2px solid #00c9ff;
+      padding: 1rem 2.5rem;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .outline-button:hover {
+      background: rgba(0, 201, 255, 0.1);
+      transform: translateY(-4px);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(0, 201, 255, 0.3);
+    }
+    
+    /* Footer Styles */    .site-footer {
+      background: rgba(0, 9, 31, 0.9); 
+      padding: 3rem 0 1rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 4rem;
+      position: relative;
+      z-index: 10; 
+      backdrop-filter: blur(8px);
+      border-top: 1px solid rgba(146, 254, 157, 0.3);
+      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+    }
+    
+    .footer-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      background: rgba(0, 9, 31, 0.6);
+      backdrop-filter: blur(10px);
+      margin-top: 3rem;
+    }
+    
+    .site-footer h4 {
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
+    }
+    
+    .footer-links {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    
+    .footer-links li {
+      margin-bottom: 0.8rem;
+    }
+    
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .footer-links a:hover {
+      color: #00c9ff;
+    }
+    
+    .social-icons {
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .social-icons a {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      color: #ffffff;
+      transition: all 0.3s ease;
+    }
+    
+    .social-icons a:hover {
+      background: #00c9ff;
+      transform: translateY(-3px);
+    }
+    
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 1.6rem;
+      }
+
+      .glow-button, .outline-button {
+        width: 90%;
+        margin-bottom: 1rem;
+      }
+      
+      .cta-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      
+      /* Hide the corner logos on mobile */
+      .corner-logo {
+        display: none;
+      }
+      
+      .benefit-img-container {
+        height: 150px;
+        margin-bottom: 1.5rem;
+      }
+      
+      .testimonial-card {
+        margin-bottom: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>  <div class="video-background">
+    <iframe src="https://player.vimeo.com/video/918429025?title=0&byline=0&muted=1&autoplay=1&autopause=0&controls=0&loop=1&app_id=122963" 
+            frameborder="0" 
+            allow="autoplay; fullscreen" 
+            allowfullscreen>
+    </iframe>
+  </div>
+  
+  <div class="content-wrapper" style="position: relative; z-index: 5; min-height: 100vh;">
+  <img src="{{ url_for('static', filename='Picture12.png') }}" class="corner-logo top-left-logo" alt="AI Logo"/>
+  <img src="{{ url_for('static', filename='Asset 2.png') }}" class="corner-logo top-right-logo" alt="AI Logo"/>
+
+  <section class="hero">
+    <div class="logo-container">
+      <!-- <img src="{{ url_for('static', filename='banner.gif') }}" class="hero-banner" alt="Banner"/> -->
+    </div>
+    <h1>Uniface360 –– AI-Powered Safety & Detection Demo</h1>
+    <p>
+      Explore how Uniface360 detects smoking, unauthorized people, restricted-area breaches, and PPE (hardhat) issues
+      in real time using live camera feeds and intelligent alerts.
+    </p>
+    <a href="{{ url_for('demo_welcome') }}" class="glow-button text-decoration-none">
+      Explore the Safety Demo
+    </a>
+  </section>
+  <section class="features-section">
+    <div class="features-title">Core Capabilities</div>
+    <div class="row text-center">
+      <div class="col-md-3 col-6 feature-box">
+        <i class="fas fa-user-shield"></i>
+        <div>Personnel Tracking</div>
+        <p class="feature-description">Real-time monitoring of all personnel movements with AI identification</p>
+      </div>
+      <div class="col-md-3 col-6 feature-box">
+        <i class="fas fa-network-wired"></i>
+        <div>Space Monitoring</div>
+        <p class="feature-description">Intelligent space utilization analytics with occupancy tracking</p>
+      </div>
+      <div class="col-md-3 col-6 feature-box">
+        <i class="fas fa-calendar-check"></i>
+        <div>Attendance System</div>
+        <p class="feature-description">Automated attendance tracking with comprehensive reporting</p>
+      </div>
+      <div class="col-md-3 col-6 feature-box">
+        <i class="fas fa-brain"></i>
+        <div>AI-Powered Dashboard</div>
+        <p class="feature-description">Advanced analytics and insights through machine learning</p>
+      </div>
+    </div>
+    <div class="row text-center mt-4">
+      <div class="col-md-3 col-6 feature-box">
+        <i class="fas fa-hard-hat"></i>
+        <div>HSE Team</div>
+        <p class="feature-description">Health, Safety, and Environment personnel tracking and alerts</p>
+      </div>
+      <div class="col-md-3 col-6 feature-box">
+        <i class="fas fa-user-secret"></i>
+        <div>Security Team</div>
+        <p class="feature-description">Dedicated monitoring for security staff and incident response</p>
+      </div>
+      <div class="col-md-3 col-6 feature-box">
+        <i class="fas fa-ambulance"></i>
+        <div>Rescue Team</div>
+        <p class="feature-description">Rescue team presence and rapid deployment tracking</p>
+      </div>
+      <div class="col-md-3 col-6 feature-box">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>UN-Auth (Red Zone)</div>
+        <p class="feature-description">Detection and alerting of unauthorized personnel in restricted areas</p>
+      </div>
+    </div>
+  </section>
+  <section class="stats-section">
+    <div class="container">
+      <div class="row text-center">
+        <div class="col-md-3 col-6 stat-item">
+          <div class="stat-number" data-count="98">0</div>
+          <div class="stat-percent">%</div>
+          <div class="stat-label">Recognition Accuracy</div>
+        </div>
+        <div class="col-md-3 col-6 stat-item">
+          <div class="stat-number" data-count="500">0</div>
+          <div class="stat-plus">+</div>
+          <div class="stat-label">Buildings Protected</div>
+        </div>
+        <div class="col-md-3 col-6 stat-item">
+          <div class="stat-number" data-count="98">0</div>
+          <div class="stat-percent">%</div>
+          <div class="stat-label">Red Zone Accuracy</div>
+        </div>
+        <div class="col-md-3 col-6 stat-item">
+          <div class="stat-number" data-count="24">0</div>
+          <div class="stat-text">/7</div>
+          <div class="stat-label">Monitoring & Support</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="benefits-section">
+    <div class="container">
+      <div class="features-title">Why Choose Uniface360</div>
+      <div class="row align-items-center py-4">
+        <div class="col-md-6">
+          <div class="benefit-img-container">
+            <i class="fas fa-shield-alt benefit-icon"></i>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <h3 class="benefit-title">Enhanced Security</h3>
+          <p class="benefit-description">
+            Our AI-powered facial recognition system provides superior security by constantly monitoring who enters and exits your building. 
+            Uniface360 sends instant alerts for unauthorized access attempts and maintains a comprehensive log of all personnel movements.
+          </p>
+          <ul class="benefit-list">
+            <li><i class="fas fa-check-circle"></i> Real-time notifications for security breaches</li>
+            <li><i class="fas fa-check-circle"></i> Comprehensive audit logs for compliance</li>
+            <li><i class="fas fa-check-circle"></i> Integration with existing security systems</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="row align-items-center py-4 flex-md-row-reverse">
+        <div class="col-md-6">
+          <div class="benefit-img-container">
+            <i class="fas fa-chart-line benefit-icon"></i>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <h3 class="benefit-title">Operational Efficiency</h3>
+          <p class="benefit-description">
+            Automate attendance tracking and eliminate manual processes. Uniface360 streamlines operations by providing accurate 
+            attendance data, reducing administrative overhead, and enabling data-driven decision making.
+          </p>
+          <ul class="benefit-list">
+            <li><i class="fas fa-check-circle"></i> Eliminate time fraud with AI verification</li>
+            <li><i class="fas fa-check-circle"></i> Generate automated attendance reports</li>
+            <li><i class="fas fa-check-circle"></i> Optimize resource allocation based on occupancy data</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="row align-items-center py-4">
+        <div class="col-md-6">
+          <div class="benefit-img-container">
+            <i class="fas fa-video benefit-icon"></i>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <h3 class="benefit-title">Advanced Camera Technology</h3>
+          <p class="benefit-description">
+            Our system leverages cutting-edge camera technology with AI to provide comprehensive building coverage. 
+            View live feeds, replay recorded footage, and receive intelligent insights about space utilization and movement patterns.
+          </p>
+          <ul class="benefit-list">
+            <li><i class="fas fa-check-circle"></i> Multi-floor camera integration</li>
+            <li><i class="fas fa-check-circle"></i> Interactive building map with camera locations</li>
+            <li><i class="fas fa-check-circle"></i> High-resolution footage with AI analytics</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials-section">
+    <div class="container">
+      <div class="features-title">What Our Clients Say</div>
+      <div class="row">
+        <div class="col-md-4">
+          <div class="testimonial-card">
+            <div class="testimonial-stars">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+            <p class="testimonial-text">
+              "Implementing Uniface360 has transformed our security protocols. We've seen a 40% improvement in response times and significantly reduced unauthorized access incidents."
+            </p>
+            <div class="testimonial-author">
+              <div class="author-name">Robert Johnson</div>
+              <div class="author-role">Security Director, Global Tech Inc.</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="testimonial-card">
+            <div class="testimonial-stars">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+            <p class="testimonial-text">
+              "The attendance tracking system has eliminated time fraud and simplified our payroll process. The ROI on Uniface360 was clear within the first quarter."
+            </p>
+            <div class="testimonial-author">
+              <div class="author-name">Sarah Williams</div>
+              <div class="author-role">HR Manager, Innovate Corporation</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="testimonial-card">
+            <div class="testimonial-stars">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+            </div>
+            <p class="testimonial-text">
+              "The interactive building map and real-time occupancy data have helped us optimize our space utilization and improve emergency response procedures."
+            </p>
+            <div class="testimonial-author">
+              <div class="author-name">Michael Chen</div>
+              <div class="author-role">Facilities Manager, Summit Buildings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="cta-section">
+    <div class="container text-center">
+      <h2 class="cta-title">Ready to Transform Your Building Security?</h2>
+      <p class="cta-description">
+        Join the growing number of organizations that trust Uniface360 for their security and attendance management needs.
+      </p>      <div class="cta-buttons">
+        <a href="{{ url_for('demo_welcome') }}" class="glow-button text-decoration-none">Launch Safety Demo</a>
+        <a href="{{ url_for('request_demo') }}" class="outline-button text-decoration-none">Request a Demo</a>
+      </div>
+    </div>
+  </section>
+  <div class="footer-wrapper" style="position: relative; z-index: 10;">
+  <footer class="site-footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h4>Uniface360</h4>
+          <p>AI-Powered Building Security Solution</p>
+          <p>Developed by PetroChoice®</p>
+        </div>
+        <div class="col-md-4">
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li><a href="#">Features</a></li>
+            <li><a href="#">Support</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4">
+          <h4>Connect With Us</h4>
+          <div class="social-icons">
+            <a href="https://www.linkedin.com/company/petrochoice-integrated-services"><i class="fab fa-linkedin"></i></a>
+            <!-- <a href=""><i class="fab fa-twitter"></i></a> -->
+            <a href="https://www.facebook.com/profile.php?id=61552399684686"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.instagram.com/petrochoice/"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>      <div class="footer-bottom">
+        <p>&copy; 2025 Uniface360. All Rights Reserved.</p>
+        <p>
+          <a href="https://petrochoice.org" target="_blank" style="color: #ccc;">
+            <strong>This product is developed by PetroChoice®</strong>
+          </a>
+        </p>      </div>
+    </div>  </footer>
+  </div>
+  </div><!-- End of content-wrapper -->
+  
+  <script>
+    // Stats counter animation
+    document.addEventListener('DOMContentLoaded', function() {
+      // Function to check if element is in viewport
+      function isInViewport(el) {
+        const rect = el.getBoundingClientRect();
+        return (
+          rect.top >= 0 &&
+          rect.left >= 0 &&
+          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+          rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+      }
+      
+      // Counter animation function
+      function animateCounter() {
+        const counters = document.querySelectorAll('.stat-number');
+        counters.forEach(counter => {
+          // Only start animation if in viewport and not already animated
+          if (isInViewport(counter) && !counter.classList.contains('animated')) {
+            counter.classList.add('animated');
+            
+            const target = parseInt(counter.getAttribute('data-count'));
+            const duration = 2000; // 2 seconds
+            const step = target / (duration / 16); // 60fps
+            
+            let count = 0;
+            const timer = setInterval(() => {
+              count += step;
+              if (count >= target) {
+                counter.textContent = target;
+                clearInterval(timer);
+              } else {
+                counter.textContent = Math.floor(count);
+              }
+            }, 16); // ~60fps
+          }
+        });
+      }
+      
+      // Run once on page load
+      animateCounter();
+      
+      // Run on scroll
+      window.addEventListener('scroll', animateCounter);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<aside class="col-12 col-lg-2 sidebar p-3" id="hrSidebar">
+    <h6 class="text-uppercase text-muted px-2">HR Suite</h6>
+    <ul class="nav nav-pills flex-column gap-1 mt-2">
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_home' %}active{% endif %}" href="{{ url_for('hr_home') }}">
+                <i class="fa-solid fa-gauge"></i> HR Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_employees' %}active{% endif %}" href="{{ url_for('hr_employees') }}">
+                <i class="fa-solid fa-users"></i> Employees
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_departments' %}active{% endif %}" href="{{ url_for('hr_departments') }}">
+                <i class="fa-solid fa-sitemap"></i> Departments & Org
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_recruitment' %}active{% endif %}" href="{{ url_for('hr_recruitment') }}">
+                <i class="fa-solid fa-briefcase"></i> Recruitment
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_attendance' %}active{% endif %}" href="{{ url_for('hr_attendance') }}">
+                <i class="fa-regular fa-calendar-check"></i> Attendance & Shifts
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_leaves' %}active{% endif %}" href="{{ url_for('hr_leaves') }}">
+                <i class="fa-regular fa-paper-plane"></i> Leaves
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_payroll' %}active{% endif %}" href="{{ url_for('hr_payroll') }}">
+                <i class="fa-solid fa-money-bill-wave"></i> Payroll
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_compensation' %}active{% endif %}" href="{{ url_for('hr_compensation') }}">
+                <i class="fa-solid fa-gift"></i> Compensation & Benefits
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_performance' %}active{% endif %}" href="{{ url_for('hr_performance') }}">
+                <i class="fa-solid fa-chart-line"></i> Performance
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_training' %}active{% endif %}" href="{{ url_for('hr_training') }}">
+                <i class="fa-solid fa-graduation-cap"></i> Training & Certification
+            </a>
+        </li>
+        {# <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_hse' %}active{% endif %}" href="{{ url_for('hr_hse') }}">
+                <i class="fa-solid fa-helmet-safety"></i> HSE
+            </a>
+        </li> #}
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_sites' %}active{% endif %}" href="{{ url_for('hr_sites') }}">
+                <i class="fa-solid fa-building"></i> Sites
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_access' %}active{% endif %}" href="{{ url_for('hr_access') }}">
+                <i class="fa-solid fa-user-shield"></i> Access & Roles
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'hr_reports' %}active{% endif %}" href="{{ url_for('hr_reports') }}">
+                <i class="fa-solid fa-table"></i> Reports
+            </a>
+        </li>
+    </ul>
+</aside>
+

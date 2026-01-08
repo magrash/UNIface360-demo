@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departments & Organization</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    {% include 'hr/_navbar.html' %}
+
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'hr/_sidebar.html' %}
+
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Departments & Organization Structure</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="exportDeptCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" id="exportDeptPdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#deptModal"><i class="fa-solid fa-plus"></i> Add Department</button>
+                    </div>
+                </div>
+
+                <!-- Key Performance Indicators -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon primary">🏢</div>
+                            <div>
+                                <div class="value">12</div>
+                                <div class="label">Total Departments</div>
+                                <small class="text-primary d-block mt-1"><i class="fa-solid fa-arrow-up"></i> +2 this year</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">👥</div>
+                            <div>
+                                <div class="value">156</div>
+                                <div class="label">Total Employees</div>
+                                <small class="text-success d-block mt-1">Avg: 13 per dept</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">👔</div>
+                            <div>
+                                <div class="value">18</div>
+                                <div class="label">Managers</div>
+                                <small class="text-warning d-block mt-1">1.5 per department</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">📊</div>
+                            <div>
+                                <div class="value">4</div>
+                                <div class="label">Management Levels</div>
+                                <small class="text-danger d-block mt-1">CEO → Manager → Team</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Departments Table & Organization Chart -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-8">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Departments List</div>
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search..." style="width:200px;" id="deptSearch">
+                                    <select class="form-select form-select-sm" style="width:auto" id="filterLocation">
+                                        <option value="">All Locations</option>
+                                        <option>Cairo Office</option>
+                                        <option>Field Site A</option>
+                                        <option>Field Site B</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0" id="deptTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Department</th>
+                                            <th>Manager</th>
+                                            <th>Team Size</th>
+                                            <th>Location</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="p-2 rounded" style="background:rgba(0,152,121,0.2);">
+                                                        <i class="fa-solid fa-laptop-code" style="color:#009879;"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-semibold">IT Department</div>
+                                                        <div class="text-muted small">Technology & Systems</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span>Mostafa Magdy</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">25</span></td>
+                                            <td><span class="badge" style="background:#24c1d9;">Cairo Office</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#deptModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="Employees"><i class="fa-solid fa-users"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="p-2 rounded" style="background:rgba(16,185,129,0.2);">
+                                                        <i class="fa-solid fa-users" style="color:#10b981;"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-semibold">HR Department</div>
+                                                        <div class="text-muted small">Human Resources</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span>Dalia</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">10</span></td>
+                                            <td><span class="badge" style="background:#24c1d9;">Cairo Office</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#deptModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="Employees"><i class="fa-solid fa-users"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="p-2 rounded" style="background:rgba(245,158,11,0.2);">
+                                                        <i class="fa-solid fa-money-bill-wave" style="color:#f59e0b;"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-semibold">Finance Department</div>
+                                                        <div class="text-muted small">Financial Management</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span>Yousef</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">15</span></td>
+                                            <td><span class="badge" style="background:#24c1d9;">Cairo Office</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#deptModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="Employees"><i class="fa-solid fa-users"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="p-2 rounded" style="background:rgba(36,193,217,0.2);">
+                                                        <i class="fa-solid fa-industry" style="color:#24c1d9;"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-semibold">Operations</div>
+                                                        <div class="text-muted small">Field Operations</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span>Mahmoud</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">35</span></td>
+                                            <td><span class="badge" style="background:#f59e0b;">Field Site A</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#deptModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="Employees"><i class="fa-solid fa-users"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="p-2 rounded" style="background:rgba(239,68,68,0.2);">
+                                                        <i class="fa-solid fa-helmet-safety" style="color:#ef4444;"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-semibold">HSE Department</div>
+                                                        <div class="text-muted small">Health, Safety & Environment</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span>Eng. Ahmed</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">15</span></td>
+                                            <td><span class="badge" style="background:#f59e0b;">Field Site B</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#deptModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="Employees"><i class="fa-solid fa-users"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="text-muted small">Showing 1-5 of 12 departments</div>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Organization Chart</div>
+                            <div class="d-flex flex-column gap-2 flex-grow-1">
+                                <div class="p-3" style="background:rgba(36,193,217,0.1); border-radius:8px; border-left:3px solid #24c1d9;">
+                                    <div class="fw-semibold d-flex align-items-center gap-2">
+                                        <i class="fa-solid fa-crown" style="color:#24c1d9;"></i>
+                                        General Management
+                                    </div>
+                                    <div class="text-muted small mt-1">CEO: Eng. Mahmoud</div>
+                                    <div class="text-muted small">Level 1 - Executive</div>
+                                </div>
+                                <div class="ps-4">
+                                    <div class="p-2 mb-2" style="background:rgba(16,185,129,0.1); border-radius:8px; border-left:3px solid #10b981;">
+                                        <div class="fw-semibold d-flex align-items-center gap-2">
+                                            <i class="fa-solid fa-laptop-code" style="color:#10b981;"></i>
+                                            IT Department
+                                        </div>
+                                        <div class="text-muted small">Manager: Mostafa | 25 employees</div>
+                                    </div>
+                                    <div class="p-2 mb-2" style="background:rgba(16,185,129,0.1); border-radius:8px; border-left:3px solid #10b981;">
+                                        <div class="fw-semibold d-flex align-items-center gap-2">
+                                            <i class="fa-solid fa-users" style="color:#10b981;"></i>
+                                            HR Department
+                                        </div>
+                                        <div class="text-muted small">Manager: Dalia | 10 employees</div>
+                                    </div>
+                                    <div class="p-2 mb-2" style="background:rgba(16,185,129,0.1); border-radius:8px; border-left:3px solid #10b981;">
+                                        <div class="fw-semibold d-flex align-items-center gap-2">
+                                            <i class="fa-solid fa-money-bill-wave" style="color:#10b981;"></i>
+                                            Finance Department
+                                        </div>
+                                        <div class="text-muted small">Manager: Yousef | 15 employees</div>
+                                    </div>
+                                    <div class="p-2 mb-2" style="background:rgba(16,185,129,0.1); border-radius:8px; border-left:3px solid #10b981;">
+                                        <div class="fw-semibold d-flex align-items-center gap-2">
+                                            <i class="fa-solid fa-industry" style="color:#10b981;"></i>
+                                            Operations
+                                        </div>
+                                        <div class="text-muted small">Manager: Mahmoud | 35 employees</div>
+                                    </div>
+                                    <div class="p-2" style="background:rgba(16,185,129,0.1); border-radius:8px; border-left:3px solid #10b981;">
+                                        <div class="fw-semibold d-flex align-items-center gap-2">
+                                            <i class="fa-solid fa-helmet-safety" style="color:#10b981;"></i>
+                                            HSE Department
+                                        </div>
+                                        <div class="text-muted small">Manager: Eng. Ahmed | 15 employees</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Department Size Distribution</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="deptSizeChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex justify-content-between">
+                                <small class="text-muted">Largest: Operations (35)</small>
+                                <small class="text-muted">Smallest: HR (10)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Employees by Department</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="empDeptChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center">
+                                <span class="badge" style="background:#009879;">IT: 25</span>
+                                <span class="badge" style="background:#00c4a7;">HR: 10</span>
+                                <span class="badge" style="background:#10b981;">Finance: 15</span>
+                                <span class="badge" style="background:#24c1d9;">Ops: 35</span>
+                                <span class="badge" style="background:#f59e0b;">HSE: 15</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permissions Table -->
+                <div class="row g-3">
+                    <div class="col-lg-12">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Permissions by Department/Level</div>
+                                <button class="btn btn-outline btn-sm" data-bs-toggle="modal" data-bs-target="#permissionModal"><i class="fa-solid fa-shield-halved"></i> Manage Permissions</button>
+                            </div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Department</th>
+                                            <th>Level</th>
+                                            <th>View</th>
+                                            <th>Edit</th>
+                                            <th>Delete</th>
+                                            <th>Approve</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-laptop-code" style="color:#009879;"></i>
+                                                    <span>IT Department</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">Manager</span></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-x text-danger"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#permissionModal"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-users" style="color:#10b981;"></i>
+                                                    <span>HR Department</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">Manager</span></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-x text-danger"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#permissionModal"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-money-bill-wave" style="color:#f59e0b;"></i>
+                                                    <span>Finance Department</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">Manager</span></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-x text-danger"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#permissionModal"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-industry" style="color:#24c1d9;"></i>
+                                                    <span>Operations</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">Manager</span></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-x text-danger"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#permissionModal"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-helmet-safety" style="color:#ef4444;"></i>
+                                                    <span>HSE Department</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">Manager</span></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-x text-danger"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#permissionModal"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Department Modal -->
+    <div class="modal fade" id="deptModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add/Edit Department</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-2">Department Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Department Name</label>
+                            <input class="form-control" placeholder="Department name">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Department Code</label>
+                            <input class="form-control" placeholder="e.g., IT, HR, FIN">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Direct Manager</label>
+                            <select class="form-select">
+                                <option>Select Manager...</option>
+                                <option>Mostafa Magdy</option>
+                                <option>Dalia</option>
+                                <option>Yousef</option>
+                                <option>Mahmoud</option>
+                                <option>Eng. Ahmed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Location</label>
+                            <select class="form-select">
+                                <option>Cairo Office</option>
+                                <option>Field Site A</option>
+                                <option>Field Site B</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" placeholder="Department description..." rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select">
+                                <option>Active</option>
+                                <option>Inactive</option>
+                                <option>Under Review</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Parent Department (Optional)</label>
+                            <select class="form-select">
+                                <option>None</option>
+                                <option>General Management</option>
+                                <option>Operations</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Save Department</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Permission Modal -->
+    <div class="modal fade" id="permissionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Manage Permissions</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Department</label>
+                            <select class="form-select">
+                                <option>IT Department</option>
+                                <option>HR Department</option>
+                                <option>Finance Department</option>
+                                <option>Operations</option>
+                                <option>HSE Department</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Level</label>
+                            <select class="form-select">
+                                <option>Manager</option>
+                                <option>Team Lead</option>
+                                <option>Employee</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Permissions</label>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="permView" checked>
+                                    <label class="form-check-label" for="permView">View</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="permEdit" checked>
+                                    <label class="form-check-label" for="permEdit">Edit</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="permDelete">
+                                    <label class="form-check-label" for="permDelete">Delete</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="permApprove" checked>
+                                    <label class="form-check-label" for="permApprove">Approve</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Save Permissions</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            // Charts with consistent colors
+            const ctx1 = document.getElementById('deptSizeChart');
+            if(ctx1) {
+                new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: ['IT', 'HR', 'Finance', 'Ops', 'HSE'],
+                        datasets: [{
+                            label: 'Team Size',
+                            data: [25, 10, 15, 35, 15],
+                            backgroundColor: '#009879',
+                            borderColor: '#00c4a7',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { color: '#aaa' } }, x: { ticks: { color: '#aaa' } } },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('empDeptChart');
+            if(ctx2) {
+                new Chart(ctx2, {
+                    type: 'pie',
+                    data: {
+                        labels: ['IT', 'HR', 'Finance', 'Ops', 'HSE'],
+                        datasets: [{
+                            data: [25, 10, 15, 35, 15],
+                            backgroundColor: ['#009879', '#00c4a7', '#10b981', '#24c1d9', '#f59e0b']
+                        }]
+                    },
+                    options: { 
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Export functions
+            function exportCsv() {
+                const rows = [['Department','Manager','Team Size','Location','Status']];
+                document.querySelectorAll('#deptTable tbody tr').forEach(tr => {
+                    const cells = tr.querySelectorAll('td');
+                    if(cells.length >= 5) {
+                        rows.push([
+                            cells[0].textContent.trim().replace(/\s+/g, ' '),
+                            cells[1].textContent.trim(),
+                            cells[2].textContent.trim(),
+                            cells[3].textContent.trim(),
+                            cells[4].textContent.trim()
+                        ]);
+                    }
+                });
+                const csv = rows.map(r => r.join(',')).join('\n');
+                const blob = new Blob([csv], {type:'text/csv'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'departments_report.csv';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+
+            function exportPdf() {
+                window.print();
+            }
+
+            const btnCsv = document.getElementById('exportDeptCsv');
+            const btnPdf = document.getElementById('exportDeptPdf');
+            if(btnCsv) btnCsv.addEventListener('click', exportCsv);
+            if(btnPdf) btnPdf.addEventListener('click', exportPdf);
+
+            // Search functionality
+            const searchInput = document.getElementById('deptSearch');
+            if(searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    document.querySelectorAll('#deptTable tbody tr').forEach(tr => {
+                        const text = tr.textContent.toLowerCase();
+                        tr.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

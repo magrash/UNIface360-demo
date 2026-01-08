@@ -1,0 +1,96 @@
+<aside class="col-12 col-lg-2 sidebar p-3" id="unauthSidebar">
+    <h6 class="text-uppercase text-muted px-2">Unauthorized Area</h6>
+    <ul class="nav nav-pills flex-column gap-1 mt-2">
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_home' %}active{% endif %}" href="{{ url_for('unauthorized_home') }}">
+                <i class="fa-solid fa-gauge"></i> Home Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_violations' %}active{% endif %}" href="{{ url_for('unauthorized_violations') }}">
+                <i class="fa-solid fa-triangle-exclamation"></i> Violations Records
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_areas' %}active{% endif %}" href="{{ url_for('unauthorized_areas') }}">
+                <i class="fa-solid fa-ban"></i> Unauthorized Areas
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_violations_by_person' %}active{% endif %}" href="{{ url_for('unauthorized_violations_by_person') }}">
+                <i class="fa-solid fa-user-xmark"></i> By Person
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_violations_by_department' %}active{% endif %}" href="{{ url_for('unauthorized_violations_by_department') }}">
+                <i class="fa-solid fa-building"></i> By Department
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_violations_by_location' %}active{% endif %}" href="{{ url_for('unauthorized_violations_by_location') }}">
+                <i class="fa-solid fa-map-location-dot"></i> By Location
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_risk_analysis' %}active{% endif %}" href="{{ url_for('unauthorized_risk_analysis') }}">
+                <i class="fa-solid fa-chart-line"></i> Risk Analysis
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_daily_log' %}active{% endif %}" href="{{ url_for('unauthorized_daily_log') }}">
+                <i class="fa-solid fa-calendar-day"></i> Daily/Shift Log
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_incident_reporting' %}active{% endif %}" href="{{ url_for('unauthorized_incident_reporting') }}">
+                <i class="fa-solid fa-plus-circle"></i> Report Violation
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_investigations' %}active{% endif %}" href="{{ url_for('unauthorized_investigations') }}">
+                <i class="fa-solid fa-magnifying-glass"></i> Investigations
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_corrective_actions' %}active{% endif %}" href="{{ url_for('unauthorized_corrective_actions') }}">
+                <i class="fa-solid fa-wrench"></i> Corrective Actions
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_training_needs' %}active{% endif %}" href="{{ url_for('unauthorized_training_needs') }}">
+                <i class="fa-solid fa-graduation-cap"></i> Training Needs
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_compliance_score' %}active{% endif %}" href="{{ url_for('unauthorized_compliance_score') }}">
+                <i class="fa-solid fa-shield-halved"></i> Compliance Score
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_policies' %}active{% endif %}" href="{{ url_for('unauthorized_policies') }}">
+                <i class="fa-solid fa-book"></i> Policies & Rules
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_security_log' %}active{% endif %}" href="{{ url_for('unauthorized_security_log') }}">
+                <i class="fa-solid fa-shield"></i> Security Log
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_roles_permissions' %}active{% endif %}" href="{{ url_for('unauthorized_roles_permissions') }}">
+                <i class="fa-solid fa-user-shield"></i> Roles & Permissions
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_reports' %}active{% endif %}" href="{{ url_for('unauthorized_reports') }}">
+                <i class="fa-solid fa-file-export"></i> Reports Export
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {% if request.endpoint == 'unauthorized_settings' %}active{% endif %}" href="{{ url_for('unauthorized_settings') }}">
+                <i class="fa-solid fa-gear"></i> Settings
+            </a>
+        </li>
+    </ul>
+</aside>
+

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roles & Permissions - Unauthorized Area Dashboard</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body class="dashboard">
+    {% include 'unauthorized/_navbar.html' %}
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'unauthorized/_sidebar.html' %}
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Roles & Permissions</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#roleModal"><i class="fa-solid fa-plus"></i> Add Role</button>
+                    </div>
+                </div>
+
+                <!-- Role Cards -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="glass-card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="m-0">Manager Dashboard</h5>
+                                <span class="badge bg-primary">5 users</span>
+                            </div>
+                            <div class="mb-3">
+                                <div class="small mb-2"><strong>Permissions:</strong></div>
+                                <ul class="list-unstyled small">
+                                    <li class="mb-1">✓ View all violations</li>
+                                    <li class="mb-1">✓ Generate reports</li>
+                                    <li class="mb-1">✓ Assign investigations</li>
+                                    <li class="mb-1">✗ Cannot delete records</li>
+                                </ul>
+                            </div>
+                            <button class="btn btn-sm btn-outline w-100">Manage</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="glass-card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="m-0">HSE Officer Dashboard</h5>
+                                <span class="badge bg-success">3 users</span>
+                            </div>
+                            <div class="mb-3">
+                                <div class="small mb-2"><strong>Permissions:</strong></div>
+                                <ul class="list-unstyled small">
+                                    <li class="mb-1">✓ Full access to violations</li>
+                                    <li class="mb-1">✓ Create investigations</li>
+                                    <li class="mb-1">✓ Manage corrective actions</li>
+                                    <li class="mb-1">✓ Assign training</li>
+                                </ul>
+                            </div>
+                            <button class="btn btn-sm btn-outline w-100">Manage</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="glass-card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="m-0">Security Dashboard</h5>
+                                <span class="badge bg-info">8 users</span>
+                            </div>
+                            <div class="mb-3">
+                                <div class="small mb-2"><strong>Permissions:</strong></div>
+                                <ul class="list-unstyled small">
+                                    <li class="mb-1">✓ View security logs</li>
+                                    <li class="mb-1">✓ Monitor cameras</li>
+                                    <li class="mb-1">✓ Report violations</li>
+                                    <li class="mb-1">✗ Limited investigation access</li>
+                                </ul>
+                            </div>
+                            <button class="btn btn-sm btn-outline w-100">Manage</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="glass-card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="m-0">Employee View</h5>
+                                <span class="badge bg-warning">140 users</span>
+                            </div>
+                            <div class="mb-3">
+                                <div class="small mb-2"><strong>Permissions:</strong></div>
+                                <ul class="list-unstyled small">
+                                    <li class="mb-1">✓ View own violations</li>
+                                    <li class="mb-1">✓ View training status</li>
+                                    <li class="mb-1">✗ Cannot view others</li>
+                                    <li class="mb-1">✗ Read-only access</li>
+                                </ul>
+                            </div>
+                            <button class="btn btn-sm btn-outline w-100">Manage</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

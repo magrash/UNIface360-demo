@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access & Roles</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    {% include 'hr/_navbar.html' %}
+
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'hr/_sidebar.html' %}
+
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Access Control & Self Service Portal</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="exportAccessCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" id="exportAccessPdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#roleModal"><i class="fa-solid fa-user-shield"></i> Add Role</button>
+                    </div>
+                </div>
+
+                <!-- Key Performance Indicators -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon primary">👥</div>
+                            <div>
+                                <div class="value">8</div>
+                                <div class="label">Total Roles</div>
+                                <small class="text-primary d-block mt-1">4 active, 4 custom</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">✅</div>
+                            <div>
+                                <div class="value">156</div>
+                                <div class="label">Active Users</div>
+                                <small class="text-success d-block mt-1">100% coverage</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">🔔</div>
+                            <div>
+                                <div class="value">24</div>
+                                <div class="label">Pending Notifications</div>
+                                <small class="text-warning d-block mt-1">Require action</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">🔒</div>
+                            <div>
+                                <div class="value">12</div>
+                                <div class="label">Permission Groups</div>
+                                <small class="text-danger d-block mt-1">Across all modules</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Roles & Permissions & Self Service -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-8">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Roles & Permissions</div>
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search..." style="width:200px;" id="roleSearch">
+                                    <select class="form-select form-select-sm" style="width:auto" id="moduleFilter">
+                                        <option value="all">All Modules</option>
+                                        <option>Employees</option>
+                                        <option>Payroll</option>
+                                        <option>Leaves</option>
+                                        <option>Self Service</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0" id="rolesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Role</th>
+                                            <th>Module</th>
+                                            <th>View</th>
+                                            <th>Edit</th>
+                                            <th>Delete</th>
+                                            <th>Approve</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-user-tie" style="color:#009879;"></i>
+                                                    <span class="fw-semibold">HR Manager</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#009879;">Employees</span></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#roleModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-money-bill-wave" style="color:#24c1d9;"></i>
+                                                    <span class="fw-semibold">Finance Manager</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#24c1d9;">Payroll</span></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-x text-danger"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#roleModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-users" style="color:#f59e0b;"></i>
+                                                    <span class="fw-semibold">Department Manager</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#f59e0b;">Employees</span></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-x text-danger"></i></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#roleModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-user" style="color:#10b981;"></i>
+                                                    <span class="fw-semibold">Employee</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#10b981;">Self Service</span></td>
+                                            <td><i class="fa-solid fa-check text-success"></i></td>
+                                            <td><i class="fa-solid fa-x text-danger"></i></td>
+                                            <td><i class="fa-solid fa-x text-danger"></i></td>
+                                            <td><i class="fa-solid fa-x text-danger"></i></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#roleModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="text-muted small">Showing 1-4 of 8 roles</div>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Self Service Portal</div>
+                            <div class="d-flex flex-column gap-2 flex-grow-1">
+                                <div class="p-3" style="background:rgba(16,185,129,0.1); border-radius:8px; border-left:3px solid #10b981;">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="fa-regular fa-paper-plane" style="color:#10b981;"></i>
+                                        <div class="fw-semibold">Request Leave</div>
+                                    </div>
+                                    <div class="text-muted small">Submit and track leave requests</div>
+                                </div>
+                                <div class="p-3" style="background:rgba(36,193,217,0.1); border-radius:8px; border-left:3px solid #24c1d9;">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="fa-solid fa-money-bill-wave" style="color:#24c1d9;"></i>
+                                        <div class="fw-semibold">Request Advance</div>
+                                    </div>
+                                    <div class="text-muted small">Request salary advance</div>
+                                </div>
+                                <div class="p-3" style="background:rgba(245,158,11,0.1); border-radius:8px; border-left:3px solid #f59e0b;">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="fa-regular fa-user" style="color:#f59e0b;"></i>
+                                        <div class="fw-semibold">Update Personal Data</div>
+                                    </div>
+                                    <div class="text-muted small">Edit personal information</div>
+                                </div>
+                                <div class="p-3" style="background:rgba(16,185,129,0.1); border-radius:8px; border-left:3px solid #10b981;">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="fa-solid fa-file-invoice" style="color:#10b981;"></i>
+                                        <div class="fw-semibold">View Salary Slip</div>
+                                    </div>
+                                    <div class="text-muted small">Download monthly payslips</div>
+                                </div>
+                                <div class="p-3" style="background:rgba(239,68,68,0.1); border-radius:8px; border-left:3px solid #ef4444;">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="fa-solid fa-bell" style="color:#ef4444;"></i>
+                                        <div class="fw-semibold">Notifications</div>
+                                    </div>
+                                    <div class="text-muted small">View alerts and updates</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Users by Role</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="usersRoleChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center">
+                                <span class="badge" style="background:#009879;">HR Manager: 5</span>
+                                <span class="badge" style="background:#00c4a7;">Finance: 3</span>
+                                <span class="badge" style="background:#10b981;">Dept Manager: 18</span>
+                                <span class="badge" style="background:#f59e0b;">Employee: 130</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Permission Distribution</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="permissionChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex justify-content-between">
+                                <small class="text-muted">Total Users: 156</small>
+                                <small class="text-muted">With Edit: 26</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="row g-3">
+                    <div class="col-lg-12">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Recent Activity Log</div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>User</th>
+                                            <th>Action</th>
+                                            <th>Module</th>
+                                            <th>Time</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Dalia</span>
+                                                </div>
+                                            </td>
+                                            <td>Updated employee record</td>
+                                            <td><span class="badge" style="background:#009879;">Employees</span></td>
+                                            <td><span class="text-muted">2025-01-20 10:30</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Success</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Yousef</span>
+                                                </div>
+                                            </td>
+                                            <td>Approved leave request</td>
+                                            <td><span class="badge" style="background:#24c1d9;">Leaves</span></td>
+                                            <td><span class="text-muted">2025-01-20 09:15</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Success</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Mahmoud</span>
+                                                </div>
+                                            </td>
+                                            <td>Generated payroll report</td>
+                                            <td><span class="badge" style="background:#f59e0b;">Payroll</span></td>
+                                            <td><span class="text-muted">2025-01-20 08:45</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Success</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Role Modal -->
+    <div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add/Edit Role</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-2">Role Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Role Name</label>
+                            <input class="form-control" placeholder="e.g., HR Manager">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Module</label>
+                            <select class="form-select">
+                                <option>Select module...</option>
+                                <option>Employees</option>
+                                <option>Payroll</option>
+                                <option>Leaves</option>
+                                <option>Self Service</option>
+                                <option>All Modules</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Permissions</label>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="permView" checked>
+                                    <label class="form-check-label" for="permView">View</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="permEdit">
+                                    <label class="form-check-label" for="permEdit">Edit</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="permDelete">
+                                    <label class="form-check-label" for="permDelete">Delete</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="permApprove">
+                                    <label class="form-check-label" for="permApprove">Approve</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Save Role</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            // Charts with consistent colors
+            const ctx1 = document.getElementById('usersRoleChart');
+            if(ctx1) {
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['HR Manager', 'Finance Manager', 'Dept Manager', 'Employee'],
+                        datasets: [{
+                            data: [5, 3, 18, 130],
+                            backgroundColor: ['#009879', '#00c4a7', '#10b981', '#f59e0b']
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('permissionChart');
+            if(ctx2) {
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['View', 'Edit', 'Delete', 'Approve'],
+                        datasets: [{
+                            label: 'Users',
+                            data: [156, 26, 8, 26],
+                            backgroundColor: '#009879',
+                            borderColor: '#00c4a7',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: '#aaa' } },
+                            x: { ticks: { color: '#aaa' } }
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Export functions
+            function exportCsv() {
+                const rows = [['Role','Module','View','Edit','Delete','Approve']];
+                document.querySelectorAll('#rolesTable tbody tr').forEach(tr => {
+                    const cells = tr.querySelectorAll('td');
+                    if(cells.length >= 6) {
+                        rows.push([
+                            cells[0].textContent.trim().replace(/\s+/g, ' '),
+                            cells[1].textContent.trim(),
+                            cells[2].querySelector('i')?.classList.contains('fa-check') ? 'Yes' : 'No',
+                            cells[3].querySelector('i')?.classList.contains('fa-check') ? 'Yes' : 'No',
+                            cells[4].querySelector('i')?.classList.contains('fa-check') ? 'Yes' : 'No',
+                            cells[5].querySelector('i')?.classList.contains('fa-check') ? 'Yes' : 'No'
+                        ]);
+                    }
+                });
+                const csv = rows.map(r => r.join(',')).join('\n');
+                const blob = new Blob([csv], {type:'text/csv'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'access_roles_report.csv';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+
+            function exportPdf() {
+                window.print();
+            }
+
+            const btnCsv = document.getElementById('exportAccessCsv');
+            const btnPdf = document.getElementById('exportAccessPdf');
+            if(btnCsv) btnCsv.addEventListener('click', exportCsv);
+            if(btnPdf) btnPdf.addEventListener('click', exportPdf);
+
+            // Search functionality
+            const roleSearch = document.getElementById('roleSearch');
+            if(roleSearch) {
+                roleSearch.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    document.querySelectorAll('#rolesTable tbody tr').forEach(tr => {
+                        const text = tr.textContent.toLowerCase();
+                        tr.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

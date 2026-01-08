@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HSE Reports Management</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <!-- DataTables (Bootstrap 5) -->
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    <!-- Shared site dashboard styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+
+    <style>
+        :root { 
+            --brand-green: var(--primary, #009879);
+            --brand-teal: var(--primary-2, #00c4a7);
+        }
+        body { 
+            background: var(--bg); 
+            color: rgba(255, 255, 255, 0.85);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .navbar { background: transparent; border-bottom: 1px solid var(--card-border); }
+        .navbar-brand, .navbar-nav .nav-link { color: rgba(255, 255, 255, 0.9) !important; }
+        .brand-badge { background: var(--brand-green); color: #fff; font-weight: 700; padding: 6px 10px; border-radius: 8px; }
+        .sidebar { background: var(--card); border-right: 1px solid var(--card-border); min-height: calc(100vh - 56px); position: sticky; top: 56px; }
+        .card.custom-card { background: var(--card-bg, var(--card)); border: 1px solid var(--card-border) !important; }
+        .nav-pills .nav-link { color: rgba(255, 255, 255, 0.7) !important; }
+        .nav-pills .nav-link.active { background-color: var(--brand-green); color: #0b1324; }
+        .nav-pills .nav-link:hover { color: rgba(255, 255, 255, 0.9) !important; }
+        .avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+        /* Table styling */
+        .table { color: rgba(255, 255, 255, 0.85); }
+        .table thead th { 
+            background-color: rgba(128, 128, 128, 0.15) !important;
+            color: rgba(200, 200, 200, 0.9) !important; 
+            border-color: rgba(128, 128, 128, 0.3) !important; 
+            font-weight: 600; 
+        }
+        .table tbody td { 
+            border-color: rgba(128, 128, 128, 0.2) !important; 
+            color: rgba(200, 200, 200, 0.85) !important; 
+            vertical-align: middle !important;
+            padding: 0.75rem !important;
+        }
+        .table-striped > tbody > tr:nth-of-type(odd) > td { 
+            background-color: rgba(128, 128, 128, 0.05) !important; 
+        }
+        .table-striped > tbody > tr:nth-of-type(even) > td { 
+            background-color: rgba(128, 128, 128, 0.02) !important; 
+        }
+        .table tbody tr:hover {
+            background-color: rgba(128, 128, 128, 0.1) !important;
+        }
+        .table .btn {
+            vertical-align: middle;
+            margin: 0 2px;
+        }
+        .table .badge {
+            vertical-align: middle;
+            display: inline-block;
+        }
+        /* Form controls */
+        .form-select, .form-control { background: var(--card); border-color: var(--card-border); color: rgba(255, 255, 255, 0.85); }
+        .form-select:focus, .form-control:focus { background: var(--card); border-color: var(--brand-green); color: rgba(255, 255, 255, 0.9); }
+        .form-select option { background: var(--card-bg, var(--card)); color: var(--text); }
+        h4, h5, h6 { color: rgba(255, 255, 255, 0.9); }
+        .section-title { color: rgba(255, 255, 255, 0.9); }
+        /* DataTables dark mode */
+        .dataTables_wrapper .dataTables_length select, .dataTables_wrapper .dataTables_filter input { background: var(--card); border-color: var(--card-border); color: rgba(255, 255, 255, 0.85); }
+        .dataTables_wrapper .dataTables_paginate .paginate_button { color: rgba(255, 255, 255, 0.85) !important; }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: var(--brand-green) !important; border-color: var(--brand-green) !important; color: #fff !important; }
+        /* Filter buttons styling */
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            border-radius: 6px !important;
+            padding: 0.375rem 0.75rem !important;
+            transition: all 0.2s ease;
+        }
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-color: rgba(255, 255, 255, 0.25) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+        .filter-btn.active {
+            background: rgba(0, 152, 121, 0.2) !important;
+            border-color: var(--brand-green) !important;
+            color: var(--brand-green) !important;
+        }
+        .entries-select {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            border-radius: 6px !important;
+        }
+        .text-muted {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+    </style>
+</head>
+<body class="dashboard">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('admin_hse_dashboard') }}">
+                <span class="brand-badge">HSE</span>
+                <span class="fw-semibold">Performance Dashboard</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="topNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item me-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="themeToggle">
+                            <label class="form-check-label" for="themeToggle">Light/Dark</label>
+                        </div>
+                    </li>
+                    <li class="nav-item me-2">
+                        <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
+                            <img src="https://i.pravatar.cc/100?img=12" alt="avatar" class="avatar" />
+                            <span class="fw-semibold">Admin User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_hse_settings') }}">Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <aside class="col-12 col-lg-2 sidebar p-3">
+                <h6 class="text-uppercase text-muted px-2">Navigation</h6>
+                <ul class="nav nav-pills flex-column gap-1 mt-2">
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard Overview</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_incidents') }}"><i class="fa-solid fa-triangle-exclamation"></i> Incidents & Accidents</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_inspections') }}"><i class="fa-solid fa-clipboard-check"></i> Inspections & Audits</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_risks') }}"><i class="fa-solid fa-shield-halved"></i> Risk Assessment</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_trainings') }}"><i class="fa-solid fa-chalkboard-user"></i> Training & Certification</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_ppe') }}"><i class="fa-solid fa-hard-hat"></i> PPE & Equipment</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_environmental') }}"><i class="fa-solid fa-leaf"></i> Environmental</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_medical') }}"><i class="fa-solid fa-user-doctor"></i> Occupational Health</a></li>
+                    <li class="nav-item"><a class="nav-link active d-flex align-items-center gap-2" href="{{ url_for('admin_hse_reports') }}"><i class="fa-regular fa-file-lines"></i> Reports & Analytics</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_employees') }}"><i class="fa-solid fa-users"></i> Employees</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_tracking') }}"><i class="fa-solid fa-chart-line"></i> Tracking</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_monthly_dashboard') }}"><i class="fa-solid fa-calendar-alt"></i> Monthly Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_settings') }}"><i class="fa-solid fa-gear"></i> Core Settings</a></li>
+                </ul>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="section-title m-0"><i class="fa-regular fa-file-lines me-2"></i>Reports & Analytics</h4>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newReportModal"><i class="fa-solid fa-plus me-1"></i>New Report</button>
+                </div>
+
+                <div class="card custom-card shadow-sm rounded-3 p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex gap-2 align-items-center">
+                            <button class="btn btn-sm filter-btn active" data-filter="type">All Types</button>
+                            <button class="btn btn-sm filter-btn" data-filter="severity">All Severity</button>
+                            <button class="btn btn-sm filter-btn" data-filter="status">All Status</button>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-success"><i class="fa-solid fa-download me-1"></i>Export</button>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted">Show</span>
+                            <select class="form-select form-select-sm entries-select" style="width:auto">
+                                <option>10</option>
+                                <option>25</option>
+                                <option>50</option>
+                                <option>100</option>
+                            </select>
+                            <span class="text-muted">entries</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="reportsTable" class="table table-striped" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Department</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Reported By</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2025-06-03</td>
+                                    <td>Operations</td>
+                                    <td><i class="fa-solid fa-triangle-exclamation me-2"></i>Incident</td>
+                                    <td><span class="badge text-bg-warning">Major</span></td>
+                                    <td><span class="badge text-bg-warning">Open</span></td>
+                                    <td>John Doe</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewReport(1)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editReport(1)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2025-06-02</td>
+                                    <td>Maintenance</td>
+                                    <td><i class="fa-solid fa-exclamation-triangle me-2"></i>Near Miss</td>
+                                    <td><span class="badge text-bg-secondary">Minor</span></td>
+                                    <td><span class="badge text-bg-success">Closed</span></td>
+                                    <td>Jane Smith</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewReport(2)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editReport(2)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2025-06-01</td>
+                                    <td>Logistics</td>
+                                    <td><i class="fa-solid fa-user-injured me-2"></i>LTI</td>
+                                    <td><span class="badge text-bg-danger">Critical</span></td>
+                                    <td><span class="badge text-bg-info">In Review</span></td>
+                                    <td>Mike Johnson</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewReport(3)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editReport(3)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2025-05-30</td>
+                                    <td>Drilling</td>
+                                    <td><i class="fa-solid fa-triangle-exclamation me-2"></i>Incident</td>
+                                    <td><span class="badge text-bg-secondary">Minor</span></td>
+                                    <td><span class="badge text-bg-warning">Open</span></td>
+                                    <td>Sarah Lee</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewReport(4)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editReport(4)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2025-05-29</td>
+                                    <td>Operations</td>
+                                    <td><i class="fa-solid fa-exclamation-triangle me-2"></i>Near Miss</td>
+                                    <td><span class="badge text-bg-warning">Major</span></td>
+                                    <td><span class="badge text-bg-success">Closed</span></td>
+                                    <td>Tom Brown</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewReport(5)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editReport(5)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <!-- New Report Modal -->
+    <div class="modal fade" id="newReportModal" tabindex="-1" aria-labelledby="newReportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newReportModalLabel"><i class="fa-solid fa-file-circle-plus me-2"></i>New HSE Report</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newReportForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Report Type <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Type</option>
+                                    <option value="Incident">Incident</option>
+                                    <option value="Near Miss">Near Miss</option>
+                                    <option value="LTI">LTI (Lost Time Injury)</option>
+                                    <option value="Inspection">Inspection</option>
+                                    <option value="Risk Assessment">Risk Assessment</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Department <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Department</option>
+                                    <option>Operations</option>
+                                    <option>Maintenance</option>
+                                    <option>Logistics</option>
+                                    <option>Drilling</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Severity</label>
+                                <select class="form-select">
+                                    <option value="">Select Severity</option>
+                                    <option>Minor</option>
+                                    <option>Major</option>
+                                    <option>Critical</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" rows="4" placeholder="Report description..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="submitNewReport()">
+                        <i class="fa-solid fa-save me-1"></i>Save Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle function
+        function setTheme(light) {
+            if (light) {
+                document.body.classList.add('light-theme');
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+            } else {
+                document.body.classList.remove('light-theme');
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Default: dark mode
+            setTheme(false);
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+            
+            new DataTable('#reportsTable', { 
+                order: [[0, 'desc']], 
+                pageLength: 10,
+                dom: 'rtip'
+            });
+            
+            const toggle = document.getElementById('themeToggle');
+            if (toggle) {
+                toggle.addEventListener('change', (e) => setTheme(e.target.checked));
+            }
+
+            // Filter button handlers
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Entries select handler
+            const entriesSelect = document.querySelector('.entries-select');
+            if (entriesSelect) {
+                entriesSelect.addEventListener('change', function() {
+                    const table = $('#reportsTable').DataTable();
+                    table.page.len(parseInt(this.value)).draw();
+                });
+            }
+        });
+
+        function submitNewReport() {
+            const form = document.getElementById('newReportForm');
+            if (form.checkValidity()) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newReportModal'));
+                modal.hide();
+                alert('Report created successfully!');
+                setTimeout(() => location.reload(), 500);
+            } else {
+                form.reportValidity();
+            }
+        }
+
+        function viewReport(id) {
+            alert('Viewing report details for ID: ' + id);
+        }
+
+        function editReport(id) {
+            alert('Editing report ID: ' + id);
+        }
+    </script>
+</body>
+</html>
+

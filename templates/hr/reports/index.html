@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    {% include 'hr/_navbar.html' %}
+
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'hr/_sidebar.html' %}
+
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Reports & Analytics</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="exportAllCsv"><i class="fa-solid fa-download"></i> Export All CSV</button>
+                        <button class="btn btn-gradient" id="exportAllPdf"><i class="fa-solid fa-file-pdf"></i> Export All PDF</button>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#customReportModal"><i class="fa-solid fa-plus"></i> Custom Report</button>
+                    </div>
+                </div>
+
+                <!-- Key Performance Indicators -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon primary">📊</div>
+                            <div>
+                                <div class="value">24</div>
+                                <div class="label">Available Reports</div>
+                                <small class="text-primary d-block mt-1">Across all modules</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">📈</div>
+                            <div>
+                                <div class="value">156</div>
+                                <div class="label">Reports Generated</div>
+                                <small class="text-success d-block mt-1">This month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">🔔</div>
+                            <div>
+                                <div class="value">12</div>
+                                <div class="label">Active Alerts</div>
+                                <small class="text-warning d-block mt-1">Require attention</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">💾</div>
+                            <div>
+                                <div class="value">Daily</div>
+                                <div class="label">Backup Status</div>
+                                <small class="text-danger d-block mt-1">Last: 2 hours ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manager Analytics Dashboard -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-8">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Manager Analytics Dashboard</div>
+                                <select class="form-select form-select-sm" style="width:auto" id="analyticsPeriod">
+                                    <option>Last 30 Days</option>
+                                    <option>Last 3 Months</option>
+                                    <option>Last 6 Months</option>
+                                    <option>This Year</option>
+                                </select>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="glass-card p-3" style="background:rgba(255,255,255,0.04);">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="fw-semibold">Attendance Trend</div>
+                                            <button class="btn btn-sm btn-outline" id="exportAttReport"><i class="fa-solid fa-download"></i></button>
+                                        </div>
+                                        <div style="height: 200px; position: relative;">
+                                            <canvas id="attendanceTrendChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="glass-card p-3" style="background:rgba(255,255,255,0.04);">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="fw-semibold">Leaves Trend</div>
+                                            <button class="btn btn-sm btn-outline" id="exportLeavesReport"><i class="fa-solid fa-download"></i></button>
+                                        </div>
+                                        <div style="height: 200px; position: relative;">
+                                            <canvas id="leavesTrendChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="glass-card p-3" style="background:rgba(255,255,255,0.04);">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="fw-semibold">Payroll Summary</div>
+                                            <button class="btn btn-sm btn-outline" id="exportPayrollReport"><i class="fa-solid fa-download"></i></button>
+                                        </div>
+                                        <div style="height: 200px; position: relative;">
+                                            <canvas id="payrollSummaryChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="glass-card p-3" style="background:rgba(255,255,255,0.04);">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="fw-semibold">HSE Incidents</div>
+                                            <button class="btn btn-sm btn-outline" id="exportHseReport"><i class="fa-solid fa-download"></i></button>
+                                        </div>
+                                        <div style="height: 200px; position: relative;">
+                                            <canvas id="hseIncidentsChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Quick Export Reports</div>
+                            <div class="d-flex flex-column gap-2 flex-grow-1">
+                                <button class="btn btn-outline w-100 text-start" id="exportEmployeesReport">
+                                    <i class="fa-solid fa-users"></i> Employees Report
+                                </button>
+                                <button class="btn btn-outline w-100 text-start" id="exportAttendanceReport">
+                                    <i class="fa-regular fa-calendar-check"></i> Attendance Report
+                                </button>
+                                <button class="btn btn-outline w-100 text-start" id="exportPayrollReport2">
+                                    <i class="fa-solid fa-money-bill-wave"></i> Payroll Report
+                                </button>
+                                <button class="btn btn-outline w-100 text-start" id="exportLeavesReport2">
+                                    <i class="fa-regular fa-paper-plane"></i> Leaves Report
+                                </button>
+                                <button class="btn btn-outline w-100 text-start" id="exportPerformanceReport">
+                                    <i class="fa-solid fa-chart-line"></i> Performance Report
+                                </button>
+                                <button class="btn btn-outline w-100 text-start" id="exportTrainingReport">
+                                    <i class="fa-solid fa-graduation-cap"></i> Training Report
+                                </button>
+                            </div>
+                            <div class="mt-3">
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-gradient w-100" id="exportExcel"><i class="fa-solid fa-file-excel"></i> Excel</button>
+                                    <button class="btn btn-gradient w-100" id="exportPdf"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts & Notifications -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Alert Settings</div>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Email Notifications</label>
+                                    <input type="email" class="form-control" placeholder="admin@company.com" value="admin@company.com">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">SMS Notifications</label>
+                                    <input type="tel" class="form-control" placeholder="+20 123 456 7890" value="+20 123 456 7890">
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="alertAttendance" checked>
+                                        <label class="form-check-label" for="alertAttendance">Attendance Alerts</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="alertLeaves" checked>
+                                        <label class="form-check-label" for="alertLeaves">Leave Request Alerts</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="alertHse" checked>
+                                        <label class="form-check-label" for="alertHse">HSE Incident Alerts</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-gradient w-100"><i class="fa-solid fa-save"></i> Save Alert Settings</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Backup & Security</div>
+                            <div class="d-flex flex-column gap-3 flex-grow-1">
+                                <div class="p-3" style="background:rgba(16,185,129,0.1); border-radius:8px; border-left:3px solid #10b981;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="fw-semibold d-flex align-items-center gap-2">
+                                            <i class="fa-solid fa-database" style="color:#10b981;"></i>
+                                            Database Backup
+                                        </div>
+                                        <span class="chip" style="background:rgba(16,185,129,0.2);">Active</span>
+                                    </div>
+                                    <div class="text-muted small mb-2">Last backup: 2 hours ago</div>
+                                    <div class="text-muted small">Frequency: Daily at 2:00 AM</div>
+                                </div>
+                                <div class="p-3" style="background:rgba(36,193,217,0.1); border-radius:8px; border-left:3px solid #24c1d9;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="fw-semibold d-flex align-items-center gap-2">
+                                            <i class="fa-solid fa-shield-halved" style="color:#24c1d9;"></i>
+                                            Security Layers
+                                        </div>
+                                        <span class="chip" style="background:rgba(16,185,129,0.2);">Enabled</span>
+                                    </div>
+                                    <div class="text-muted small mb-2">SSL/TLS encryption active</div>
+                                    <div class="text-muted small">Role-based access control enabled</div>
+                                </div>
+                                <div class="p-3" style="background:rgba(245,158,11,0.1); border-radius:8px; border-left:3px solid #f59e0b;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="fw-semibold d-flex align-items-center gap-2">
+                                            <i class="fa-solid fa-clock-rotate-left" style="color:#f59e0b;"></i>
+                                            Backup History
+                                        </div>
+                                        <button class="btn btn-sm btn-outline"><i class="fa-solid fa-history"></i> View</button>
+                                    </div>
+                                    <div class="text-muted small">30 days retention period</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Categories -->
+                <div class="row g-3">
+                    <div class="col-lg-12">
+                        <div class="glass-card p-3">
+                            <div class="section-title mb-3">Report Categories</div>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <div class="p-4 text-center" style="background:rgba(16,185,129,0.1); border-radius:12px; border-left:3px solid #10b981;">
+                                        <i class="fa-solid fa-users fa-2x mb-2" style="color:#10b981;"></i>
+                                        <div class="fw-semibold mb-2">Employee Reports</div>
+                                        <div class="text-muted small mb-3">Personal data, employment status</div>
+                                        <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Generate</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-4 text-center" style="background:rgba(36,193,217,0.1); border-radius:12px; border-left:3px solid #24c1d9;">
+                                        <i class="fa-solid fa-money-bill-wave fa-2x mb-2" style="color:#24c1d9;"></i>
+                                        <div class="fw-semibold mb-2">Financial Reports</div>
+                                        <div class="text-muted small mb-3">Payroll, compensation, benefits</div>
+                                        <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Generate</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-4 text-center" style="background:rgba(245,158,11,0.1); border-radius:12px; border-left:3px solid #f59e0b;">
+                                        <i class="fa-solid fa-chart-line fa-2x mb-2" style="color:#f59e0b;"></i>
+                                        <div class="fw-semibold mb-2">Performance Reports</div>
+                                        <div class="text-muted small mb-3">Appraisals, goals, evaluations</div>
+                                        <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Generate</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-4 text-center" style="background:rgba(239,68,68,0.1); border-radius:12px; border-left:3px solid #ef4444;">
+                                        <i class="fa-solid fa-helmet-safety fa-2x mb-2" style="color:#ef4444;"></i>
+                                        <div class="fw-semibold mb-2">HSE Reports</div>
+                                        <div class="text-muted small mb-3">Incidents, compliance, training</div>
+                                        <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Generate</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Custom Report Modal -->
+    <div class="modal fade" id="customReportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Custom Report</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-2">Report Configuration</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Report Name</label>
+                            <input class="form-control" placeholder="e.g., Monthly Summary">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Module</label>
+                            <select class="form-select">
+                                <option>Select module...</option>
+                                <option>Employees</option>
+                                <option>Attendance</option>
+                                <option>Payroll</option>
+                                <option>Leaves</option>
+                                <option>Performance</option>
+                                <option>Training</option>
+                                <option>HSE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date Range</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">To</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Format</label>
+                            <select class="form-select">
+                                <option>Excel (XLSX)</option>
+                                <option>PDF</option>
+                                <option>CSV</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Generate Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            // Charts with consistent colors and fixed height
+            const attChart = document.getElementById('attendanceTrendChart');
+            if(attChart) {
+                new Chart(attChart, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+                        datasets: [{
+                            label: 'Attendance Rate',
+                            data: [94, 95, 94, 96, 95, 60, 40],
+                            borderColor: '#009879',
+                            backgroundColor: 'rgba(0,152,121,0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { ticks: { color: '#aaa' }, beginAtZero: true, max: 100 },
+                            x: { ticks: { color: '#aaa' } }
+                        }
+                    }
+                });
+            }
+
+            const leavesChart = document.getElementById('leavesTrendChart');
+            if(leavesChart) {
+                new Chart(leavesChart, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+                        datasets: [{
+                            label: 'Leave Requests',
+                            data: [35, 42, 38, 45, 40, 48],
+                            backgroundColor: '#00c4a7',
+                            borderColor: '#10b981',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { ticks: { color: '#aaa' }, beginAtZero: true },
+                            x: { ticks: { color: '#aaa' } }
+                        }
+                    }
+                });
+            }
+
+            const payrollChart = document.getElementById('payrollSummaryChart');
+            if(payrollChart) {
+                new Chart(payrollChart, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+                        datasets: [{
+                            label: 'Payroll ($)',
+                            data: [1200000, 1180000, 1250000, 1230000, 1270000, 1290000],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16,185,129,0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { ticks: { color: '#aaa' }, beginAtZero: true },
+                            x: { ticks: { color: '#aaa' } }
+                        }
+                    }
+                });
+            }
+
+            const hseChart = document.getElementById('hseIncidentsChart');
+            if(hseChart) {
+                new Chart(hseChart, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+                        datasets: [{
+                            label: 'Incidents',
+                            data: [5, 3, 4, 2, 3, 1],
+                            backgroundColor: '#f59e0b',
+                            borderColor: '#ef4444',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { ticks: { color: '#aaa' }, beginAtZero: true },
+                            x: { ticks: { color: '#aaa' } }
+                        }
+                    }
+                });
+            }
+
+            // Export functions
+            function exportReport(name) {
+                alert(`Exporting ${name} report (frontend demo)`);
+            }
+
+            document.getElementById('exportAttReport')?.addEventListener('click', () => exportReport('Attendance'));
+            document.getElementById('exportLeavesReport')?.addEventListener('click', () => exportReport('Leaves'));
+            document.getElementById('exportPayrollReport')?.addEventListener('click', () => exportReport('Payroll'));
+            document.getElementById('exportHseReport')?.addEventListener('click', () => exportReport('HSE'));
+            document.getElementById('exportEmployeesReport')?.addEventListener('click', () => exportReport('Employees'));
+            document.getElementById('exportAttendanceReport')?.addEventListener('click', () => exportReport('Attendance'));
+            document.getElementById('exportPayrollReport2')?.addEventListener('click', () => exportReport('Payroll'));
+            document.getElementById('exportLeavesReport2')?.addEventListener('click', () => exportReport('Leaves'));
+            document.getElementById('exportPerformanceReport')?.addEventListener('click', () => exportReport('Performance'));
+            document.getElementById('exportTrainingReport')?.addEventListener('click', () => exportReport('Training'));
+            document.getElementById('exportExcel')?.addEventListener('click', () => exportReport('All (Excel)'));
+            document.getElementById('exportPdf')?.addEventListener('click', () => window.print());
+            document.getElementById('exportAllCsv')?.addEventListener('click', () => exportReport('All (CSV)'));
+            document.getElementById('exportAllPdf')?.addEventListener('click', () => window.print());
+        })();
+    </script>
+</body>
+</html>

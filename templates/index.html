@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UNIface360 Realtime Safety Demo</title>
+  <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+</head>
+
+<body>
+  <div id="particles-js" style="position: fixed; inset: 0; z-index: -2;"></div>
+  <div class="uf-layout">
+    <!-- Top navigation / branding -->
+    <header class="uf-header">
+      <div class="uf-logo">
+        <img src="{{ url_for('static', filename='logo6.png') }}" alt="UNIface360 logo" />
+        <span class="uf-logo-text">UNIface360</span>
+      </div>
+      <nav class="uf-nav" aria-label="Primary">
+        <span class="uf-nav-item uf-nav-pill">Realtime Safety Demo</span>
+        <span class="uf-nav-status" id="sse-status" aria-live="polite">SSE: connecting…</span>
+      </nav>
+    </header>
+
+    <!-- Hero section -->
+    <main class="uf-main">
+      <section class="uf-hero" aria-labelledby="hero-title">
+        <div class="uf-hero-content">
+          <h1 id="hero-title">See UNIface360 in Action</h1>
+          <p class="uf-hero-subtitle">
+            A live, interactive demo of AI safety monitoring:
+            smoking detection, unauthorized people, restricted areas, and PPE (hardhat) compliance.
+          </p>
+          <div class="uf-hero-cta">
+            <button type="button" class="uf-btn uf-btn-primary" id="btn-explore-scroll">
+              Explore the demo
+            </button>
+            <button type="button" class="uf-btn uf-btn-ghost" id="btn-reset-alerts">
+              Clear alerts
+            </button>
+          </div>
+        </div>
+        <div class="uf-hero-viz" aria-hidden="true">
+          <div class="uf-hero-orbit"></div>
+          <div class="uf-hero-orbit uf-hero-orbit--inner"></div>
+          <div class="uf-hero-core-glow"></div>
+        </div>
+      </section>
+
+      <!-- Explore the Demo (replaces “Start to Future”) -->
+      <section class="uf-section" id="explore-demo" aria-labelledby="explore-title">
+        <header class="uf-section-header">
+          <h2 id="explore-title">Explore the Demo</h2>
+          <p>Trigger detections locally or from the backend, and watch alerts appear in realtime.</p>
+        </header>
+
+        <div class="uf-grid uf-grid--cards">
+          <!-- Evacuation System -->
+          <article class="uf-card" aria-labelledby="card-evacuation-title">
+            <header class="uf-card-header">
+              <div class="uf-card-icon uf-card-icon--evacuation"></div>
+              <div>
+                <h3 id="card-evacuation-title">Evacuation System</h3>
+                <p class="uf-card-subtitle">Live person tracking for emergency evacuation.</p>
+              </div>
+            </header>
+            <div class="uf-card-body">
+              <p class="uf-card-text">
+                Real-time person detection and identification to ensure everyone is accounted for.
+              </p>
+              <p class="uf-card-status">
+                Status:
+                <span id="status-evacuation" class="uf-status-badge">Idle</span>
+              </p>
+            </div>
+            <footer class="uf-card-footer">
+              <button type="button" class="uf-btn uf-btn-secondary" id="btn-evacuation-local">
+                Simulate locally
+              </button>
+              <button type="button" class="uf-btn uf-btn-outline" id="btn-evacuation-backend">
+                Trigger via backend
+              </button>
+            </footer>
+          </article>
+
+          <!-- Unauthorized Person -->
+          <article class="uf-card" aria-labelledby="card-unauth-title">
+            <header class="uf-card-header">
+              <div class="uf-card-icon uf-card-icon--unauthorized"></div>
+              <div>
+                <h3 id="card-unauth-title">Unauthorized Person</h3>
+                <p class="uf-card-subtitle">Detect unknown faces in secure areas.</p>
+              </div>
+            </header>
+            <div class="uf-card-body">
+              <p class="uf-card-text">
+                For the demo, we simulate face recognition returning <span class="uf-mono">unknown</span>
+                to trigger an intrusion alert.
+              </p>
+              <p class="uf-card-status">
+                Status:
+                <span id="status-unauthorized" class="uf-status-badge">Idle</span>
+              </p>
+            </div>
+            <footer class="uf-card-footer">
+              <button type="button" class="uf-btn uf-btn-secondary" id="btn-unauth-local">
+                Simulate locally
+              </button>
+              <button type="button" class="uf-btn uf-btn-outline" id="btn-unauth-backend">
+                Trigger via backend
+              </button>
+            </footer>
+          </article>
+
+          <!-- Restricted Area -->
+          <article class="uf-card" aria-labelledby="card-restricted-title">
+            <header class="uf-card-header">
+              <div class="uf-card-icon uf-card-icon--restricted"></div>
+              <div>
+                <h3 id="card-restricted-title">Restricted Area</h3>
+                <p class="uf-card-subtitle">Raise alarms when movement enters a red‑zoned area.</p>
+              </div>
+            </header>
+            <div class="uf-card-body">
+              <p class="uf-card-text">
+                Linked to the restricted camera feed with a red overlay to mimic virtual safety perimeters.
+              </p>
+              <p class="uf-card-status">
+                Status:
+                <span id="status-restricted" class="uf-status-badge">Idle</span>
+              </p>
+            </div>
+            <footer class="uf-card-footer">
+              <button type="button" class="uf-btn uf-btn-secondary" id="btn-restricted-local">
+                Simulate locally
+              </button>
+              <button type="button" class="uf-btn uf-btn-outline" id="btn-restricted-backend">
+                Trigger via backend
+              </button>
+            </footer>
+          </article>
+
+          <!-- PPE (Hardhat) -->
+          <article class="uf-card" aria-labelledby="card-ppe-title">
+            <header class="uf-card-header">
+              <div class="uf-card-icon uf-card-icon--ppe"></div>
+              <div>
+                <h3 id="card-ppe-title">PPE – Hardhat</h3>
+                <p class="uf-card-subtitle">Highlight missing hardhats and PPE violations.</p>
+              </div>
+            </header>
+            <div class="uf-card-body">
+              <p class="uf-card-text">
+                The demo simulates a negative PPE check and surfaces a violation alert.
+              </p>
+              <p class="uf-card-status">
+                Status:
+                <span id="status-ppe" class="uf-status-badge">Idle</span>
+              </p>
+            </div>
+            <footer class="uf-card-footer">
+              <button type="button" class="uf-btn uf-btn-secondary" id="btn-ppe-local">
+                Simulate locally
+              </button>
+              <button type="button" class="uf-btn uf-btn-outline" id="btn-ppe-backend">
+                Trigger via backend
+              </button>
+            </footer>
+          </article>
+        </div>
+      </section>
+
+      <!-- Live camera feeds -->
+      <section class="uf-section" aria-labelledby="cams-title">
+        <header class="uf-section-header">
+          <h2 id="cams-title">Live Camera Feeds</h2>
+          <p>
+            The browser uses your webcam via <span class="uf-mono">getUserMedia()</span> to simulate
+            normal and restricted‑area views. The restricted feed shows a red overlay.
+          </p>
+        </header>
+
+        <div class="uf-grid uf-grid--cams">
+          <div class="uf-cam-card">
+            <header class="uf-cam-header">
+              <span class="uf-pill uf-pill--normal">Normal feed</span>
+              <span class="uf-cam-label">Lobby / public zone</span>
+            </header>
+            <div class="uf-cam-body">
+              <video id="cam-normal" autoplay playsinline muted></video>
+            </div>
+            <footer class="uf-cam-footer">
+              <span id="cam-normal-status" class="uf-caption" aria-live="polite">
+                Waiting for camera permission…
+              </span>
+            </footer>
+          </div>
+
+          <div class="uf-cam-card uf-cam-card--restricted">
+            <header class="uf-cam-header">
+              <span class="uf-pill uf-pill--restricted">Restricted feed</span>
+              <span class="uf-cam-label">Red zone / high‑risk area</span>
+            </header>
+            <div class="uf-cam-body uf-cam-body--restricted">
+              <video id="cam-restricted" autoplay playsinline muted></video>
+              <div class="uf-restricted-overlay" aria-hidden="true">
+                <span>Restricted safety zone</span>
+              </div>
+            </div>
+            <footer class="uf-cam-footer">
+              <span id="cam-restricted-status" class="uf-caption" aria-live="polite">
+                Shares the same physical camera; visual overlay only.
+              </span>
+            </footer>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Realtime alert container -->
+    <section class="uf-alert-layer" aria-label="Realtime safety notifications" aria-live="assertive" id="alert-layer">
+    </section>
+
+    <footer class="uf-footer">
+      <p>&copy; {{ datetime.utcnow().year }} UNIface360 Demo. Futuristic safety, simplified.</p>
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='particles-init.js') }}"></script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Needs - Unauthorized Area Dashboard</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    {% include 'unauthorized/_navbar.html' %}
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'unauthorized/_sidebar.html' %}
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Training Needs (Based on Violations)</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="btnExportCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#assignTrainingModal"><i class="fa-solid fa-plus"></i> Assign Training</button>
+                    </div>
+                </div>
+
+                <!-- KPIs -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">👥</div>
+                            <div>
+                                <div class="value">12</div>
+                                <div class="label">Training Required</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon info">📚</div>
+                            <div>
+                                <div class="value">8</div>
+                                <div class="label">In Progress</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">✅</div>
+                            <div>
+                                <div class="value">24</div>
+                                <div class="label">Completed</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon primary">📈</div>
+                            <div>
+                                <div class="value">+35%</div>
+                                <div class="label">Improvement Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Training Needs Table -->
+                <div class="glass-card p-3 mb-3">
+                    <div class="section-title mb-3">Employees Requiring Training</div>
+                    <div class="table-responsive">
+                        <table class="table table-darkish align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Department</th>
+                                    <th>Violations</th>
+                                    <th>Required Training</th>
+                                    <th>Status</th>
+                                    <th>Completion %</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar" style="width:40px;height:40px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;">AM</div>
+                                            <div>
+                                                <div class="fw-semibold">Ahmed Mohamed</div>
+                                                <div class="text-muted small">ID-001234</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="chip">Operations</span></td>
+                                    <td><span class="badge bg-danger">8</span></td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <span class="chip small">Safety Training</span>
+                                            <span class="chip small">Authorized Area</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-info">In Progress</span></td>
+                                    <td>
+                                        <div class="progress" style="height:8px;width:100px;">
+                                            <div class="progress-bar bg-info" style="width:60%"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#trainingDetailModal"><i class="fa-regular fa-eye"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar" style="width:40px;height:40px;background:#f59e0b;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;">SK</div>
+                                            <div>
+                                                <div class="fw-semibold">Sara Khaled</div>
+                                                <div class="text-muted small">ID-001567</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="chip">Maintenance</span></td>
+                                    <td><span class="badge bg-warning">6</span></td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <span class="chip small">PPE Training</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td>
+                                        <div class="progress" style="height:8px;width:100px;">
+                                            <div class="progress-bar bg-warning" style="width:0%"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#trainingDetailModal"><i class="fa-regular fa-eye"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Training Types -->
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Training Types Distribution</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="trainingTypesChart" height="200" class="ltr"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Improvement After Training</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="improvementChart" height="200" class="ltr"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Get chart text color based on theme
+        function getChartTextColor() {
+            return document.body.classList.contains('light-theme') ? '#0f172a' : '#e2e8f0';
+        }
+        function getChartGridColor() {
+            return document.body.classList.contains('light-theme') ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+        }
+        // Training Types Chart
+        const trainingTypesCtx = document.getElementById('trainingTypesChart');
+        if(trainingTypesCtx) {
+            new Chart(trainingTypesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Safety Training', 'Authorized Area', 'PPE Training', 'Confined Space', 'Fire Safety'],
+                    datasets: [{
+                        data: [8, 6, 5, 3, 2],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)',      // Danger (red)
+                            'rgba(245, 158, 11, 0.8)',     // Warning (orange)
+                            'rgba(0, 152, 121, 0.8)',      // Primary (green)
+                            'rgba(0, 196, 167, 0.8)',      // Primary-2 (teal)
+                            'rgba(16, 185, 129, 0.8)'      // Success (emerald)
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: getChartTextColor() } }
+                    }
+                }
+            });
+        }
+
+        // Improvement Chart
+        const improvementCtx = document.getElementById('improvementChart');
+        if(improvementCtx) {
+            new Chart(improvementCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Before Training', 'After Training'],
+                    datasets: [{
+                        label: 'Avg Violations per Person',
+                        data: [3.2, 1.8],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)',      // Danger (red) - Before
+                            'rgba(16, 185, 129, 0.8)'      // Success (emerald) - After
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: getChartTextColor() },
+                            grid: { color: getChartGridColor() }
+                        },
+                        x: {
+                            ticks: { color: getChartTextColor() },
+                            grid: { color: getChartGridColor() }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

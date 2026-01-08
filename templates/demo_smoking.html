@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smoking Detection Demo – UNIface360</title>
+  <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <style>
+    .multi-camera-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    .zone-section {
+      margin-bottom: 2rem;
+    }
+    .zone-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .zone-title.smoking {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+    .zone-title.normal {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #86efac;
+    }
+    .no-cameras-message {
+      text-align: center;
+      padding: 2rem;
+      color: #94a3b8;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px dashed rgba(148, 163, 184, 0.3);
+      border-radius: 12px;
+    }
+    .no-cameras-message a {
+      color: #22d3ee;
+      text-decoration: none;
+    }
+    .cameras-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1600px;
+      margin: 0 auto 1.5rem auto;
+      padding: 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+    }
+    .cameras-count {
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+    .cameras-count strong {
+      color: #22d3ee;
+    }
+  </style>
+</head>
+<body data-page="smoking">
+  <div id="particles-js" style="position: fixed; inset: 0; z-index: -2;"></div>
+  <div class="uf-layout">
+    <header class="uf-header">
+      <a href="{{ url_for('demo_welcome') }}" style="text-decoration: none; color: inherit;">
+        <div class="uf-logo">
+          <img src="{{ url_for('static', filename='logo6.png') }}" alt="UNIface360 logo" />
+          <span class="uf-logo-text">UNIface360</span>
+        </div>
+      </a>
+      <nav class="uf-nav" aria-label="Primary">
+        <span class="uf-nav-item uf-nav-pill">Smoke & Fire Detection</span>
+      </nav>
+    </header>
+
+    <main class="uf-main">
+      <section class="uf-section">
+        <header class="uf-section-header">
+          <h2>Smoke & Fire Detection</h2>
+          <p>
+            Real-time smoke and fire detection using AI-powered computer vision.
+            Cameras marked as "Smoking Zone" will trigger alerts when smoke/fire is detected.
+          </p>
+        </header>
+
+        <!-- Cameras Toolbar -->
+        <div class="cameras-toolbar">
+          <span class="cameras-count">
+            <strong id="smoking-count">0</strong> smoking zones, <strong id="normal-count">0</strong> normal cameras
+          </span>
+          <div style="display: flex; gap: 0.75rem;">
+            <button id="refresh-cameras-btn" class="uf-btn uf-btn-secondary">⟳ Refresh</button>
+            <button id="start-all-btn" class="uf-btn uf-btn-primary">▶ Start All Cameras</button>
+            <a href="/manage" class="uf-btn uf-btn-secondary" style="text-decoration: none;">⚙️ Manage</a>
+          </div>
+        </div>
+
+        <!-- Smoking Zone Cameras (Detection Active) -->
+        <div class="zone-section">
+          <div class="zone-title smoking">
+            <span>🚭</span> No-Smoking Zone Cameras (Detection Active)
+          </div>
+          <div class="multi-camera-grid" id="smoking-cameras-container">
+            <!-- Smoking zone cameras will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Normal Zone Cameras -->
+        <div class="zone-section">
+          <div class="zone-title normal">
+            <span>🟢</span> Normal Area Cameras (Monitoring Only)
+          </div>
+          <div class="multi-camera-grid" id="normal-cameras-container">
+            <!-- Normal cameras will be loaded here -->
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <section class="uf-alert-layer" aria-label="Realtime safety notifications" aria-live="assertive" id="alert-layer"></section>
+
+  <script src="{{ url_for('static', filename='particles-init.js') }}"></script>
+  <script>
+    (function() {
+      "use strict";
+      
+      const MODEL_TYPE = 'smoking';
+      let modelCameras = {};
+      let checkIntervals = {};
+      let isRunning = false;
+      
+      let lastEmergencySoundTime = 0;
+      const EMERGENCY_SOUND_COOLDOWN = 30000;
+      let emergencyAudio = null;
+      let lastEmailAlertTime = 0;
+      const EMAIL_ALERT_COOLDOWN = 60000;
+      
+      async function loadModelCameras() {
+        try {
+          const res = await fetch(`/api/model-cameras/${MODEL_TYPE}`);
+          const data = await res.json();
+          if (data.ok) {
+            modelCameras = data.cameras || {};
+            renderCameras();
+          }
+        } catch (err) {
+          console.error('Failed to load cameras:', err);
+        }
+      }
+      
+      function renderCameras() {
+        const smokingContainer = document.getElementById('smoking-cameras-container');
+        const normalContainer = document.getElementById('normal-cameras-container');
+        
+        const allCameras = Object.entries(modelCameras).filter(([id, cam]) => cam.enabled);
+        const smokingCameras = allCameras.filter(([id, cam]) => cam.is_smoking_zone);
+        const normalCameras = allCameras.filter(([id, cam]) => !cam.is_smoking_zone);
+        
+        document.getElementById('smoking-count').textContent = smokingCameras.length;
+        document.getElementById('normal-count').textContent = normalCameras.length;
+        
+        // Render smoking zone cameras
+        if (smokingCameras.length === 0) {
+          smokingContainer.innerHTML = `
+            <div class="no-cameras-message" style="grid-column: 1 / -1;">
+              <p>No smoking zone cameras. <a href="/manage">Add cameras</a> and mark them as "Smoking Zone".</p>
+            </div>
+          `;
+        } else {
+          smokingContainer.innerHTML = smokingCameras.map(([camId, cam]) => `
+            <div class="uf-cam-card uf-cam-card--restricted" data-camera-id="${camId}">
+              <header class="uf-cam-header">
+                <span class="uf-pill uf-pill--restricted">🚭 No-Smoking Zone</span>
+                <span class="uf-cam-label">${cam.name || 'Camera ' + camId}</span>
+              </header>
+              <div class="uf-cam-body uf-cam-body--restricted">
+                <img id="cam-feed-${camId}" style="width: 100%; height: auto; min-height: 200px; background: #0a0a0f; object-fit: cover;">
+                <div class="uf-restricted-overlay" aria-hidden="true"><span>No Smoking Zone</span></div>
+              </div>
+              <footer class="uf-cam-footer">
+                <span id="cam-status-${camId}" class="uf-caption">Ready</span>
+              </footer>
+            </div>
+          `).join('');
+        }
+        
+        // Render normal cameras
+        if (normalCameras.length === 0) {
+          normalContainer.innerHTML = `
+            <div class="no-cameras-message" style="grid-column: 1 / -1;">
+              <p>No normal area cameras. <a href="/manage">Add cameras</a> (leave "Smoking Zone" unchecked).</p>
+            </div>
+          `;
+        } else {
+          normalContainer.innerHTML = normalCameras.map(([camId, cam]) => `
+            <div class="uf-cam-card" data-camera-id="${camId}">
+              <header class="uf-cam-header">
+                <span class="uf-pill uf-pill--normal">Normal Area</span>
+                <span class="uf-cam-label">${cam.name || 'Camera ' + camId}</span>
+              </header>
+              <div class="uf-cam-body">
+                <img id="cam-feed-${camId}" style="width: 100%; height: auto; min-height: 200px; background: #0a0a0f; object-fit: cover;">
+              </div>
+              <footer class="uf-cam-footer">
+                <span id="cam-status-${camId}" class="uf-caption">Ready</span>
+              </footer>
+            </div>
+          `).join('');
+        }
+      }
+      
+      function startAllCameras() {
+        const allCameras = Object.entries(modelCameras).filter(([id, cam]) => cam.enabled);
+        const smokingZoneCameras = allCameras.filter(([id, cam]) => cam.is_smoking_zone);
+        
+        allCameras.forEach(([camId, cam]) => {
+          const feedEl = document.getElementById(`cam-feed-${camId}`);
+          const statusEl = document.getElementById(`cam-status-${camId}`);
+          
+          if (feedEl) {
+            feedEl.src = `/video_feed/${camId}`;
+            if (statusEl) statusEl.textContent = cam.is_smoking_zone ? 'Starting detection...' : 'Monitoring';
+          }
+        });
+        
+        // Only run detection on smoking zone cameras (staggered)
+        smokingZoneCameras.forEach(([camId, cam], index) => {
+          if (checkIntervals[camId]) clearInterval(checkIntervals[camId]);
+          const staggerDelay = 2000 + (index * 500);
+          setTimeout(() => {
+            console.log(`[SMOKE CAM ${camId}] Starting detection interval`);
+            checkIntervals[camId] = setInterval(() => performCheck(camId, cam.name), 4000);
+            performCheck(camId, cam.name);
+          }, staggerDelay);
+        });
+        
+        isRunning = true;
+        document.getElementById('start-all-btn').textContent = '⏹ Stop All';
+        document.getElementById('start-all-btn').onclick = stopAllCameras;
+      }
+      
+      function stopAllCameras() {
+        Object.keys(checkIntervals).forEach(camId => {
+          clearInterval(checkIntervals[camId]);
+          delete checkIntervals[camId];
+        });
+        
+        Object.entries(modelCameras).filter(([id, cam]) => cam.enabled).forEach(([camId]) => {
+          const feedEl = document.getElementById(`cam-feed-${camId}`);
+          const statusEl = document.getElementById(`cam-status-${camId}`);
+          if (feedEl) feedEl.src = '';
+          if (statusEl) statusEl.textContent = 'Stopped';
+        });
+        
+        isRunning = false;
+        document.getElementById('start-all-btn').textContent = '▶ Start All Cameras';
+        document.getElementById('start-all-btn').onclick = startAllCameras;
+      }
+      
+      async function performCheck(camId, camName) {
+        const statusEl = document.getElementById(`cam-status-${camId}`);
+        
+        try {
+          console.log(`[SMOKE CAM ${camId}] Checking...`);
+          const res = await fetch('/api/demo/smoking/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ camera_index: parseInt(camId) })
+          });
+          
+          const data = await res.json();
+          console.log(`[SMOKE CAM ${camId}] Response:`, data);
+          
+          // API returns smoke_detected and fire_detected
+          if (data.fire_detected === true) {
+            if (statusEl) {
+              statusEl.textContent = '🔥 FIRE DETECTED!';
+              statusEl.style.color = '#ff4444';
+            }
+            showAlert(`🔥 FIRE HAZARD on ${camName}: Fire detected!`, 'critical');
+            playEmergencySound();
+            sendEmailAlert(camId);
+            
+            setTimeout(() => {
+              if (statusEl) {
+                statusEl.textContent = 'Monitoring - Detection Active';
+                statusEl.style.color = '';
+              }
+            }, 5000);
+          } else if (data.smoke_detected === true) {
+            if (statusEl) {
+              statusEl.textContent = '💨 SMOKE DETECTED!';
+              statusEl.style.color = '#f59e0b';
+            }
+            showAlert(`💨 SMOKE ALERT on ${camName}: Smoke detected!`, 'critical');
+            playEmergencySound();
+            sendEmailAlert(camId);
+            
+            setTimeout(() => {
+              if (statusEl) {
+                statusEl.textContent = 'Monitoring - Detection Active';
+                statusEl.style.color = '';
+              }
+            }, 5000);
+          } else {
+            // No hazard detected - zone clear
+            if (statusEl && !statusEl.textContent.includes('DETECTED')) {
+              statusEl.textContent = 'Monitoring - All Clear';
+              statusEl.style.color = '#22c55e';
+            }
+          }
+        } catch (err) {
+          console.error(`[SMOKE CAM ${camId}] Check error:`, err);
+        }
+      }
+      
+      function playEmergencySound() {
+        const now = Date.now();
+        if (now - lastEmergencySoundTime >= EMERGENCY_SOUND_COOLDOWN) {
+          try {
+            if (!emergencyAudio) {
+              emergencyAudio = new Audio('/static/emergency.mp3');
+              emergencyAudio.volume = 0.7;
+            }
+            emergencyAudio.currentTime = 0;
+            emergencyAudio.play().catch(() => {});
+            lastEmergencySoundTime = now;
+          } catch (e) {}
+        }
+      }
+      
+      async function sendEmailAlert(camId) {
+        const now = Date.now();
+        if (now - lastEmailAlertTime >= EMAIL_ALERT_COOLDOWN) {
+          try {
+            await fetch('/api/demo/smoking/send-alert-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ camera_index: parseInt(camId) })
+            });
+            lastEmailAlertTime = now;
+          } catch (e) {}
+        }
+      }
+      
+      function showAlert(message, type) {
+        const layer = document.getElementById('alert-layer');
+        if (!layer) return;
+        const alert = document.createElement('div');
+        alert.className = `uf-alert uf-alert--${type}`;
+        alert.innerHTML = `<div class="uf-alert-content"><span class="uf-alert-icon">🔥</span><span class="uf-alert-message">${message}</span></div>`;
+        layer.appendChild(alert);
+        setTimeout(() => alert.remove(), 8000);
+      }
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        loadModelCameras();
+        document.getElementById('start-all-btn').addEventListener('click', startAllCameras);
+        document.getElementById('refresh-cameras-btn').addEventListener('click', loadModelCameras);
+      });
+    })();
+  </script>
+</body>
+</html>

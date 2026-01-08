@@ -1,0 +1,111 @@
+<nav class="navbar navbar-expand-lg navbar-dark hr-navbar-fixed" style="background:rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border-bottom:1px solid rgba(255,255,255,0.12)">
+    <div class="container-fluid">
+        <button class="btn btn-link d-lg-none me-2 sidebar-toggle-btn" type="button" id="sidebarToggle" style="text-decoration:none; padding:8px;">
+            <i class="fa-solid fa-bars fa-lg"></i>
+        </button>
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('hr_home') }}">
+            <img src="{{ url_for('static', filename='logo6.png') }}" alt="Logo" style="height:34px; margin-inline-end:6px;">
+            <span class="fw-semibold">HR Suite</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav2">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="nav2">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item me-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="themeToggleShared">
+                        <label class="form-check-label" for="themeToggleShared">Light/Dark</label>
+                    </div>
+                </li>
+                <li class="nav-item me-2">
+                    <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">Logout</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="https://i.pravatar.cc/100?img=12" alt="avatar" class="avatar" />
+                        <span class="fw-semibold">Admin User</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                        <li><a class="dropdown-item" href="#">Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="sidebar-overlay d-lg-none" id="sidebarOverlay"></div>
+<script>
+(function(){
+    const body = document.body;
+    const toggle = document.getElementById('themeToggleShared');
+    if (!toggle) return;
+    function applyTheme(){
+        if (toggle.checked) {
+            body.classList.add('light-theme');
+            document.documentElement.setAttribute('data-bs-theme', 'light');
+        } else {
+            body.classList.remove('light-theme');
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+        }
+    }
+    toggle.addEventListener('change', applyTheme);
+    applyTheme();
+})();
+
+// Sidebar toggle for mobile
+(function(){
+    function initSidebar() {
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        
+        if (!sidebarToggle || !sidebar || !sidebarOverlay) return;
+        
+        function closeSidebar() {
+            sidebar.classList.remove('sidebar-open');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        sidebarToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            sidebar.classList.toggle('sidebar-open');
+            sidebarOverlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('sidebar-open') ? 'hidden' : '';
+        });
+        
+        sidebarOverlay.addEventListener('click', closeSidebar);
+        
+        // Close sidebar when clicking on a nav link (using event delegation)
+        sidebar.addEventListener('click', function(e) {
+            if (window.innerWidth < 992 && e.target.closest('.nav-link')) {
+                setTimeout(closeSidebar, 100);
+            }
+        });
+        
+        // Handle window resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (window.innerWidth >= 992) {
+                    closeSidebar();
+                }
+            }, 250);
+        });
+    }
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSidebar);
+    } else {
+        initSidebar();
+    }
+})();
+</script>
+

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HSE Training & Certification</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+    <style>
+        :root { 
+            --brand-green: var(--primary, #009879);
+            --brand-teal: var(--primary-2, #00c4a7);
+        }
+        body { 
+            background: var(--bg); 
+            color: rgba(255, 255, 255, 0.85);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .navbar { background: transparent; border-bottom: 1px solid var(--card-border); }
+        .navbar-brand, .navbar-nav .nav-link { color: rgba(255, 255, 255, 0.9) !important; }
+        .brand-badge { background: var(--brand-green); color: #fff; font-weight: 700; padding: 6px 10px; border-radius: 8px; }
+        .sidebar { background: var(--card); border-right: 1px solid var(--card-border); min-height: calc(100vh - 56px); position: sticky; top: 56px; }
+        .card.custom-card { background: var(--card-bg, var(--card)); border: 1px solid var(--card-border) !important; }
+        .nav-pills .nav-link { color: rgba(255, 255, 255, 0.7) !important; }
+        .nav-pills .nav-link.active { background-color: var(--brand-green); color: #0b1324; }
+        .nav-pills .nav-link:hover { color: rgba(255, 255, 255, 0.9) !important; }
+        .avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+        .table { color: rgba(255, 255, 255, 0.85); }
+        .table thead th { 
+            background-color: rgba(128, 128, 128, 0.15) !important;
+            color: rgba(200, 200, 200, 0.9) !important; 
+            border-color: rgba(128, 128, 128, 0.3) !important; 
+            font-weight: 600; 
+        }
+        .table tbody td { 
+            border-color: rgba(128, 128, 128, 0.2) !important; 
+            color: rgba(200, 200, 200, 0.85) !important; 
+        }
+        .table-striped > tbody > tr:nth-of-type(odd) > td { 
+            background-color: rgba(128, 128, 128, 0.05) !important; 
+        }
+        .table-striped > tbody > tr:nth-of-type(even) > td { 
+            background-color: rgba(128, 128, 128, 0.02) !important; 
+        }
+        .table tbody tr:hover {
+            background-color: rgba(128, 128, 128, 0.1) !important;
+        }
+        /* Table alignment fixes */
+        .table td, .table th {
+            vertical-align: middle !important;
+            padding: 0.75rem !important;
+        }
+        .table td i {
+            vertical-align: middle;
+            margin-right: 0.5rem;
+        }
+        .table .btn {
+            vertical-align: middle;
+            margin: 0 2px;
+        }
+        .table .badge {
+            vertical-align: middle;
+            display: inline-block;
+        }
+        /* Icon and text alignment */
+        .d-flex.align-items-center {
+            align-items: center !important;
+        }
+        .d-flex.align-items-center i {
+            line-height: 1;
+        }
+        /* Card content alignment */
+        .card-body, .card.custom-card {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-select, .form-control { background: var(--card); border-color: var(--card-border); color: rgba(255, 255, 255, 0.85); }
+        .form-select:focus, .form-control:focus { background: var(--card); border-color: var(--brand-green); color: rgba(255, 255, 255, 0.9); }
+        h4, h5, h6 { color: rgba(255, 255, 255, 0.9); }
+        .btn-outline-success, .btn-outline-primary, .btn-outline-warning { color: rgba(255, 255, 255, 0.85); }
+        .section-title { color: rgba(255, 255, 255, 0.9); }
+        
+        /* Modal Styles - Fixed z-index and enhanced colors */
+        .modal {
+            z-index: 9999 !important;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6) !important;
+            backdrop-filter: blur(8px);
+            opacity: 1 !important;
+            z-index: 9998 !important;
+        }
+        .modal-dialog {
+            z-index: 9999 !important;
+            margin: 2rem auto !important;
+        }
+        .modal-content {
+            border-radius: 16px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+            background: rgba(30, 35, 45, 0.98) !important;
+            border: 2px solid rgba(0, 152, 121, 0.5) !important;
+            opacity: 1 !important;
+            animation: modalAppear 0.3s ease-out;
+            position: relative;
+            z-index: 9999 !important;
+            color: var(--text) !important;
+        }
+        .modal-header {
+            border-radius: 16px 16px 0 0;
+            background: linear-gradient(135deg, rgba(0, 152, 121, 0.3), rgba(0, 196, 167, 0.25)) !important;
+            border-bottom: 2px solid rgba(0, 152, 121, 0.5);
+            padding: 1.25rem 1.5rem;
+            color: var(--text) !important;
+        }
+        .modal-title {
+            color: rgba(255, 255, 255, 0.95) !important;
+            font-weight: 700;
+            font-size: 1.25rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .modal-body {
+            background: var(--card) !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            padding: 1.5rem;
+        }
+        .modal-footer {
+            border-radius: 0 0 16px 16px;
+            background: linear-gradient(135deg, rgba(0, 152, 121, 0.15), rgba(0, 196, 167, 0.1)) !important;
+            border-top: 2px solid rgba(0, 152, 121, 0.4);
+            padding: 1.25rem 1.5rem;
+        }
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            padding: 0.75rem;
+        }
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.45) !important;
+            opacity: 1 !important;
+        }
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-color: var(--brand-green) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 0 0 0.2rem rgba(0, 152, 121, 0.3) !important;
+            outline: none;
+        }
+        .form-label {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            opacity: 1 !important;
+        }
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+            opacity: 0.9;
+            background: transparent;
+        }
+        .btn-close:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        /* Ensure text is visible in dark mode */
+        .modal-body .text-muted {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+        /* Button styles in modal */
+        .modal-footer .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .modal-footer .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.95);
+        }
+        .modal-footer .btn-success {
+            background: var(--brand-green);
+            border-color: var(--brand-green);
+            color: white;
+            font-weight: 600;
+        }
+        .modal-footer .btn-success:hover {
+            background: var(--brand-teal);
+            border-color: var(--brand-teal);
+        }
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="dashboard">
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('admin_hse_dashboard') }}">
+                <span class="brand-badge">HSE</span>
+                <span class="fw-semibold">Performance Dashboard</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="topNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item me-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="themeToggle">
+                            <label class="form-check-label" for="themeToggle">Light/Dark</label>
+                        </div>
+                    </li>
+                    <li class="nav-item me-2">
+                        <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
+                            <img src="https://i.pravatar.cc/100?img=12" alt="avatar" class="avatar" />
+                            <span class="fw-semibold">Admin User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_hse_settings') }}">Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-2 sidebar p-3">
+                <h6 class="text-uppercase text-muted px-2">Navigation</h6>
+                <ul class="nav nav-pills flex-column gap-1 mt-2">
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard Overview</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_incidents') }}"><i class="fa-solid fa-triangle-exclamation"></i> Incidents & Accidents</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_inspections') }}"><i class="fa-solid fa-clipboard-check"></i> Inspections & Audits</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_risks') }}"><i class="fa-solid fa-shield-halved"></i> Risk Assessment</a></li>
+                    <li class="nav-item"><a class="nav-link active d-flex align-items-center gap-2" href="{{ url_for('admin_hse_trainings') }}"><i class="fa-solid fa-chalkboard-user"></i> Training & Certification</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_ppe') }}"><i class="fa-solid fa-hard-hat"></i> PPE & Equipment</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_environmental') }}"><i class="fa-solid fa-leaf"></i> Environmental</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_medical') }}"><i class="fa-solid fa-user-doctor"></i> Occupational Health</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_reports') }}"><i class="fa-regular fa-file-lines"></i> Reports & Analytics</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_employees') }}"><i class="fa-solid fa-users"></i> Employees</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_tracking') }}"><i class="fa-solid fa-chart-line"></i> Tracking</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_monthly_dashboard') }}"><i class="fa-solid fa-calendar-alt"></i> Monthly Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_settings') }}"><i class="fa-solid fa-gear"></i> Core Settings</a></li>
+                </ul>
+            </aside>
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="section-title m-0"><i class="fa-solid fa-chalkboard-user me-2"></i>Training & Certification</h4>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#scheduleTrainingModal"><i class="fa-solid fa-plus me-1"></i>Schedule Training</button>
+                </div>
+
+                <div class="card custom-card shadow-sm rounded-3 p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" style="width:auto" id="trainingTypeFilter">
+                                <option value="">All Types</option>
+                                <option value="Fire Safety">Fire Safety</option>
+                                <option value="First Aid">First Aid</option>
+                                <option value="H2S">H2S</option>
+                                <option value="Defensive Driving">Defensive Driving</option>
+                                <option value="Confined Space">Confined Space</option>
+                            </select>
+                            <select class="form-select form-select-sm" style="width:auto" id="trainingStatusFilter">
+                                <option value="">All Status</option>
+                                <option value="Scheduled">Scheduled</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-success"><i class="fa-solid fa-download me-1"></i>Export</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="trainingsTable" class="table table-striped" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Training Type</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Location</th>
+                                    <th>Instructor</th>
+                                    <th>Participants</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fa-solid fa-fire me-2"></i>Fire Safety</td>
+                                    <td>2025-06-15</td>
+                                    <td>09:00 AM</td>
+                                    <td>Training Hall A</td>
+                                    <td>Ahmed Hassan</td>
+                                    <td>25/30</td>
+                                    <td><span class="badge text-bg-info">Scheduled</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewTraining(1)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editTraining(1)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fa-solid fa-heart-pulse me-2"></i>First Aid</td>
+                                    <td>2025-06-10</td>
+                                    <td>02:00 PM</td>
+                                    <td>Medical Center</td>
+                                    <td>Dr. Sarah Ali</td>
+                                    <td>18/20</td>
+                                    <td><span class="badge text-bg-success">Completed</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewTraining(2)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editTraining(2)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fa-solid fa-flask me-2"></i>H2S Awareness</td>
+                                    <td>2025-06-20</td>
+                                    <td>10:00 AM</td>
+                                    <td>Site B - Safety Room</td>
+                                    <td>Mohamed Ibrahim</td>
+                                    <td>0/15</td>
+                                    <td><span class="badge text-bg-info">Scheduled</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewTraining(3)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editTraining(3)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fa-solid fa-car me-2"></i>Defensive Driving</td>
+                                    <td>2025-06-05</td>
+                                    <td>08:00 AM</td>
+                                    <td>Driving School</td>
+                                    <td>Omar Khaled</td>
+                                    <td>12/12</td>
+                                    <td><span class="badge text-bg-success">Completed</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewTraining(4)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editTraining(4)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fa-solid fa-box me-2"></i>Confined Space Entry</td>
+                                    <td>2025-06-25</td>
+                                    <td>01:00 PM</td>
+                                    <td>Site C - Workshop</td>
+                                    <td>Hassan Mohamed</td>
+                                    <td>0/10</td>
+                                    <td><span class="badge text-bg-info">Scheduled</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewTraining(5)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editTraining(5)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Certifications Expiring Soon -->
+                <div class="card custom-card shadow-sm rounded-3 p-3">
+                    <h6 class="mb-3"><i class="fa-solid fa-exclamation-triangle me-2 text-warning"></i>Certifications Expiring Soon</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Certification</th>
+                                    <th>Expiry Date</th>
+                                    <th>Days Remaining</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Ahmed Mohamed</td>
+                                    <td>Fire Safety</td>
+                                    <td>2025-06-20</td>
+                                    <td><span class="badge text-bg-danger">5 days</span></td>
+                                    <td><button class="btn btn-sm btn-outline-warning" onclick="renewCertification(1)"><i class="fa-solid fa-sync me-1"></i>Renew</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Fatima Ali</td>
+                                    <td>First Aid</td>
+                                    <td>2025-06-22</td>
+                                    <td><span class="badge text-bg-warning">7 days</span></td>
+                                    <td><button class="btn btn-sm btn-outline-warning" onclick="renewCertification(2)"><i class="fa-solid fa-sync me-1"></i>Renew</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Omar Hassan</td>
+                                    <td>H2S Awareness</td>
+                                    <td>2025-06-25</td>
+                                    <td><span class="badge text-bg-warning">10 days</span></td>
+                                    <td><button class="btn btn-sm btn-outline-warning" onclick="renewCertification(3)"><i class="fa-solid fa-sync me-1"></i>Renew</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Schedule Training Modal -->
+    <div class="modal fade" id="scheduleTrainingModal" tabindex="-1" aria-labelledby="scheduleTrainingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="scheduleTrainingModalLabel"><i class="fa-solid fa-calendar-check me-2"></i>Schedule Safety Training</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="scheduleTrainingForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Training Type <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Training Type</option>
+                                    <option value="Fire Safety">Fire Safety</option>
+                                    <option value="First Aid">First Aid</option>
+                                    <option value="H2S">H2S Awareness</option>
+                                    <option value="Defensive Driving">Defensive Driving</option>
+                                    <option value="Confined Space">Confined Space Entry</option>
+                                    <option value="Lifting Operations">Lifting Operations</option>
+                                    <option value="Scaffolding">Scaffolding Safety</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Training Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Training Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Duration (hours)</label>
+                                <input type="number" class="form-control" placeholder="4" min="1" max="8">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Location <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Training location" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Instructor <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Instructor name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Max Participants</label>
+                                <input type="number" class="form-control" placeholder="30" min="1">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" rows="3" placeholder="Training description and objectives..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="submitScheduleTraining()">
+                        <i class="fa-solid fa-calendar-check me-1"></i>Schedule Training
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        // Theme toggle function
+        function setTheme(light) {
+            if (light) {
+                document.body.classList.add('light-theme');
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+            } else {
+                document.body.classList.remove('light-theme');
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+            }
+        }
+
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#trainingsTable').DataTable({
+                "pageLength": 10,
+                "order": [[1, "desc"]]
+            });
+
+            // Theme toggle initialization
+            setTheme(false);
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('change', (e) => setTheme(e.target.checked));
+            }
+        });
+
+        function submitScheduleTraining() {
+            const form = document.getElementById('scheduleTrainingForm');
+            if (form.checkValidity()) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleTrainingModal'));
+                modal.hide();
+                alert('Training scheduled successfully!');
+                setTimeout(() => location.reload(), 500);
+            } else {
+                form.reportValidity();
+            }
+        }
+
+        function viewTraining(id) {
+            alert('Viewing training details for ID: ' + id);
+        }
+
+        function editTraining(id) {
+            alert('Editing training ID: ' + id);
+        }
+
+        function renewCertification(id) {
+            if (confirm('Do you want to schedule renewal training for this certification?')) {
+                alert('Renewal training scheduled for certification ID: ' + id);
+            }
+        }
+    </script>
+</body>
+</html>
+

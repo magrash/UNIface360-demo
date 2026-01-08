@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Map</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            color: #fff;
+        }
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .navbar-brand, .nav-link {
+            color: #fff !important;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            color: #fff;
+        }
+        .card-header {
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-weight: 500;
+        }
+        #mapCanvas {
+            border: 2px solid rgba(33, 147, 176, 0.3);
+            border-radius: 10px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        #mapCanvas:hover {
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+        }
+        .map-container {
+            position: relative;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+        .map-control-btn {
+            background: rgba(33, 147, 176, 0.3);
+            border: 1px solid rgba(33, 147, 176, 0.5);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .map-control-btn:hover {
+            background: rgba(33, 147, 176, 0.5);
+            transform: translateY(-2px);
+        }        .room {
+            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .room:hover {
+            border-color: rgba(33, 147, 176, 0.5);
+            box-shadow: 0 0 20px rgba(33, 147, 176, 0.3);
+            transform: scale(1.02);
+        }
+        #mapCanvas {
+            cursor: crosshair;
+        }
+        .room-label {
+            position: absolute;
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+            font-weight: 500;
+        }
+        .person-dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #2193b0;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(33, 147, 176, 0.5);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .person-dot:hover {
+            transform: scale(1.5);
+            box-shadow: 0 0 20px rgba(33, 147, 176, 0.8);
+        }
+        .person-tooltip {
+            position: absolute;
+            background: rgba(33, 147, 176, 0.9);
+            border: 1px solid rgba(33, 147, 176, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            padding: 10px 15px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .person-tooltip::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 5px 5px 5px;
+            border-style: solid;
+            border-color: transparent transparent rgba(33, 147, 176, 0.9) transparent;
+        }
+        .room-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .room-info h5 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .room-info p {
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+        }
+
+
+
+
+    .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    transition: width 0.3s ease;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    color: #fff;
+}
+
+.sidebar-header img {
+    height: 40px;
+}
+
+.sidebar-header span {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-left: 0rem;
+    white-space: nowrap;
+}
+
+#toggleSidebar {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+
+    flex: 1 1 auto; /* Allow this list to grow */
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-nav li {
+    width: 100%;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.3s ease, padding 0.3s ease;
+}
+
+.sidebar-nav a i {
+    margin-right: 12px;
+    font-size: 1.2rem;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    background: rgba(109, 213, 237, 0.2);
+    color: #6dd5ed;
+}
+
+/* Sidebar bottom section (e.g. logout link) */
+.sidebar-bottom {
+    flex-shrink: 0;
+    margin-bottom: 1rem;
+}
+
+.sidebar-bottom .sidebar-nav {
+    flex: none;
+    margin-top: 0;
+}
+
+/* Hide text but keep toggle button visible in collapsed mode */
+.sidebar.collapsed .sidebar-nav a span,
+.sidebar.collapsed .sidebar-header span {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-nav a {
+    justify-content: center;
+    padding: 14px 0;
+}
+
+.sidebar.collapsed .sidebar-nav a i {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.sidebar.collapsed .sidebar-header {
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar.collapsed .sidebar-header img {
+    margin: 0 auto;
+}
+
+.sidebar.collapsed #toggleSidebar {
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.content-wrapper {
+    margin-left: 240px;
+    transition: margin-left 0.3s ease;
+}
+
+.sidebar.collapsed ~ .content-wrapper {
+    margin-left: 70px;
+}
+
+.sidebar-divider {
+    border: 0;
+    height: 5px;
+    background: rgba(225, 248, 255, 0.858);
+    margin: 1rem 1.25rem;
+}
+
+@media (max-width: 768px) {
+  /* Make attendance table scrollable */
+  .card-body table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Responsive map container */
+  .map-container {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  #mapCanvas {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+  }
+
+  .card-header .float-end {
+    float: none !important;
+    margin-top: 0.5rem;
+    text-align: left;
+  }
+
+  /* Chart responsiveness */
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+        .room-info h5 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .room-info p {
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+       <div class="sidebar collapsed" id="sidebar">
+
+        <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='logo6.png') }}" alt="Logo">
+        <span>Uniface360</span>
+        <button id="toggleSidebar">☰</button>
+        </div>
+
+
+
+        <!-- Main navigation links -->
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('dashboard') }}" title="Dashboard"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+            <li><a href="{{ url_for('emergency_status') }}" title="Report"><i class="bi bi-exclamation-triangle"></i> <span>Report</span></a></li>
+            <li><a href="{{ url_for('map') }}" title="Map"><i class="bi bi-map"></i> <span>Map</span></a></li>
+            <li><a href="{{ url_for('live_stream') }}" title="Live Stream"><i class="bi bi-camera-video"></i> <span>Live Stream</span></a></li>
+            <li><a href="{{ url_for('people_directory') }}" title="Directory"><i class="bi bi-people"></i> <span>Directory</span></a></li>
+            <li><a href="{{ url_for('excuses') }}" title="Excuses"><i class="bi bi-journal-check"></i> <span>Excuses</span></a></li>
+        </ul>
+
+        <!-- Horizontal line separator -->
+        <hr class="sidebar-divider">
+
+        <!-- Bottom section with Support and Logout -->
+        <div class="sidebar-bottom">
+            <ul class="sidebar-nav">
+                <li><a href="/support" title="Support"><i class="bi bi-life-preserver"></i> <span>Support</span></a></li>
+                <li><a href="{{ url_for('logout') }}" title="Logout"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a></li>
+            </ul>
+        </div>
+
+    </div>
+    <div class="content-wrapper">
+        <div class="container mt-4">
+            <h1 class="mb-4">Building Map</h1>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card shadow mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Interactive Floor Map</span>
+                            <div class="map-controls">
+                                <button class="map-control-btn" id="zoomIn">+</button>
+                                <button class="map-control-btn" id="zoomOut">-</button>
+                                <button class="map-control-btn" id="resetView">Reset</button>
+                            </div>
+                        </div>
+                        <div class="card-body">                            <div class="map-container position-relative">
+                                <canvas id="mapCanvas" width="800" height="600"></canvas>
+                                <div id="tooltip" style="display: none;"></div>
+                                <div id="personTooltip" class="person-tooltip" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow mb-4">
+                        <div class="card-header">Room Information</div>
+                        <div class="card-body">                            <div id="roomInfo">
+                                <div class="room-info">
+                                    <h5>Hover over a room or person</h5>
+                                    <p>Move your cursor over any room or person dot to see more information</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow">
+                        <div class="card-header">Current Occupancy</div>
+                        <div class="card-body">
+                            <div class="room-info">
+                                <h5>Total People in Building</h5>
+                                <p id="totalPeople">0</p>
+                            </div>
+                            <div class="room-info">
+                                <h5>Most Occupied Room</h5>
+                                <p id="mostOccupied">-</p>
+                            </div>
+                            <div class="room-info">
+                                <h5>Least Occupied Room</h5>
+                                <p id="leastOccupied">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS('particles-js', {
+            particles: {
+                number: {
+                    value: 300,
+                    density: {
+                        enable: true,
+                        value_area: 1000
+                    }
+                },
+                color: {
+                    value: '#ffffff'
+                },
+                shape: {
+                    type: 'circle',
+                    stroke: {
+                        width: 0,
+                        color: '#000000'
+                    }
+                },
+                opacity: {
+                    value: 0.3,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                size: {
+                    value: 2.5,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#ffffff',
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: true,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'grab'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 140,
+                        line_linked: {
+                            opacity: 0.5
+                        }
+                    },
+                    push: {
+                        particles_nb: 3
+                    }
+                }
+            },
+            retina_detect: true
+        });
+
+        // Map initialization
+        const canvas = document.getElementById('mapCanvas');
+        const ctx = canvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip');
+        const personTooltip = document.getElementById('personTooltip');
+        const roomInfo = document.getElementById('roomInfo');
+
+        // Map state
+        let scale = 1;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isDragging = false;
+        let lastX = 0;
+        let lastY = 0;        // Room definitions with enhanced styling
+        const rooms = [
+            { 
+                id: 'meeting', 
+                name: 'Meeting Room', 
+                x: 50, y: 50, 
+                width: 200, height: 150, 
+                color: 'rgba(33, 147, 176, 0.2)',
+                icon: '📋',
+                cameraId: 1
+            },
+            { 
+                id: 'main', 
+                name: 'Main Room', 
+                x: 300, y: 50, 
+                width: 300, height: 200, 
+                color: 'rgba(109, 213, 237, 0.2)',
+                icon: '🏛️',
+                cameraId: 2
+            },            { 
+                id: 'room1', 
+                name: 'Room 1', 
+                x: 50, y: 250, 
+                width: 200, height: 150, 
+                color: 'rgba(33, 176, 147, 0.2)',
+                icon: '🚪',
+                cameraId: 3
+            },
+            { 
+                id: 'room2', 
+                name: 'Room 2', 
+                x: 300, y: 300, 
+                width: 200, height: 150, 
+                color: 'rgba(237, 109, 213, 0.2)',
+                icon: '🚪',
+                cameraId: 4
+            },            { 
+                id: 'kitchen', 
+                name: 'Kitchen', 
+                x: 550, y: 300, 
+                width: 200, height: 150, 
+                color: 'rgba(176, 33, 147, 0.2)',
+                icon: '🍳',
+                cameraId: 5
+            },
+            { 
+                id: 'room3', 
+                name: 'Room 3', 
+                x: 50, y: 450, 
+                width: 200, height: 150, 
+                color: 'rgba(147, 33, 176, 0.2)',
+                icon: '🚪',
+                cameraId: 1
+            },
+            { 
+                id: 'room4', 
+                name: 'Room 4', 
+                x: 300, y: 450, 
+                width: 200, height: 150, 
+                color: 'rgba(213, 109, 237, 0.2)',
+                icon: '🚪',
+                cameraId: 2
+            }
+        ];
+
+        // People data from Flask
+        const people = JSON.parse('{{ people | tojson | safe }}');
+
+        // Group people by room
+        const roomPeople = {};
+        rooms.forEach(room => {
+            roomPeople[room.id] = people.filter(person => person.location === room.name);
+        });
+
+        // Draw the map with enhanced styling
+        function drawMap() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
+
+            // Draw rooms with enhanced styling
+            rooms.forEach(room => {
+                // Room background with gradient
+                const gradient = ctx.createLinearGradient(room.x, room.y, room.x + room.width, room.y + room.height);
+                gradient.addColorStop(0, room.color);
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0.1)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(room.x, room.y, room.width, room.height);                // Room border
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(room.x, room.y, room.width, room.height);
+                
+                // Camera icon to indicate clickable rooms
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.font = '16px "Bootstrap Icons"';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'top';
+                ctx.fillText('📹', room.x + room.width - 10, room.y + 10);
+
+                // Room label with icon
+                ctx.fillStyle = '#fff';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`${room.icon} ${room.name}`, room.x + room.width/2, room.y + room.height/2);
+            });                // Draw people with enhanced styling and aligned placement
+            rooms.forEach(room => {
+                const peopleInRoom = roomPeople[room.id] || [];
+                const padding = 20; // Padding from room edges
+                const labelHeight = 20; // Height of room label
+                
+                // Calculate available area for dots (excluding label area)
+                const availableWidth = room.width - (padding * 2);
+                const availableHeight = room.height - (padding * 2) - labelHeight;
+                
+                // Calculate grid for dot placement - precise alignment
+                const maxCols = Math.min(peopleInRoom.length, 3); // Max 3 dots per row
+                const cols = Math.min(maxCols, Math.floor(availableWidth / 30)); // 30px spacing between dots
+                const rows = Math.ceil(peopleInRoom.length / cols);
+                
+                // Calculate starting position (centered in available area)
+                const startX = room.x + padding + (availableWidth - (cols * 30)) / 2;
+                const startY = room.y + padding + (availableHeight - (rows * 30)) / 2;
+                
+                peopleInRoom.forEach((person, index) => {
+                    const row = Math.floor(index / cols);
+                    const col = index % cols;
+                    
+                    // Calculate dot position with precise alignment
+                    const x = startX + (col * 30);
+                    const y = startY + (row * 30);
+                    
+                    // Person dot with glow effect
+                    ctx.beginPath();
+                    ctx.arc(x, y, 6, 0, Math.PI * 2);
+                    const gradient = ctx.createRadialGradient(x, y, 0, x, y, 6);
+                    gradient.addColorStop(0, 'rgba(33, 147, 176, 0.8)');
+                    gradient.addColorStop(1, 'rgba(33, 147, 176, 0.2)');
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    
+                    // Store dot position for interaction
+                    person.x = x;
+                    person.y = y;
+                });
+            });
+
+            ctx.restore();
+        }
+
+        // Handle mouse events with enhanced interactivity
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left - offsetX) / scale;
+            const y = (e.clientY - rect.top - offsetY) / scale;
+
+            // Check if mouse is over a room
+            const room = rooms.find(r => 
+                x >= r.x && x <= r.x + r.width && 
+                y >= r.y && y <= r.y + r.height
+            );
+
+            // Check if mouse is over a person dot
+            let hoveredPerson = null;
+            rooms.forEach(room => {
+                const peopleInRoom = roomPeople[room.id] || [];
+                peopleInRoom.forEach(person => {
+                    if (person.x && person.y) {
+                        const dx = x - person.x;
+                        const dy = y - person.y;                        if (Math.sqrt(dx * dx + dy * dy) < 8) {
+                            hoveredPerson = person;
+                        }
+                    }
+                });
+            });
+
+            if (hoveredPerson) {
+                // Hide tooltips (as requested)
+                tooltip.style.display = 'none';
+                personTooltip.style.display = 'none';
+                
+                // Update the information panel instead
+                roomInfo.innerHTML = `
+                    <div class="room-info">
+                        <h5>Person Information</h5>
+                        <p><strong>Name:</strong> ${hoveredPerson.name}</p>
+                        <p><strong>Location:</strong> ${hoveredPerson.location}</p>
+                    </div>
+                `;
+            } else if (room) {
+                // Hide tooltips (as requested)
+                tooltip.style.display = 'none';
+                personTooltip.style.display = 'none';
+                
+                // Update room info in the sidebar
+                const peopleInRoom = roomPeople[room.id] || [];                roomInfo.innerHTML = `
+                    <div class="room-info">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>${room.name}</h5>
+                            <button class="btn btn-sm btn-primary view-camera-btn" data-camera-id="${room.cameraId}">
+                                <i class="bi bi-camera-video"></i> View Camera
+                            </button>
+                        </div>
+                        <p>Occupancy: ${peopleInRoom.length} person(s)</p>
+                        ${peopleInRoom.length > 0 ? `
+                            <p>People present:</p>
+                            <ul>
+                                ${peopleInRoom.map(p => `<li>${p.name}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+                    </div>
+                `;
+            } else {
+                // Hide tooltips
+                tooltip.style.display = 'none';
+                personTooltip.style.display = 'none';
+                
+                // Reset room info to default when not hovering over anything
+                roomInfo.innerHTML = `
+                    <div class="room-info">
+                        <h5>Hover over a room or person</h5>
+                        <p>Move your cursor over any room or person dot to see more information</p>
+                    </div>
+                `;
+            }
+        });
+
+        // Handle zoom controls
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            scale = Math.min(scale * 1.2, 3);
+            drawMap();
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            scale = Math.max(scale / 1.2, 0.5);
+            drawMap();
+        });
+
+        document.getElementById('resetView').addEventListener('click', () => {
+            scale = 1;
+            offsetX = 0;
+            offsetY = 0;
+            drawMap();
+        });
+
+        // Handle drag to pan
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                offsetX += e.clientX - lastX;
+                offsetY += e.clientY - lastY;
+                lastX = e.clientX;
+                lastY = e.clientY;
+                drawMap();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+        });        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
+
+        // Handle room click to show camera
+        canvas.addEventListener('click', (e) => {
+            if (isDragging) return; // Don't show camera if user is dragging
+
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left - offsetX) / scale;
+            const y = (e.clientY - rect.top - offsetY) / scale;
+
+            // Check if click is on a room
+            const clickedRoom = rooms.find(r => 
+                x >= r.x && x <= r.x + r.width && 
+                y >= r.y && y <= r.y + r.height
+            );
+
+            if (clickedRoom) {
+                // Set camera feed source based on room's camera ID
+                const cameraModal = new bootstrap.Modal(document.getElementById('cameraModal'));
+                const cameraFeed = document.getElementById('cameraFeed');
+                const modalTitle = document.getElementById('cameraModalLabel');
+                
+                // Update modal title and camera feed
+                modalTitle.textContent = `${clickedRoom.name} Camera`;
+                cameraFeed.src = `{{ url_for('video_feed', camera_id=1) }}`.replace('1', clickedRoom.cameraId);
+                
+                // Show the modal
+                cameraModal.show();
+            }
+        });
+
+        // Update occupancy stats
+        function updateStats() {
+            let total = 0;
+            let mostOccupied = { room: '', count: 0 };
+            let leastOccupied = { room: '', count: Infinity };
+
+            rooms.forEach(room => {
+                const count = (roomPeople[room.id] || []).length;
+                total += count;
+                if (count > mostOccupied.count) {
+                    mostOccupied = { room: room.name, count };
+                }
+                if (count < leastOccupied.count) {
+                    leastOccupied = { room: room.name, count };
+                }
+            });
+
+            document.getElementById('totalPeople').textContent = total;
+            document.getElementById('mostOccupied').textContent = mostOccupied.room ? 
+                `${mostOccupied.room} (${mostOccupied.count})` : '-';
+            document.getElementById('leastOccupied').textContent = leastOccupied.room ? 
+                `${leastOccupied.room} (${leastOccupied.count})` : '-';
+        }        // Initial draw and stats update
+        drawMap();
+        updateStats();
+        
+        // Add event delegation for camera buttons in the room info panel
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.view-camera-btn')) {
+                const btn = e.target.closest('.view-camera-btn');
+                const cameraId = btn.getAttribute('data-camera-id');
+                
+                // Show the camera modal
+                const cameraModal = new bootstrap.Modal(document.getElementById('cameraModal'));
+                const cameraFeed = document.getElementById('cameraFeed');
+                const modalTitle = document.getElementById('cameraModalLabel');
+                
+                // Find the room with this camera
+                const room = rooms.find(r => r.cameraId == cameraId);
+                modalTitle.textContent = `${room ? room.name : 'Room'} Camera`;
+                
+                // Set the camera feed source
+                cameraFeed.src = `{{ url_for('video_feed', camera_id=1) }}`.replace('1', cameraId);
+                
+                // Show the modal
+                cameraModal.show();
+            }
+        });
+
+        // Redraw on window resize
+        window.addEventListener('resize', () => {
+            drawMap();
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>        document.getElementById('toggleSidebar').addEventListener('click', function () {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        });
+        
+        // Fullscreen toggle for camera view
+        document.getElementById('toggleFullscreen').addEventListener('click', function() {
+            const cameraFeed = document.getElementById('cameraFeed');
+            
+            if (!document.fullscreenElement) {
+                // Enter fullscreen
+                if (cameraFeed.requestFullscreen) {
+                    cameraFeed.requestFullscreen();
+                } else if (cameraFeed.webkitRequestFullscreen) {
+                    cameraFeed.webkitRequestFullscreen();
+                } else if (cameraFeed.msRequestFullscreen) {
+                    cameraFeed.msRequestFullscreen();
+                }
+                this.innerHTML = '<i class="bi bi-fullscreen-exit"></i> Exit Fullscreen';
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                this.innerHTML = '<i class="bi bi-fullscreen"></i> Fullscreen';
+            }
+        });
+    </script>    <!-- Camera Modal -->
+    <div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: rgba(22, 33, 62, 0.95); border: 1px solid rgba(33, 147, 176, 0.5);">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(33, 147, 176, 0.5);">
+                    <h5 class="modal-title" id="cameraModalLabel">Room Camera</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="position-relative">
+                        <img id="cameraFeed" src="" alt="Camera Feed" class="img-fluid rounded shadow" style="max-height: 60vh;">
+                        <div class="position-absolute top-0 start-0 p-2 bg-danger text-white rounded-circle blink-recording">
+                            <i class="bi bi-record-fill"></i>
+                        </div>
+                        <div class="position-absolute top-0 end-0 p-2 bg-dark bg-opacity-50 text-white rounded">
+                            LIVE
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(33, 147, 176, 0.5);">
+                    <div class="d-flex justify-content-between w-100">
+                        <div>
+                            <button type="button" class="btn btn-outline-light" id="toggleFullscreen">
+                                <i class="bi bi-fullscreen"></i> Fullscreen
+                            </button>
+                        </div>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        .blink-recording {
+            animation: blink 2s infinite;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Status</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            color: #fff;
+        }
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .navbar-brand, .nav-link {
+            color: #fff !important;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            color: #fff;
+        }
+        .card-header {
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-weight: 500;
+        }
+        .table {
+            color: #fff;
+        }
+        .table thead th {
+            background: rgba(33, 147, 176, 0.2);
+            border-bottom: 1px solid rgba(33, 147, 176, 0.3);
+            color: #fff;
+        }
+        .table tbody td {
+            border-color: rgba(33, 147, 176, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+        .table tbody tr:hover {
+            background: rgba(33, 147, 176, 0.1);
+        }
+        .form-select, .form-control {
+            background: rgba(33, 147, 176, 0.2);
+            border: 1px solid rgba(33, 147, 176, 0.3);
+            color: #fff;
+        }
+        .form-select:focus, .form-control:focus {
+            background: rgba(33, 147, 176, 0.3);
+            border-color: rgba(33, 147, 176, 0.4);
+            box-shadow: 0 0 0 0.25rem rgba(33, 147, 176, 0.1);
+            color: #fff;
+        }
+        .form-select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #2193b0, #6dd5ed);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 147, 176, 0.4);
+        }
+        .btn-success {
+            background: linear-gradient(45deg, #25a244, #2ecc71);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #ff6b6b);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #ffd700);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+        }
+        .dropdown-menu {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dropdown-item {
+            color: #fff;
+        }
+        .dropdown-item:hover {
+            background: rgba(33, 147, 176, 0.2);
+            color: #fff;
+        }
+        .img-fluid {
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        .img-fluid:hover {
+            transform: scale(1.05);
+        }
+        .form-label {
+            color: #fff;
+            font-weight: 500;
+        }
+
+
+
+        .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    transition: width 0.3s ease;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    color: #fff;
+}
+
+.sidebar-header img {
+    height: 40px;
+}
+
+.sidebar-header span {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-left: 0rem;
+    white-space: nowrap;
+}
+
+#toggleSidebar {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+
+    flex: 1 1 auto; /* Allow this list to grow */
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-nav li {
+    width: 100%;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.3s ease, padding 0.3s ease;
+}
+
+.sidebar-nav a i {
+    margin-right: 12px;
+    font-size: 1.2rem;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    background: rgba(109, 213, 237, 0.2);
+    color: #6dd5ed;
+}
+
+/* Sidebar bottom section (e.g. logout link) */
+.sidebar-bottom {
+    flex-shrink: 0;
+    margin-bottom: 1rem;
+}
+
+.sidebar-bottom .sidebar-nav {
+    flex: none;
+    margin-top: 0;
+}
+
+/* Hide text but keep toggle button visible in collapsed mode */
+.sidebar.collapsed .sidebar-nav a span,
+.sidebar.collapsed .sidebar-header span {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-nav a {
+    justify-content: center;
+    padding: 14px 0;
+}
+
+.sidebar.collapsed .sidebar-nav a i {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.sidebar.collapsed .sidebar-header {
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar.collapsed .sidebar-header img {
+    margin: 0 auto;
+}
+
+.sidebar.collapsed #toggleSidebar {
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.content-wrapper {
+    margin-left: 240px;
+    transition: margin-left 0.3s ease;
+}
+
+.sidebar.collapsed ~ .content-wrapper {
+    margin-left: 70px;
+}
+
+.sidebar-divider {
+    border: 0;
+    height: 5px;
+    background: rgba(225, 248, 255, 0.858);
+    margin: 1rem 1.25rem;
+}
+
+@media (max-width: 768px) {
+  /* Make attendance table scrollable */
+  .card-body table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Responsive map container */
+  .map-container {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  #mapCanvas {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+  }
+
+  .card-header .float-end {
+    float: none !important;
+    margin-top: 0.5rem;
+    text-align: left;
+  }
+
+  /* Chart responsiveness */
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+
+       <div class="sidebar collapsed" id="sidebar">
+
+        <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='logo6.png') }}" alt="Logo">
+        <span>Uniface360</span>
+        <button id="toggleSidebar">☰</button>
+        </div>
+
+
+
+        <!-- Main navigation links -->
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('dashboard') }}" title="Dashboard"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+            <li><a href="{{ url_for('emergency_status') }}" title="Report"><i class="bi bi-exclamation-triangle"></i> <span>Report</span></a></li>
+            <li><a href="{{ url_for('map') }}" title="Map"><i class="bi bi-map"></i> <span>Map</span></a></li>
+            <li><a href="{{ url_for('live_stream') }}" title="Live Stream"><i class="bi bi-camera-video"></i> <span>Live Stream</span></a></li>
+            <li><a href="{{ url_for('people_directory') }}" title="Directory"><i class="bi bi-people"></i> <span>Directory</span></a></li>
+            <li><a href="{{ url_for('excuses') }}" title="Excuses"><i class="bi bi-journal-check"></i> <span>Excuses</span></a></li>
+        </ul>
+
+        <!-- Horizontal line separator -->
+        <hr class="sidebar-divider">
+
+        <!-- Bottom section with Support and Logout -->
+        <div class="sidebar-bottom">
+            <ul class="sidebar-nav">
+                <li><a href="/support" title="Support"><i class="bi bi-life-preserver"></i> <span>Support</span></a></li>
+                <li><a href="{{ url_for('logout') }}" title="Logout"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a></li>
+            </ul>
+        </div>
+
+
+
+
+        <!-- <div class="sidebar-footer">
+            <p class="text-center text-white">Uniface360 &copy; 2023</p>
+        </div> -->
+
+    </div>
+
+
+
+    <div class="content-wrapper">
+        <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
+                    <img src="{{ url_for('static', filename='logo2.png') }}" alt="Logo" style="height:40px; margin-right:10px;">
+                    Uniface360
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('emergency_status') }}">Report</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('map') }}">Map</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('people_directory') }}">Directory</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div> -->        </nav>            
+            <div class="container mt-4">
+                <h1 class="mb-0">
+                    Emergency Status
+                    <img src="{{ url_for('static', filename='live (1).gif') }}" alt="Live Status" style="height: 144px; margin-left: 0px; vertical-align: middle;">
+                </h1>                <div class="alert mb-3" style="background: rgba(33, 43, 83, 0.7); border-color: rgba(33, 147, 176, 0.5); color: white; padding: 15px; border-radius: 8px;">
+                    <div class="d-flex align-items-center justify-content-center flex-column">
+                        <div class="mb-2" style="font-size: 1.2rem; font-weight: 600;">
+                            <i class="bi bi-people-fill me-2"></i> Live Personnel Counter
+                        </div>
+                        <div class="counter-container" style="display: flex; justify-content: center; margin-top: 8px;">
+                            <div id="digitCounter" class="digit-counter">
+                                <!-- Digits will be dynamically inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <style>
+                        .digit-counter {
+                            display: flex;
+                            justify-content: center;
+                            font-family: 'Arial', sans-serif;
+                        }
+                        
+                        .digit-box {
+                            background: linear-gradient(180deg, #f2f2f2 0%, #d9d9d9 100%);
+                            border-radius: 4px;
+                            width: 40px;
+                            height: 60px;
+                            margin: 0 2px;
+                            position: relative;
+                            overflow: hidden;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                        }
+                        
+                        .digit {
+                            position: absolute;
+                            font-size: 36px;
+                            font-weight: bold;
+                            color: #00123E;
+                        }
+                        
+                        .separator {
+                            font-size: 36px;
+                            font-weight: bold;
+                            margin: 0 2px;
+                            color: #f2f2f2;
+                            display: flex;
+                            align-items: center;
+                            height: 60px;
+                        }
+                        
+                        @keyframes flipDown {
+                            0% { transform: translateY(-100%); opacity: 0; }
+                            100% { transform: translateY(0); opacity: 1; }
+                        }
+                        
+                        .digit-animate {
+                            animation: flipDown 0.5s ease-in-out;
+                        }
+                        
+                        @media (max-width: 767px) {
+                            .digit-box {
+                                width: 30px;
+                                height: 45px;
+                            }
+                            .digit {
+                                font-size: 28px;
+                            }
+                            .separator {
+                                font-size: 28px;
+                                height: 45px;
+                            }
+                        }
+                    </style>
+                </div>
+            <div class="card shadow mb-4">
+                <div class="card-header">Filters</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="nameFilter" class="form-label">Name</label>
+                            <select id="nameFilter" class="form-select">
+                                <option value="">All Names</option>
+                                {% for name in names %}
+                                <option value="{{ name }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="locationFilter" class="form-label">Location</label>
+                            <select id="locationFilter" class="form-select">
+                                <option value="">All Locations</option>
+                                {% for location in floors %}
+                                <option value="{{ location }}">{{ location }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="dateFilter" class="form-label">Date Range</label>
+                            <input type="date" id="dateFilter" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="dropdown me-2 d-inline-block">
+                    <button class="btn btn-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown">
+                        Export Report
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" data-format="csv">Export as CSV</a></li>
+                        <li><a class="dropdown-item" href="#" data-format="pdf">Export as PDF</a></li>
+                    </ul>
+                </div>
+                <button id="deleteBtn" class="btn btn-danger me-2">Delete Selected</button>
+                <button id="hideBtn" class="btn btn-warning">Hide Selected</button>
+            </div>
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="reportTable">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAll"></th>
+                                    <th>Name</th>
+                                    <th>Last Known Location</th>
+                                    <th>Last Seen</th>
+                                    <th>Evidence</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for person in people %}
+                                <tr data-name="{{ person.name }}" data-location="{{ person.location }}" data-date="{{ person.last_seen.split(' ')[0] }}">
+                                    <td><input type="checkbox" class="row-select"></td>
+                                    <td>{{ person.name }}</td>
+                                    <td>{{ person.location }}</td>
+                                    <td>{{ person.last_seen }}</td>
+                                    <td>
+                                        {% if person.image_path %}
+                                        <img src="{{ url_for('serve_evidence', filename=person.image_path | basename) }}" alt="Evidence" class="img-fluid" style="max-width: 100px;">
+                                        {% else %}
+                                        No Image
+                                        {% endif %}
+                                    </td>
+                                    <td><a href="{{ url_for('person_logs', name=person.name) }}" class="btn btn-sm btn-outline-primary">View All Logs</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS('particles-js', {
+            particles: {
+                number: {
+                    value: 300,
+                    density: {
+                        enable: true,
+                        value_area: 1000
+                    }
+                },
+                color: {
+                    value: '#ffffff'
+                },
+                shape: {
+                    type: 'circle',
+                    stroke: {
+                        width: 0,
+                        color: '#000000'
+                    }
+                },
+                opacity: {
+                    value: 0.3,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                size: {
+                    value: 2.5,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#ffffff',
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: true,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'grab'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 140,
+                        line_linked: {
+                            opacity: 0.5
+                        }
+                    },
+                    push: {
+                        particles_nb: 3
+                    }
+                }
+            },
+            retina_detect: true
+        });
+    </script>    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function filterTable() {
+            const nameFilter = document.getElementById('nameFilter').value;
+            const locationFilter = document.getElementById('locationFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            const rows = document.querySelectorAll('#reportTable tbody tr');
+            
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const name = row.getAttribute('data-name');
+                const location = row.getAttribute('data-location');
+                const date = row.getAttribute('data-date');
+                
+                const nameMatch = !nameFilter || name === nameFilter;
+                const locationMatch = !locationFilter || location === locationFilter;
+                const dateMatch = !dateFilter || date === dateFilter;
+                
+                const isVisible = nameMatch && locationMatch && dateMatch;
+                row.style.display = isVisible ? '' : 'none';
+                
+                if (isVisible) {
+                    visibleCount++;
+                }
+            });
+            
+            // Update the counter
+            document.getElementById('personCount').textContent = visibleCount;
+        }
+
+        document.getElementById('nameFilter').addEventListener('change', filterTable);
+        document.getElementById('locationFilter').addEventListener('change', filterTable);
+        document.getElementById('dateFilter').addEventListener('change', filterTable);
+
+        // Select All functionality
+        const selectAll = document.getElementById('selectAll');
+        selectAll.addEventListener('change', () => {
+            const checkboxes = document.querySelectorAll('.row-select');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        });
+
+        // Delete selected rows
+        document.getElementById('deleteBtn').addEventListener('click', () => {
+            const rows = document.querySelectorAll('#reportTable tbody tr');
+            const selectedNames = [];
+            
+            rows.forEach(row => {
+                const checkbox = row.querySelector('.row-select');
+                if (checkbox.checked) {
+                    selectedNames.push(row.getAttribute('data-name'));
+                }
+            });
+
+            if (selectedNames.length === 0) {
+                alert("No rows selected");
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete ${selectedNames.length} row(s)? This will permanently remove them from the database.`)) {
+                return;
+            }            fetch('/delete_report_rows', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(selectedNames)
+            })
+            .then(response => {
+                if (response.ok) {
+                    rows.forEach(row => {
+                        if (selectedNames.includes(row.getAttribute('data-name'))) {
+                            row.remove();
+                        }
+                    });                    alert("Rows deleted successfully");
+                    // Update person count after deletion
+                    const visibleRows = document.querySelectorAll('#reportTable tbody tr:not([style*="display: none"])');
+                    const visibleCount = visibleRows.length;
+                    if (typeof updateCounter === 'function') {
+                        updateCounter(visibleCount);
+                    }
+                } else {
+                    alert("Failed to delete rows");
+                }
+            })
+            .catch(err => {
+                console.error('Delete failed:', err);
+                alert("Error deleting rows");
+            });
+        });
+
+        // Hide selected rows
+        document.getElementById('hideBtn').addEventListener('click', () => {
+            const rows = document.querySelectorAll('#reportTable tbody tr');
+            let hiddenCount = 0;
+            
+            rows.forEach(row => {
+                const checkbox = row.querySelector('.row-select');
+                if (checkbox.checked) {
+                    row.style.display = 'none';
+                    hiddenCount++;
+                }
+            });            if (hiddenCount === 0) {
+                alert("No rows selected");            } else {
+                alert(`${hiddenCount} row(s) hidden`);
+                // Update person count after hiding rows
+                const visibleRows = document.querySelectorAll('#reportTable tbody tr:not([style*="display: none"])');
+                const visibleCount = visibleRows.length;
+                if (typeof updateCounter === 'function') {
+                    updateCounter(visibleCount);
+                }
+            }
+        });
+
+        // Export functionality
+        document.querySelectorAll('#exportDropdown ~ .dropdown-menu .dropdown-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const format = item.getAttribute('data-format');
+                const rows = document.querySelectorAll('#reportTable tbody tr');
+                const data = [];
+                
+                rows.forEach(row => {
+                    if (row.style.display !== 'none') { // Only export visible (filtered) rows
+                        const cells = row.querySelectorAll('td');
+                        data.push({
+                            name: cells[1].textContent,
+                            location: cells[2].textContent,
+                            last_seen: cells[3].textContent,
+                            image_path: cells[4].querySelector('img') ? cells[4].querySelector('img').src : 'No Image'
+                        });
+                    }
+                });
+
+                fetch(`/export_report?format=${format}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `emergency_status_report.${format}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(err => console.error('Export failed:', err));
+            });
+        });
+    </script>
+
+        <script>        document.getElementById('toggleSidebar').addEventListener('click', function () {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        });        // Digit Counter Implementation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize counter with initial value
+            const initialCount = {{ people|length }};
+            initializeCounter(initialCount);
+            
+            // Function to create the digit boxes
+            function initializeCounter(value) {
+                const digitCounter = document.getElementById('digitCounter');
+                digitCounter.innerHTML = ''; // Clear existing content
+                
+                // Always show at least 5 digits with leading zeros (e.g., 00012)
+                const valueStr = value.toString().padStart(5, '0');
+                const digits = valueStr.split('');
+                
+                // Create digit boxes with separators
+                for (let i = 0; i < digits.length; i++) {
+                    // Add comma separator after every 3 digits (from right)
+                    if (i > 0 && (digits.length - i) % 3 === 0) {
+                        const separator = document.createElement('div');
+                        separator.className = 'separator';
+                        separator.textContent = ',';
+                        digitCounter.appendChild(separator);
+                    }
+                    
+                    // Create box for each digit
+                    const digitBox = document.createElement('div');
+                    digitBox.className = 'digit-box';
+                    
+                    const digit = document.createElement('div');
+                    digit.className = 'digit';
+                    digit.textContent = digits[i];
+                    
+                    digitBox.appendChild(digit);
+                    digitCounter.appendChild(digitBox);
+                }
+            }
+            
+            // Function to update counter with animation
+            function updateCounter(newValue) {
+                const digitCounter = document.getElementById('digitCounter');
+                
+                // Convert to strings
+                const newValueStr = newValue.toString().padStart(1, '0');
+                
+                // Clear and rebuild the counter with potentially different number of digits
+                initializeCounter(newValue);
+                
+                // Add animation class to each digit
+                const digitElements = digitCounter.querySelectorAll('.digit');
+                digitElements.forEach(digitEl => {
+                    digitEl.classList.add('digit-animate');
+                });
+            }
+            
+            // Override the existing filterTable function to use our new counter
+            window.originalFilterTable = window.filterTable;
+            window.filterTable = function() {
+                const nameFilter = document.getElementById('nameFilter').value;
+                const locationFilter = document.getElementById('locationFilter').value;
+                const dateFilter = document.getElementById('dateFilter').value;
+                const rows = document.querySelectorAll('#reportTable tbody tr');
+                
+                let visibleCount = 0;
+                
+                rows.forEach(row => {
+                    const name = row.getAttribute('data-name');
+                    const location = row.getAttribute('data-location');
+                    const date = row.getAttribute('data-date');
+                    
+                    const nameMatch = !nameFilter || name === nameFilter;
+                    const locationMatch = !locationFilter || location === locationFilter;
+                    const dateMatch = !dateFilter || date === dateFilter;
+                    
+                    const isVisible = nameMatch && locationMatch && dateMatch;
+                    row.style.display = isVisible ? '' : 'none';
+                    
+                    if (isVisible) {
+                        visibleCount++;
+                    }
+                });
+                
+                // Update the counter with animation
+                updateCounter(visibleCount);
+            };
+            
+            // Override other functions that modify the visible count
+            const originalDeleteBtn = document.getElementById('deleteBtn').onclick;
+            document.getElementById('deleteBtn').addEventListener('click', function() {
+                setTimeout(() => {
+                    const visibleRows = document.querySelectorAll('#reportTable tbody tr:not([style*="display: none"])');
+                    updateCounter(visibleRows.length);
+                }, 500);
+            });
+            
+            const originalHideBtn = document.getElementById('hideBtn').onclick;
+            document.getElementById('hideBtn').addEventListener('click', function() {
+                setTimeout(() => {
+                    const visibleRows = document.querySelectorAll('#reportTable tbody tr:not([style*="display: none"])');
+                    updateCounter(visibleRows.length);
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

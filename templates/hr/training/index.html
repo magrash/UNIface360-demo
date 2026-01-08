@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training & Certification</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    {% include 'hr/_navbar.html' %}
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'hr/_sidebar.html' %}
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Training & Certification</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="exportTrainCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" id="exportTrainPdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#courseModal"><i class="fa-solid fa-plus"></i> Add Course</button>
+                    </div>
+                </div>
+
+                <!-- Key Performance Indicators -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon primary">📚</div>
+                            <div>
+                                <div class="value">24</div>
+                                <div class="label">Active Courses</div>
+                                <small class="text-primary d-block mt-1"><i class="fa-solid fa-arrow-up"></i> +5 this quarter</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">✅</div>
+                            <div>
+                                <div class="value">142</div>
+                                <div class="label">Completed This Year</div>
+                                <small class="text-success d-block mt-1">91% completion rate</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">⏰</div>
+                            <div>
+                                <div class="value">12</div>
+                                <div class="label">Expiring Soon</div>
+                                <small class="text-warning d-block mt-1">Next 90 days</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">📋</div>
+                            <div>
+                                <div class="value">8</div>
+                                <div class="label">Mandatory Courses</div>
+                                <small class="text-danger d-block mt-1">HSE, Safety, Technical</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mandatory Courses & Certificates -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Mandatory Courses (HSE/Technical)</div>
+                                <input type="text" class="form-control form-control-sm" placeholder="Search..." style="width:200px;" id="courseSearch">
+                            </div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0" id="coursesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Course</th>
+                                            <th>Department</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-helmet-safety" style="color:#ef4444;"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">HSE Basics</div>
+                                                        <div class="text-muted small">Health, Safety & Environment</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#f59e0b;">All Field</span></td>
+                                            <td><span class="chip" style="background:rgba(239,68,68,0.2);">Required</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#courseModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-fire" style="color:#f59e0b;"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">Fire Safety</div>
+                                                        <div class="text-muted small">Fire prevention & response</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#24c1d9;">All</span></td>
+                                            <td><span class="chip" style="background:rgba(239,68,68,0.2);">Required</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#courseModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-wrench" style="color:#10b981;"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">Technical Training</div>
+                                                        <div class="text-muted small">Equipment operation</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#009879;">Operations</span></td>
+                                            <td><span class="chip" style="background:rgba(239,68,68,0.2);">Required</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#courseModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="text-muted small">Showing 1-3 of 8 courses</div>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Certificates & Expiry</div>
+                                <select class="form-select form-select-sm" style="width:auto" id="expiryFilter">
+                                    <option value="all">All</option>
+                                    <option value="soon">Expiring Soon</option>
+                                    <option value="expired">Expired</option>
+                                </select>
+                            </div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0" id="certTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Certificate</th>
+                                            <th>Expires</th>
+                                            <th>Alert</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Dalia</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">HSE Basics</span></td>
+                                            <td>2025-06-01</td>
+                                            <td><span class="chip" style="background:rgba(36,193,217,0.2);">Reminder</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="Renew"><i class="fa-solid fa-rotate"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Yousef</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">Fire Safety</span></td>
+                                            <td>2025-03-15</td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">Soon</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="Renew"><i class="fa-solid fa-rotate"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Mahmoud</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">Technical Training</span></td>
+                                            <td>2025-08-20</td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Valid</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="Renew"><i class="fa-solid fa-rotate"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="text-muted small">Showing 1-3 of 12 certificates</div>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post-Training Evaluation -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-12">
+                        <div class="glass-card p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Post-Training Evaluation</div>
+                                <button class="btn btn-outline btn-sm" data-bs-toggle="modal" data-bs-target="#evalModal"><i class="fa-solid fa-clipboard-check"></i> Create Evaluation Form</button>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <div class="p-3 text-center" style="background:rgba(255,255,255,0.04); border-radius:8px;">
+                                        <div class="h4 mb-0 text-primary">142</div>
+                                        <div class="text-muted small">Total Evaluations</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 text-center" style="background:rgba(255,255,255,0.04); border-radius:8px;">
+                                        <div class="h4 mb-0 text-success">4.2/5</div>
+                                        <div class="text-muted small">Average Rating</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 text-center" style="background:rgba(255,255,255,0.04); border-radius:8px;">
+                                        <div class="h4 mb-0 text-warning">89%</div>
+                                        <div class="text-muted small">Satisfaction Rate</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 text-center" style="background:rgba(255,255,255,0.04); border-radius:8px;">
+                                        <div class="h4 mb-0 text-danger">12</div>
+                                        <div class="text-muted small">Pending Reviews</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Training Completion Trend</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="trainTrend" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex justify-content-between">
+                                <small class="text-muted">Average: 23/month</small>
+                                <small class="text-muted">Peak: June (35)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Certificates Expiry (Next 90 days)</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="expiryChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center">
+                                <span class="badge" style="background:#009879;">0-30d: 6</span>
+                                <span class="badge" style="background:#00c4a7;">31-60d: 4</span>
+                                <span class="badge" style="background:#10b981;">61-90d: 2</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Course Modal -->
+    <div class="modal fade" id="courseModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Training Course</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-2">Course Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Course Name</label>
+                            <input class="form-control" placeholder="e.g., HSE Basics">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Course Type</label>
+                            <select class="form-select">
+                                <option>Mandatory</option>
+                                <option>Optional</option>
+                                <option>Technical</option>
+                                <option>HSE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Target Department</label>
+                            <select class="form-select">
+                                <option>All Departments</option>
+                                <option>All Field</option>
+                                <option>IT Department</option>
+                                <option>HR Department</option>
+                                <option>Finance Department</option>
+                                <option>Operations</option>
+                                <option>HSE Department</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Training Date</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" placeholder="Course description..." rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Duration (hours)</label>
+                            <input type="number" class="form-control" placeholder="e.g., 8">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Certificate Validity (months)</label>
+                            <input type="number" class="form-control" placeholder="e.g., 12">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Save Course</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluation Modal -->
+    <div class="modal fade" id="evalModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Evaluation Form</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Course</label>
+                            <select class="form-select">
+                                <option>Select course...</option>
+                                <option>HSE Basics</option>
+                                <option>Fire Safety</option>
+                                <option>Technical Training</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Evaluation Type</label>
+                            <select class="form-select">
+                                <option>Post-Training Survey</option>
+                                <option>Skills Assessment</option>
+                                <option>Feedback Form</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-info small mb-0">
+                                <i class="fa-solid fa-info-circle"></i> Evaluation forms can include questions about course content, instructor quality, and practical application.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Create Form</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            // Charts with consistent colors
+            const t1 = document.getElementById('trainTrend');
+            if (t1) {
+                new Chart(t1, {
+                    type:'line',
+                    data:{
+                        labels:['Jan','Feb','Mar','Apr','May','Jun'],
+                        datasets:[{
+                            label:'Completed',
+                            data:[10,18,22,25,28,35],
+                            borderColor:'#009879',
+                            backgroundColor:'rgba(0,152,121,0.1)',
+                            fill:true,
+                            tension:.3
+                        }]
+                    },
+                    options:{
+                        plugins:{legend:{labels:{color:'#ddd'}}},
+                        scales:{
+                            x:{ticks:{color:'#aaa'}},
+                            y:{ticks:{color:'#aaa'}, beginAtZero: true}
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            const t2 = document.getElementById('expiryChart');
+            if (t2) {
+                new Chart(t2, {
+                    type:'bar',
+                    data:{
+                        labels:['0-30d','31-60d','61-90d'],
+                        datasets:[{
+                            label:'Certificates',
+                            data:[6,4,2],
+                            backgroundColor:'#009879',
+                            borderColor:'#00c4a7',
+                            borderWidth: 2
+                        }]
+                    },
+                    options:{
+                        plugins:{legend:{display: false}},
+                        scales:{
+                            x:{ticks:{color:'#aaa'}},
+                            y:{ticks:{color:'#aaa'}, beginAtZero: true}
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Export functions
+            function tableToCsv(tbl){
+                return Array.from(tbl.querySelectorAll('tr'))
+                    .map(tr => Array.from(tr.children).map(td => `"${(td.innerText||'').replace(/"/g,'""')}"`).join(','))
+                    .join('\n');
+            }
+            function dlCsv(name, csv){
+                const blob = new Blob([csv], {type:'text/csv'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = name;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+
+            const cTable = document.getElementById('coursesTable');
+            const certTable = document.getElementById('certTable');
+            document.getElementById('exportTrainCsv')?.addEventListener('click', ()=>{
+                const csv = 'Courses\n' + tableToCsv(cTable) + '\n\nCertificates\n' + tableToCsv(certTable);
+                dlCsv('training.csv', csv);
+            });
+            document.getElementById('exportTrainPdf')?.addEventListener('click', ()=> window.print());
+
+            // Search functionality
+            const courseSearch = document.getElementById('courseSearch');
+            if(courseSearch) {
+                courseSearch.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    document.querySelectorAll('#coursesTable tbody tr').forEach(tr => {
+                        const text = tr.textContent.toLowerCase();
+                        tr.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

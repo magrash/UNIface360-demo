@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policies & Safety Rules - Unauthorized Area Dashboard</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body class="dashboard">
+    {% include 'unauthorized/_navbar.html' %}
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'unauthorized/_sidebar.html' %}
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Policies & Safety Rules</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#policyModal"><i class="fa-solid fa-plus"></i> Add Policy</button>
+                    </div>
+                </div>
+
+                <!-- Policies Categories -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="glass-card p-3 text-center" style="cursor:pointer;" onclick="filterPolicies('all')">
+                            <div class="h3 mb-2">📋</div>
+                            <div class="fw-semibold">All Policies</div>
+                            <div class="text-muted small">24 documents</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="glass-card p-3 text-center" style="cursor:pointer;" onclick="filterPolicies('restricted')">
+                            <div class="h3 mb-2">🚫</div>
+                            <div class="fw-semibold">Restricted Areas</div>
+                            <div class="text-muted small">8 documents</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="glass-card p-3 text-center" style="cursor:pointer;" onclick="filterPolicies('safety')">
+                            <div class="h3 mb-2">🛡️</div>
+                            <div class="fw-semibold">Safety Procedures</div>
+                            <div class="text-muted small">12 documents</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="glass-card p-3 text-center" style="cursor:pointer;" onclick="filterPolicies('training')">
+                            <div class="h3 mb-2">📚</div>
+                            <div class="fw-semibold">Training Materials</div>
+                            <div class="text-muted small">4 documents</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Policies List -->
+                <div class="glass-card p-3 mb-3">
+                    <div class="section-title mb-3">Company Policies</div>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="glass-card p-3" style="background:rgba(239,68,68,0.1);border-left:3px solid #ef4444;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-semibold mb-2">Restricted Area Access Policy</div>
+                                    <div class="text-muted small mb-2">Defines areas requiring special authorization and work permits</div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <span class="chip small">Restricted Areas</span>
+                                        <span class="chip small">Last Updated: 2025-01-10</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i></button>
+                                    <button class="btn btn-sm btn-outline"><i class="fa-regular fa-eye"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-card p-3" style="background:rgba(245,158,11,0.1);border-left:3px solid #f59e0b;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-semibold mb-2">PPE Requirements & Procedures</div>
+                                    <div class="text-muted small mb-2">Mandatory personal protective equipment for different work areas</div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <span class="chip small">Safety Procedures</span>
+                                        <span class="chip small">Last Updated: 2025-01-05</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i></button>
+                                    <button class="btn btn-sm btn-outline"><i class="fa-regular fa-eye"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-card p-3" style="background:rgba(59,130,246,0.1);border-left:3px solid #3b82f6;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-semibold mb-2">Work Permit System</div>
+                                    <div class="text-muted small mb-2">Procedures for obtaining and using work permits</div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <span class="chip small">Safety Procedures</span>
+                                        <span class="chip small">Last Updated: 2024-12-20</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i></button>
+                                    <button class="btn btn-sm btn-outline"><i class="fa-regular fa-eye"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Restricted Areas Instructions -->
+                <div class="glass-card p-3">
+                    <div class="section-title mb-3">Instructions by Area</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="glass-card p-3" style="background:rgba(239,68,68,0.1);">
+                                <h6 class="mb-2">Warehouse Zone A</h6>
+                                <ul class="list-unstyled small mb-0">
+                                    <li class="mb-1">• Requires Level 4 authorization</li>
+                                    <li class="mb-1">• Work permit mandatory</li>
+                                    <li class="mb-1">• Safety briefing required</li>
+                                    <li class="mb-1">• Maximum 2 persons at a time</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="glass-card p-3" style="background:rgba(245,158,11,0.1);">
+                                <h6 class="mb-2">Chemical Storage</h6>
+                                <ul class="list-unstyled small mb-0">
+                                    <li class="mb-1">• HSE Officer approval required</li>
+                                    <li class="mb-1">• Full PPE mandatory</li>
+                                    <li class="mb-1">• Emergency procedures posted</li>
+                                    <li class="mb-1">• No entry after hours</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function filterPolicies(category) {
+            alert('Filtering by: ' + category);
+        }
+    </script>
+</body>
+</html>
+

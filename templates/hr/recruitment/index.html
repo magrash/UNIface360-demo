@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruitment</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    {% include 'hr/_navbar.html' %}
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'hr/_sidebar.html' %}
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Recruitment</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="exportRecCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" id="exportRecPdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#jobModal"><i class="fa-solid fa-plus"></i> Post Job</button>
+                    </div>
+                </div>
+
+                <!-- Key Performance Indicators -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon primary">📋</div>
+                            <div>
+                                <div class="value">8</div>
+                                <div class="label">Active Job Postings</div>
+                                <small class="text-primary d-block mt-1"><i class="fa-solid fa-arrow-up"></i> +3 this month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">👥</div>
+                            <div>
+                                <div class="value">156</div>
+                                <div class="label">Total Applicants</div>
+                                <small class="text-success d-block mt-1">Avg: 19.5 per job</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">📊</div>
+                            <div>
+                                <div class="value">12</div>
+                                <div class="label">In Interview Stage</div>
+                                <small class="text-warning d-block mt-1">7.7% conversion rate</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">✅</div>
+                            <div>
+                                <div class="value">6</div>
+                                <div class="label">Hired This Month</div>
+                                <small class="text-danger d-block mt-1">3.8% offer acceptance</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Postings & Applicants -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Job Postings</div>
+                                <input type="text" class="form-control form-control-sm" placeholder="Search..." style="width:200px;" id="jobSearch">
+                            </div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0" id="jobsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Location</th>
+                                            <th>Experience</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-laptop-code" style="color:#009879;"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">Software Engineer</div>
+                                                        <div class="text-muted small">Full-time</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#24c1d9;">Cairo</span></td>
+                                            <td><span class="chip">2-4 yrs</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#jobModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-helmet-safety" style="color:#ef4444;"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">HSE Supervisor</div>
+                                                        <div class="text-muted small">Full-time</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#f59e0b;">Field Site A</span></td>
+                                            <td><span class="chip">5-7 yrs</span></td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">Draft</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#jobModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-users" style="color:#10b981;"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">HR Specialist</div>
+                                                        <div class="text-muted small">Full-time</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#24c1d9;">Cairo</span></td>
+                                            <td><span class="chip">3-5 yrs</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#jobModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-industry" style="color:#24c1d9;"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">Operations Manager</div>
+                                                        <div class="text-muted small">Full-time</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#f59e0b;">Field Site B</span></td>
+                                            <td><span class="chip">7-10 yrs</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#jobModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Applicants</div>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm" style="width:auto" id="stageFilter">
+                                        <option value="all">All Stages</option>
+                                        <option>Screening</option>
+                                        <option>Interview</option>
+                                        <option>Offer</option>
+                                        <option>Hired</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <input class="form-control form-control-sm" placeholder="Filter by experience" id="expFilter">
+                                </div>
+                                <div class="col-6">
+                                    <input class="form-control form-control-sm" placeholder="Filter by location" id="locFilter">
+                                </div>
+                            </div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0" id="applicantsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Position</th>
+                                            <th>Stage</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Dalia</span>
+                                                </div>
+                                            </td>
+                                            <td>Software Engineer</td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">Screening</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#interviewModal" title="Interview"><i class="fa-solid fa-calendar"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Yousef</span>
+                                                </div>
+                                            </td>
+                                            <td>HSE Supervisor</td>
+                                            <td><span class="chip" style="background:rgba(36,193,217,0.2);">Interview</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#interviewModal" title="Schedule"><i class="fa-solid fa-calendar"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Ahmed</span>
+                                                </div>
+                                            </td>
+                                            <td>HR Specialist</td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Offer</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="Convert"><i class="fa-solid fa-user-plus"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Sara</span>
+                                                </div>
+                                            </td>
+                                            <td>Operations Manager</td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Hired</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="Onboard"><i class="fa-solid fa-user-check"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-8">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Recruitment Funnel Conversion</div>
+                                <button class="btn btn-outline btn-sm" id="exportFunnelCsv"><i class="fa-solid fa-download"></i> CSV</button>
+                            </div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="funnelChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex justify-content-between">
+                                <small class="text-muted">Total Views: 1,200</small>
+                                <small class="text-muted">Hired: 6 (0.5% conversion)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Applicant Sources</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="sourceChart" height="220"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center">
+                                <span class="badge" style="background:#009879;">LinkedIn: 55%</span>
+                                <span class="badge" style="background:#00c4a7;">Website: 25%</span>
+                                <span class="badge" style="background:#10b981;">Referral: 15%</span>
+                                <span class="badge" style="background:#f59e0b;">Agency: 5%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auto-onboard Section -->
+                <div class="row g-3">
+                    <div class="col-lg-12">
+                        <div class="glass-card p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="h6 mb-1">Auto-onboard Accepted Candidates</div>
+                                    <div class="text-muted small">Automatically convert accepted candidates to employees in the system</div>
+                                </div>
+                                <button class="btn btn-gradient"><i class="fa-solid fa-rotate"></i> Convert to Employee</button>
+                            </div>
+                            <div class="mt-3 p-3" style="background:rgba(255,255,255,0.04); border-radius:8px;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="text-center">
+                                        <div class="h5 mb-0 text-success">3</div>
+                                        <div class="text-muted small">Ready to Convert</div>
+                                    </div>
+                                    <div class="vr"></div>
+                                    <div class="text-center">
+                                        <div class="h5 mb-0 text-primary">2</div>
+                                        <div class="text-muted small">Pending Review</div>
+                                    </div>
+                                    <div class="vr"></div>
+                                    <div class="text-center">
+                                        <div class="h5 mb-0 text-warning">1</div>
+                                        <div class="text-muted small">Awaiting Documents</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Job Modal -->
+    <div class="modal fade" id="jobModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Job Posting</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-2">Job Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Job Title</label>
+                            <input class="form-control" placeholder="e.g., Software Engineer">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Department</label>
+                            <select class="form-select">
+                                <option>IT Department</option>
+                                <option>HR Department</option>
+                                <option>Finance Department</option>
+                                <option>Operations</option>
+                                <option>HSE Department</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Location</label>
+                            <select class="form-select">
+                                <option>Cairo Office</option>
+                                <option>Field Site A</option>
+                                <option>Field Site B</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Required Experience (years)</label>
+                            <input class="form-control" placeholder="e.g., 2-4">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Employment Type</label>
+                            <select class="form-select">
+                                <option>Full-time</option>
+                                <option>Part-time</option>
+                                <option>Contract</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select">
+                                <option>Active</option>
+                                <option>Draft</option>
+                                <option>Closed</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Job Description</label>
+                            <textarea class="form-control" placeholder="Detailed job description..." rows="5"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Requirements</label>
+                            <textarea class="form-control" placeholder="Required skills and qualifications..." rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Publish Job</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interview Modal -->
+    <div class="modal fade" id="interviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Schedule Interview</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Time</label>
+                            <input type="time" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Interviewer</label>
+                            <select class="form-select">
+                                <option>Select Interviewer...</option>
+                                <option>Mostafa Magdy</option>
+                                <option>Dalia</option>
+                                <option>Yousef</option>
+                                <option>Mahmoud</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Meeting Link/Location</label>
+                            <input class="form-control" placeholder="Zoom link or physical location">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" placeholder="Additional notes..." rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Schedule Interview</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            // Charts with consistent colors
+            const f = document.getElementById('funnelChart');
+            if (f) {
+                new Chart(f, {
+                    type:'bar',
+                    data:{
+                        labels:['Views','Applications','Screening','Interview','Offer','Hired'],
+                        datasets:[{
+                            label:'Candidates',
+                            data:[1200,300,120,40,12,6],
+                            backgroundColor:'#009879',
+                            borderColor:'#00c4a7',
+                            borderWidth: 2
+                        }]
+                    },
+                    options:{
+                        plugins:{legend:{display: false}},
+                        scales:{
+                            x:{ticks:{color:'#aaa'}},
+                            y:{ticks:{color:'#aaa'}, beginAtZero: true}
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            const s = document.getElementById('sourceChart');
+            if (s) {
+                new Chart(s, {
+                    type:'doughnut',
+                    data:{
+                        labels:['LinkedIn','Website','Referral','Agency'],
+                        datasets:[{
+                            data:[55,25,15,5],
+                            backgroundColor:['#009879','#00c4a7','#10b981','#f59e0b']
+                        }]
+                    },
+                    options:{
+                        plugins:{legend:{labels:{color:'#ddd'}}},
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Export functions
+            function tableToCsv(tbl){
+                return Array.from(tbl.querySelectorAll('tr'))
+                    .map(tr => Array.from(tr.children).map(td => `"${(td.innerText||'').replace(/"/g,'""')}"`).join(','))
+                    .join('\n');
+            }
+            function dlCsv(name, csv){
+                const blob = new Blob([csv], {type:'text/csv'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = name;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+
+            const jobsTable = document.getElementById('jobsTable');
+            const appsTable = document.getElementById('applicantsTable');
+            document.getElementById('exportRecCsv')?.addEventListener('click', ()=>{
+                const csv = 'Jobs\n' + tableToCsv(jobsTable) + '\n\nApplicants\n' + tableToCsv(appsTable);
+                dlCsv('recruitment.csv', csv);
+            });
+            document.getElementById('exportRecPdf')?.addEventListener('click', ()=> window.print());
+
+            // Search functionality
+            const jobSearch = document.getElementById('jobSearch');
+            if(jobSearch) {
+                jobSearch.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    document.querySelectorAll('#jobsTable tbody tr').forEach(tr => {
+                        const text = tr.textContent.toLowerCase();
+                        tr.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excuse Management</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            color: #fff;
+        }
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+        .card {
+            background: rgba(230, 220, 220, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            color: #fff;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #2193b0, #6dd5ed);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 147, 176, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(45deg, #b02121, #ed6d6d);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(176, 33, 33, 0.4);
+        }
+        .table-striped tbody tr {
+            color: #ffffff;
+        }
+        .table-striped tbody td {
+            color: #ffffff;
+        }
+        .table-striped tbody tr {
+            background-color: transparent !important;
+            color: #ffffff !important;
+        }
+        .table-striped tbody td, 
+        .table-striped thead th {
+            background-color: transparent !important;
+            color: #ffffff !important;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .navbar-brand, .nav-link {
+            color: #fff !important;
+        }
+
+
+
+
+        .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    transition: width 0.3s ease;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    color: #fff;
+}
+
+.sidebar-header img {
+    height: 40px;
+}
+
+.sidebar-header span {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-left: 0rem;
+    white-space: nowrap;
+}
+
+#toggleSidebar {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+
+    flex: 1 1 auto; /* Allow this list to grow */
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-nav li {
+    width: 100%;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.3s ease, padding 0.3s ease;
+}
+
+.sidebar-nav a i {
+    margin-right: 12px;
+    font-size: 1.2rem;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    background: rgba(109, 213, 237, 0.2);
+    color: #6dd5ed;
+}
+
+/* Sidebar bottom section (e.g. logout link) */
+.sidebar-bottom {
+    flex-shrink: 0;
+    margin-bottom: 1rem;
+}
+
+.sidebar-bottom .sidebar-nav {
+    flex: none;
+    margin-top: 0;
+}
+
+/* Hide text but keep toggle button visible in collapsed mode */
+.sidebar.collapsed .sidebar-nav a span,
+.sidebar.collapsed .sidebar-header span {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-nav a {
+    justify-content: center;
+    padding: 14px 0;
+}
+
+.sidebar.collapsed .sidebar-nav a i {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.sidebar.collapsed .sidebar-header {
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar.collapsed .sidebar-header img {
+    margin: 0 auto;
+}
+
+.sidebar.collapsed #toggleSidebar {
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.content-wrapper {
+    margin-left: 240px;
+    transition: margin-left 0.3s ease;
+}
+
+.sidebar.collapsed ~ .content-wrapper {
+    margin-left: 70px;
+}
+
+.sidebar-divider {
+    border: 0;
+    height: 5px;
+    background: rgba(225, 248, 255, 0.858);
+    margin: 1rem 1.25rem;
+}
+
+@media (max-width: 768px) {
+  /* Make attendance table scrollable */
+  .card-body table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Responsive map container */
+  .map-container {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  #mapCanvas {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+  }
+
+  .card-header .float-end {
+    float: none !important;
+    margin-top: 0.5rem;
+    text-align: left;
+  }
+
+  /* Chart responsiveness */
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+
+
+       <div class="sidebar collapsed" id="sidebar">
+
+        <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='logo6.png') }}" alt="Logo">
+        <span>Uniface360</span>
+        <button id="toggleSidebar">☰</button>
+        </div>
+
+
+        <!-- <ul class="sidebar-nav">
+            <li><a href="{{ url_for('dashboard') }}" title="Dashboard"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+            <li><a href="{{ url_for('emergency_status') }}" title="Report"><i class="bi bi-exclamation-triangle"></i> <span>Report</span></a></li>
+            <li><a href="{{ url_for('map') }}" title="Map"><i class="bi bi-map"></i> <span>Map</span></a></li>
+            <li><a href="{{ url_for('live_stream') }}" title="Live Stream"><i class="bi bi-camera-video"></i> <span>Live Stream</span></a></li>
+            <li><a href="{{ url_for('people_directory') }}" title="Directory"><i class="bi bi-people"></i> <span>Directory</span></a></li>
+            <li><a href="{{ url_for('excuses') }}" title="Excuses"><i class="bi bi-journal-check"></i> <span>Excuses</span></a></li>
+        </ul>
+
+        <div class="sidebar-bottom">
+            <ul class="sidebar-nav">
+                <li><a href="{{ url_for('logout') }}" title="Logout"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a></li>
+
+
+            </ul>
+        </div> -->
+
+
+
+
+        <!-- Main navigation links -->
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('dashboard') }}" title="Dashboard"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+            <li><a href="{{ url_for('emergency_status') }}" title="Report"><i class="bi bi-exclamation-triangle"></i> <span>Report</span></a></li>
+            <li><a href="{{ url_for('map') }}" title="Map"><i class="bi bi-map"></i> <span>Map</span></a></li>
+            <li><a href="{{ url_for('live_stream') }}" title="Live Stream"><i class="bi bi-camera-video"></i> <span>Live Stream</span></a></li>
+            <li><a href="{{ url_for('people_directory') }}" title="Directory"><i class="bi bi-people"></i> <span>Directory</span></a></li>
+            <li><a href="{{ url_for('excuses') }}" title="Excuses"><i class="bi bi-journal-check"></i> <span>Excuses</span></a></li>
+        </ul>
+
+        <!-- Horizontal line separator -->
+        <hr class="sidebar-divider">
+
+        <!-- Bottom section with Support and Logout -->
+        <div class="sidebar-bottom">
+            <ul class="sidebar-nav">
+                <li><a href="/support" title="Support"><i class="bi bi-life-preserver"></i> <span>Support</span></a></li>
+                <li><a href="{{ url_for('logout') }}" title="Logout"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a></li>
+            </ul>
+        </div>
+
+
+
+
+        <!-- <div class="sidebar-footer">
+            <p class="text-center text-white">Uniface360 &copy; 2023</p>
+        </div> -->
+
+    </div>
+
+    
+    <div class="content-wrapper">
+        <!-- Include your navigation bar here -->
+        <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Drilling Building Security</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('excuses') }}">Manage Excuses</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav> -->
+
+        <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
+                    <img src="{{ url_for('static', filename='logo2.png') }}" alt="Logo" style="height:40px; margin-right:10px;">
+                    Uniface360
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('dashboard') }}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('emergency_status') }}">Report</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('map') }}">Map</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('people_directory') }}">Directory</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav> -->
+        <div class="container mt-4">
+            <h1 class="mb-4">Excuse Management</h1>
+            
+            <!-- Add New Excuse Form -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Add New Excuse</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('add_excuse') }}" method="POST">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Employee</label>
+                                    <select class="form-select" name="name" required>
+                                        <option value="">Select Employee</option>
+                                        {% for employee in employees %}
+                                        <option value="{{ employee }}">{{ employee }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="date" class="form-label">Date</label>
+                                    <input type="date" class="form-control" name="date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label for="hours" class="form-label">Hours</label>
+                                    <input type="number" class="form-control" name="hours" step="0.5" min="0" max="24" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="reason" class="form-label">Reason</label>
+                                    <input type="text" class="form-control" name="reason" required>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Excuse</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Excuses List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Excuse Records</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Date</th>
+                                    <th>Hours</th>
+                                    <th>Reason</th>
+                                    <th>Approved By</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for excuse in excuses %}
+                                <tr>
+                                    <td>{{ excuse.name }}</td>
+                                    <td>{{ excuse.date }}</td>
+                                    <td>{{ excuse.hours }}</td>
+                                    <td>{{ excuse.reason }}</td>
+                                    <td>{{ excuse.approved_by }}</td>
+                                    <td>{{ excuse.created_at }}</td>
+                                    <td>
+                                        <a href="{{ url_for('edit_excuse', id=excuse.id) }}" class="btn btn-primary btn-sm">Edit</a>
+                                        <form action="{{ url_for('delete_excuse', id=excuse.id) }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        // Initialize date picker
+        flatpickr("input[type=date]", {
+            dateFormat: "Y-m-d"
+        });
+
+        particlesJS('particles-js', {
+            particles: {
+                number: {
+                    value: 300,
+                    density: {
+                        enable: true,
+                        value_area: 1000
+                    }
+                },
+                color: {
+                    value: '#ffffff'
+                },
+                shape: {
+                    type: 'circle',
+                    stroke: {
+                        width: 0,
+                        color: '#000000'
+                    }
+                },
+                opacity: {
+                    value: 0.3,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                size: {
+                    value: 2.5,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#ffffff',
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: true,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'grab'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 140,
+                        line_linked: {
+                            opacity: 0.5
+                        }
+                    },
+                    push: {
+                        particles_nb: 3
+                    }
+                }
+            },
+            retina_detect: true
+        });
+    </script>
+
+    <script>
+        document.getElementById('toggleSidebar').addEventListener('click', function () {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        });
+    </script>
+
+</body>
+</html>

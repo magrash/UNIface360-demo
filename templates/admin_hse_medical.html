@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HSE Occupational Health</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+    <style>
+        :root { 
+            --brand-green: var(--primary, #009879);
+            --brand-teal: var(--primary-2, #00c4a7);
+        }
+        body { 
+            background: var(--bg); 
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .navbar { background: transparent; border-bottom: 1px solid var(--card-border); }
+        .brand-badge { background: var(--brand-green); color: #fff; font-weight: 700; padding: 6px 10px; border-radius: 8px; }
+        .sidebar { background: var(--card); border-right: 1px solid var(--card-border); min-height: calc(100vh - 56px); position: sticky; top: 56px; }
+        .card.custom-card { background: var(--card-bg, var(--card)); border: 1px solid var(--card-border) !important; }
+        .nav-pills .nav-link.active { background-color: var(--brand-green); color: #0b1324; }
+        .avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+        .table { color: rgba(255, 255, 255, 0.85); }
+        .table thead th { 
+            background-color: rgba(128, 128, 128, 0.15) !important;
+            color: rgba(200, 200, 200, 0.9) !important; 
+            border-color: rgba(128, 128, 128, 0.3) !important; 
+            font-weight: 600; 
+        }
+        .table tbody td { 
+            border-color: rgba(128, 128, 128, 0.2) !important; 
+            color: rgba(200, 200, 200, 0.85) !important; 
+        }
+        .table-striped > tbody > tr:nth-of-type(odd) > td { 
+            background-color: rgba(128, 128, 128, 0.05) !important; 
+        }
+        .table-striped > tbody > tr:nth-of-type(even) > td { 
+            background-color: rgba(128, 128, 128, 0.02) !important; 
+        }
+        .table tbody tr:hover {
+            background-color: rgba(128, 128, 128, 0.1) !important;
+        }
+        /* Table alignment fixes */
+        .table td, .table th {
+            vertical-align: middle !important;
+            padding: 0.75rem !important;
+        }
+        .table td i {
+            vertical-align: middle;
+            margin-right: 0.5rem;
+        }
+        .table .btn {
+            vertical-align: middle;
+            margin: 0 2px;
+        }
+        .table .badge {
+            vertical-align: middle;
+            display: inline-block;
+        }
+        /* Icon and text alignment */
+        .d-flex.align-items-center {
+            align-items: center !important;
+        }
+        .d-flex.align-items-center i {
+            line-height: 1;
+        }
+        /* Card content alignment */
+        .card-body, .card.custom-card {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-select, .form-control { background: var(--card); border-color: var(--card-border); color: var(--text); }
+        .form-select:focus, .form-control:focus { background: var(--card); border-color: var(--brand-green); color: var(--text); }
+        
+        /* Modal Styles - Fixed z-index and enhanced colors */
+        .modal {
+            z-index: 9999 !important;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6) !important;
+            backdrop-filter: blur(8px);
+            opacity: 1 !important;
+            z-index: 9998 !important;
+        }
+        .modal-dialog {
+            z-index: 9999 !important;
+            margin: 2rem auto !important;
+        }
+        .modal-content {
+            border-radius: 16px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+            background: rgba(30, 35, 45, 0.98) !important;
+            border: 2px solid rgba(0, 152, 121, 0.5) !important;
+            opacity: 1 !important;
+            animation: modalAppear 0.3s ease-out;
+            position: relative;
+            z-index: 9999 !important;
+        }
+        .modal-header {
+            border-radius: 16px 16px 0 0;
+            background: linear-gradient(135deg, rgba(0, 152, 121, 0.3), rgba(0, 196, 167, 0.25)) !important;
+            border-bottom: 2px solid rgba(0, 152, 121, 0.5);
+            padding: 1.25rem 1.5rem;
+        }
+        .modal-title {
+            color: var(--text) !important;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .modal-body {
+            background: var(--card) !important;
+            color: var(--text) !important;
+            padding: 1.5rem;
+        }
+        .modal-footer {
+            border-radius: 0 0 16px 16px;
+            background: linear-gradient(135deg, rgba(0, 152, 121, 0.1), rgba(0, 196, 167, 0.05)) !important;
+            border-top: 2px solid rgba(0, 152, 121, 0.3);
+            padding: 1.25rem 1.5rem;
+        }
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid var(--card-border) !important;
+            color: var(--text) !important;
+        }
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4) !important;
+        }
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: var(--brand-green) !important;
+            color: var(--text) !important;
+            box-shadow: 0 0 0 0.2rem rgba(0, 152, 121, 0.25);
+        }
+        .form-label {
+            color: var(--text) !important;
+            font-weight: 600;
+        }
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+            opacity: 0.8;
+        }
+        .btn-close:hover {
+            opacity: 1;
+        }
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="dashboard">
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('admin_hse_dashboard') }}">
+                <span class="brand-badge">HSE</span>
+                <span class="fw-semibold">Performance Dashboard</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="topNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item me-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="themeToggle">
+                            <label class="form-check-label" for="themeToggle">Light/Dark</label>
+                        </div>
+                    </li>
+                    <li class="nav-item me-2">
+                        <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
+                            <img src="https://i.pravatar.cc/100?img=12" alt="avatar" class="avatar" />
+                            <span class="fw-semibold">Admin User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_hse_settings') }}">Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-2 sidebar p-3">
+                <h6 class="text-uppercase text-muted px-2">Navigation</h6>
+                <ul class="nav nav-pills flex-column gap-1 mt-2">
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard Overview</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_incidents') }}"><i class="fa-solid fa-triangle-exclamation"></i> Incidents & Accidents</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_inspections') }}"><i class="fa-solid fa-clipboard-check"></i> Inspections & Audits</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_risks') }}"><i class="fa-solid fa-shield-halved"></i> Risk Assessment</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_trainings') }}"><i class="fa-solid fa-chalkboard-user"></i> Training & Certification</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_ppe') }}"><i class="fa-solid fa-hard-hat"></i> PPE & Equipment</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_environmental') }}"><i class="fa-solid fa-leaf"></i> Environmental</a></li>
+                    <li class="nav-item"><a class="nav-link active d-flex align-items-center gap-2" href="{{ url_for('admin_hse_medical') }}"><i class="fa-solid fa-user-doctor"></i> Occupational Health</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_reports') }}"><i class="fa-regular fa-file-lines"></i> Reports & Analytics</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_employees') }}"><i class="fa-solid fa-users"></i> Employees</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_tracking') }}"><i class="fa-solid fa-chart-line"></i> Tracking</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_monthly_dashboard') }}"><i class="fa-solid fa-calendar-alt"></i> Monthly Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_settings') }}"><i class="fa-solid fa-gear"></i> Core Settings</a></li>
+                </ul>
+            </aside>
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="section-title m-0"><i class="fa-solid fa-user-doctor me-2"></i>Occupational Health</h4>
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#medicalModal"><i class="fa-solid fa-plus me-1"></i>Schedule Medical</button>
+                </div>
+
+                <!-- Health Status Summary -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-4">
+                        <div class="card custom-card p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">Pending Medicals</small>
+                                <span class="badge bg-warning">12</span>
+                            </div>
+                            <div class="small">Employees requiring medical checkup</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="card custom-card p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">Fitness to Work</small>
+                                <span class="badge bg-success">98%</span>
+                            </div>
+                            <div class="small">Employees fit for duty</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="card custom-card p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">Expiring Certificates</small>
+                                <span class="badge bg-danger">5</span>
+                            </div>
+                            <div class="small">Medical certificates expiring soon</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card custom-card shadow-sm rounded-3 p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0"><i class="fa-solid fa-calendar-check me-2"></i>Scheduled Medical Examinations</h6>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" style="width:auto">
+                                <option>All Types</option>
+                                <option>Pre-employment</option>
+                                <option>Annual</option>
+                                <option>Periodic</option>
+                                <option>Fitness to Work</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="medicalTable" class="table table-striped" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Check Type</th>
+                                    <th>Scheduled Date</th>
+                                    <th>Medical Facility</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Ahmed Mohamed</td>
+                                    <td>Annual</td>
+                                    <td>2025-06-15</td>
+                                    <td>Al-Salam Clinic</td>
+                                    <td><span class="badge text-bg-info">Scheduled</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewMedical(1)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editMedical(1)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Fatima Ali</td>
+                                    <td>Pre-employment</td>
+                                    <td>2025-06-12</td>
+                                    <td>City Hospital</td>
+                                    <td><span class="badge text-bg-info">Scheduled</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewMedical(2)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editMedical(2)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Omar Hassan</td>
+                                    <td>Fitness to Work</td>
+                                    <td>2025-06-10</td>
+                                    <td>Medical Center</td>
+                                    <td><span class="badge text-bg-success">Completed</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewMedical(3)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editMedical(3)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Sarah Ibrahim</td>
+                                    <td>Periodic</td>
+                                    <td>2025-06-20</td>
+                                    <td>Health Clinic</td>
+                                    <td><span class="badge text-bg-info">Scheduled</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewMedical(4)"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editMedical(4)"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Expiring Certificates -->
+                <div class="card custom-card shadow-sm rounded-3 p-3">
+                    <h6 class="mb-3"><i class="fa-solid fa-exclamation-triangle me-2 text-warning"></i>Medical Certificates Expiring Soon</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Certificate Type</th>
+                                    <th>Expiry Date</th>
+                                    <th>Days Remaining</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Mohamed Khaled</td>
+                                    <td>Fitness to Work</td>
+                                    <td>2025-06-20</td>
+                                    <td><span class="badge text-bg-danger">5 days</span></td>
+                                    <td><button class="btn btn-sm btn-outline-warning" onclick="renewMedical(1)"><i class="fa-solid fa-sync me-1"></i>Renew</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Hassan Mohamed</td>
+                                    <td>Annual Medical</td>
+                                    <td>2025-06-22</td>
+                                    <td><span class="badge text-bg-warning">7 days</span></td>
+                                    <td><button class="btn btn-sm btn-outline-warning" onclick="renewMedical(2)"><i class="fa-solid fa-sync me-1"></i>Renew</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <!-- Medical Check Modal -->
+    <div class="modal fade" id="medicalModal" tabindex="-1" aria-labelledby="medicalModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="medicalModalLabel"><i class="fa-solid fa-user-doctor me-2"></i>Schedule Medical Check</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="medicalForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Employee <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Employee</option>
+                                    <option>Ahmed Mohamed</option>
+                                    <option>Fatima Ali</option>
+                                    <option>Omar Hassan</option>
+                                    <option>Sarah Ibrahim</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Check Type <span class="text-danger">*</span></label>
+                                <select class="form-select" required>
+                                    <option value="">Select Type</option>
+                                    <option value="Pre-employment">Pre-employment</option>
+                                    <option value="Annual">Annual</option>
+                                    <option value="Periodic">Periodic</option>
+                                    <option value="Fitness to Work">Fitness to Work</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Scheduled Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Medical Facility</label>
+                                <input type="text" class="form-control" placeholder="Clinic/Hospital name">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-info" onclick="submitMedical()">
+                        <i class="fa-solid fa-calendar-check me-1"></i>Schedule
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        // Theme toggle function
+        function setTheme(light) {
+            if (light) {
+                document.body.classList.add('light-theme');
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+            } else {
+                document.body.classList.remove('light-theme');
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+            }
+        }
+
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#medicalTable').DataTable({
+                "pageLength": 10,
+                "order": [[2, "asc"]]
+            });
+
+            // Theme toggle initialization
+            setTheme(false);
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('change', (e) => setTheme(e.target.checked));
+            }
+        });
+
+        function submitMedical() {
+            const form = document.getElementById('medicalForm');
+            if (form.checkValidity()) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('medicalModal'));
+                modal.hide();
+                alert('Medical check scheduled successfully!');
+                setTimeout(() => location.reload(), 500);
+            } else {
+                form.reportValidity();
+            }
+        }
+
+        function viewMedical(id) {
+            alert('Viewing medical check details for ID: ' + id);
+        }
+
+        function editMedical(id) {
+            alert('Editing medical check ID: ' + id);
+        }
+
+        function renewMedical(id) {
+            if (confirm('Do you want to schedule renewal medical check for this certificate?')) {
+                alert('Renewal medical check scheduled for certificate ID: ' + id);
+            }
+        }
+    </script>
+</body>
+</html>
+

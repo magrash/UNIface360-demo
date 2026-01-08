@@ -1,0 +1,155 @@
+<nav class="navbar navbar-expand-lg navbar-dark hr-navbar-fixed" style="background:rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border-bottom:1px solid rgba(255,255,255,0.12)">
+    <div class="container-fluid">
+        <button class="btn btn-link d-lg-none me-2 sidebar-toggle-btn" type="button" id="sidebarToggle" style="text-decoration:none; padding:8px;">
+            <i class="fa-solid fa-bars fa-lg"></i>
+        </button>
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('unauthorized_home') }}">
+            <img src="{{ url_for('static', filename='logo6.png') }}" alt="Logo" style="height:34px; margin-inline-end:6px;">
+            <span class="fw-semibold">Unauthorized Area Dashboard</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav2">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="nav2">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item me-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="themeToggleShared">
+                        <label class="form-check-label" for="themeToggleShared">Light/Dark</label>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="sidebar-overlay d-lg-none" id="sidebarOverlay"></div>
+<script>
+(function(){
+    const body = document.body;
+    const toggle = document.getElementById('themeToggleShared');
+    if (!toggle) return;
+    function applyTheme(){
+        if (toggle.checked) {
+            body.classList.add('light-theme');
+            document.documentElement.setAttribute('data-bs-theme', 'light');
+        } else {
+            body.classList.remove('light-theme');
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+        }
+    }
+    toggle.addEventListener('change', applyTheme);
+    applyTheme();
+})();
+
+// Sidebar toggle for mobile
+(function(){
+    function initSidebar() {
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        
+        if (!sidebarToggle || !sidebar || !sidebarOverlay) return;
+        
+        function closeSidebar() {
+            sidebar.classList.remove('sidebar-open');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        sidebarToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            sidebar.classList.toggle('sidebar-open');
+            sidebarOverlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('sidebar-open') ? 'hidden' : '';
+        });
+        
+        sidebarOverlay.addEventListener('click', closeSidebar);
+        
+        sidebar.addEventListener('click', function(e) {
+            if (window.innerWidth < 992 && e.target.closest('.nav-link')) {
+                setTimeout(closeSidebar, 100);
+            }
+        });
+        
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (window.innerWidth >= 992) {
+                    closeSidebar();
+                }
+            }, 250);
+        });
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSidebar);
+    } else {
+        initSidebar();
+    }
+})();
+
+// Chart.js color fix for dark mode
+(function() {
+    function getChartTextColor() {
+        const isLight = document.body.classList.contains('light-theme');
+        return isLight ? '#0f172a' : '#e2e8f0';
+    }
+    
+    function getChartGridColor() {
+        const isLight = document.body.classList.contains('light-theme');
+        return isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+    }
+    
+    function updateChartDefaults() {
+        if (typeof Chart !== 'undefined') {
+            Chart.defaults.color = getChartTextColor();
+            Chart.defaults.borderColor = getChartGridColor();
+            Chart.defaults.scales = Chart.defaults.scales || {};
+            Chart.defaults.scales.linear = Chart.defaults.scales.linear || {};
+            Chart.defaults.scales.linear.ticks = Chart.defaults.scales.linear.ticks || {};
+            Chart.defaults.scales.linear.ticks.color = getChartTextColor();
+            Chart.defaults.scales.linear.grid = Chart.defaults.scales.linear.grid || {};
+            Chart.defaults.scales.linear.grid.color = getChartGridColor();
+            Chart.defaults.scales.category = Chart.defaults.scales.category || {};
+            Chart.defaults.scales.category.ticks = Chart.defaults.scales.category.ticks || {};
+            Chart.defaults.scales.category.ticks.color = getChartTextColor();
+            Chart.defaults.scales.category.grid = Chart.defaults.scales.category.grid || {};
+            Chart.defaults.scales.category.grid.color = getChartGridColor();
+        }
+    }
+    
+    // Wait for Chart.js to load
+    if (typeof Chart !== 'undefined') {
+        updateChartDefaults();
+    } else {
+        window.addEventListener('load', updateChartDefaults);
+    }
+    
+    // Update on theme change
+    const themeToggle = document.getElementById('themeToggleShared');
+    if (themeToggle) {
+        themeToggle.addEventListener('change', function() {
+            updateChartDefaults();
+            // Update existing charts
+            if (typeof Chart !== 'undefined' && Chart.instances) {
+                Object.values(Chart.instances).forEach(chart => {
+                    chart.options.color = getChartTextColor();
+                    if (chart.options.scales) {
+                        Object.values(chart.options.scales).forEach(scale => {
+                            if (scale.ticks) scale.ticks.color = getChartTextColor();
+                            if (scale.grid) scale.grid.color = getChartGridColor();
+                        });
+                    }
+                    if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+                        chart.options.plugins.legend.labels.color = getChartTextColor();
+                    }
+                    chart.update();
+                });
+            }
+        });
+    }
+})();
+</script>
+

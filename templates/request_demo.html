@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request a Demo - Uniface360</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            color: #fff;
+        }
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .navbar-brand, .nav-link {
+            color: #fff !important;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            color: #fff;
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-weight: 500;
+        }
+        .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(109, 213, 237, 0.5);
+            box-shadow: 0 0 0 0.25rem rgba(33, 147, 176, 0.25);
+            color: #fff;
+        }
+        .form-select {
+            background: rgba(33, 147, 176, 0.2);
+            border: 1px solid rgba(33, 147, 176, 0.3);
+            color: #fff;
+        }
+        .form-select:focus {
+            background: rgba(33, 147, 176, 0.3);
+            border-color: rgba(33, 147, 176, 0.4);
+            box-shadow: 0 0 0 0.25rem rgba(33, 147, 176, 0.1);
+            color: #fff;
+        }
+        .form-select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #2193b0, #6dd5ed);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 147, 176, 0.4);
+        }
+        .back-link {
+            color: #6dd5ed;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover {
+            color: #2193b0;
+            transform: translateX(-5px);
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+        .demo-features {
+            margin-top: 2rem;
+        }
+        .feature-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        .feature-item i {
+            font-size: 2rem;
+            color: #6dd5ed;
+            margin-right: 1rem;
+        }
+        .feature-item-content h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        .feature-item-content p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="content-wrapper">
+        <div class="container mt-5">
+            <a href="{{ url_for('home') }}" class="back-link">
+                <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
+            
+            <h1 class="mb-4">Request a Demo</h1>
+            
+            <!-- Add a section to display flash messages -->
+            <div class="alert-container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h2 class="h5 mb-0">Schedule Your Personalized Demo</h2>
+                        </div>
+                        <div class="card-body">
+                            <p>Fill out the form below to request a personalized demo of Uniface360's AI-powered building security system.</p>
+                            
+                            <form action="/send_demo_request" method="POST">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Name*</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="company" class="form-label">Company/Organization Name*</label>
+                                    <input type="text" class="form-control" id="company" name="company" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email*</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="building_size" class="form-label">Building Size (approx. sq ft or number of floors)</label>
+                                    <input type="text" class="form-control" id="building_size" name="building_size">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Additional Information or Questions</label>
+                                    <textarea class="form-control" id="message" name="message" rows="4"></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">Submit Demo Request</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h2 class="h5 mb-0">What to Expect in Your Demo</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="feature-item">
+                                <i class="bi bi-camera-video"></i>
+                                <div class="feature-item-content">
+                                    <h3>Live AI Recognition</h3>
+                                    <p>See our facial recognition technology in action with real-time demonstrations of personnel identification and tracking.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="feature-item">
+                                <i class="bi bi-grid-3x3"></i>
+                                <div class="feature-item-content">
+                                    <h3>Interactive Dashboard</h3>
+                                    <p>Experience the intuitive dashboard interface that provides real-time data visualization and building security analytics.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="feature-item">
+                                <i class="bi bi-map"></i>
+                                <div class="feature-item-content">
+                                    <h3>Building Mapping</h3>
+                                    <p>Learn how our system creates digital maps of your facility and tracks personnel movement throughout different zones.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="feature-item">
+                                <i class="bi bi-gear"></i>
+                                <div class="feature-item-content">
+                                    <h3>Customization Options</h3>
+                                    <p>Discover how Uniface360 can be tailored to meet your specific security and attendance management needs.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS('particles-js', {
+            particles: {
+                number: {
+                    value: 300,
+                    density: {
+                        enable: true,
+                        value_area: 1000
+                    }
+                },
+                color: {
+                    value: '#ffffff'
+                },
+                shape: {
+                    type: 'circle',
+                    stroke: {
+                        width: 0,
+                        color: '#000000'
+                    }
+                },
+                opacity: {
+                    value: 0.3,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                size: {
+                    value: 2.5,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#ffffff',
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: true,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'grab'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 140,
+                        line_linked: {
+                            opacity: 0.5
+                        }
+                    },
+                    push: {
+                        particles_nb: 3
+                    }
+                }
+            },
+            retina_detect: true
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

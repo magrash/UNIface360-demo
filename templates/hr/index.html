@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Dashboard</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style> 
+        .ltr { direction: ltr; }
+        /* Ensure main content is visible and not hidden */
+        main {
+            position: relative;
+            z-index: 1;
+        }
+        /* Custom card styles for Quick Actions */
+        .card.custom-card { 
+            background: var(--card, rgba(255, 255, 255, 0.06));
+            border: 1px solid var(--card-border, rgba(255, 255, 255, 0.12)) !important;
+            border-radius: 16px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+        .card.custom-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            border-color: rgba(0, 152, 121, 0.3);
+        }
+        /* Light theme support */
+        body.dashboard.light-theme .card.custom-card {
+            background: #ffffff;
+            border-color: rgba(2, 6, 23, 0.08) !important;
+            box-shadow: 0 6px 20px rgba(2, 6, 23, 0.06);
+        }
+    </style>
+    <script defer src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</head>
+<body class="dashboard">
+    {% include 'hr/_navbar.html' %}
+
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'hr/_sidebar.html' %}
+
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <!-- Header with Quick Actions -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1" style="font-weight: 800; letter-spacing: -0.5px;">HR Dashboard</h2>
+                        <p class="text-muted mb-0 small">Last updated: <span id="lastUpdate">Just now</span> <span class="badge bg-success ms-2" id="statusBadge"><i class="fa-solid fa-circle" style="font-size: 0.5rem;"></i> Live</span></p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-success btn-sm" id="refreshBtn">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-success btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fa-solid fa-download"></i> Export
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file-excel me-2"></i>Export to Excel</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file-pdf me-2"></i>Export to PDF</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file-csv me-2"></i>Export to CSV</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Panel -->
+                <div class="card custom-card mb-3 p-3 mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2 pt-4">
+                        <h6 class="mb-0"><i class="fa-solid fa-bolt me-2"></i>Quick Actions</h6>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('hr_employees') }}" class="btn btn-outline-primary w-100 btn-sm">
+                                <i class="fa-solid fa-user-plus me-1"></i> Add Employee
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('hr_recruitment') }}" class="btn btn-outline-success w-100 btn-sm">
+                                <i class="fa-solid fa-briefcase me-1"></i> New Position
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('hr_training') }}" class="btn btn-outline-primary w-100 btn-sm">
+                                <i class="fa-solid fa-calendar-check me-1"></i> Schedule Training
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('hr_leaves') }}" class="btn btn-outline-info w-100 btn-sm">
+                                <i class="fa-solid fa-paper-plane me-1"></i> Leave Request
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('hr_payroll') }}" class="btn btn-outline-warning w-100 btn-sm">
+                                <i class="fa-solid fa-money-bill-wave me-1"></i> Process Payroll
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('hr_performance') }}" class="btn btn-outline-secondary w-100 btn-sm">
+                                <i class="fa-solid fa-chart-line me-1"></i> Performance Review
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="{{ url_for('hr_attendance') }}" class="btn btn-outline-success w-100 btn-sm">
+                                <i class="fa-solid fa-calendar-check me-1"></i> Attendance Report
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <button class="btn btn-outline-warning w-100 btn-sm notification-bell" data-bs-toggle="modal" data-bs-target="#viewAlertsModal">
+                                <i class="fa-solid fa-bell me-1"></i> View Alerts
+                                <span class="notification-badge">3</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Performance Indicators -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">👥</div>
+                            <div>
+                                <div class="value">156</div>
+                                <div class="label">Total Employees</div>
+                                <small class="text-success d-block mt-1"><i class="fa-solid fa-arrow-up"></i> +12 this month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon primary">📆</div>
+                            <div>
+                                <div class="value">94.2%</div>
+                                <div class="label">Attendance Rate</div>
+                                <small class="text-primary d-block mt-1"><i class="fa-solid fa-arrow-up"></i> +2.1% improvement</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">⏱️</div>
+                            <div>
+                                <div class="value">27</div>
+                                <div class="label">Late Today</div>
+                                <small class="text-warning d-block mt-1"><i class="fa-solid fa-arrow-down"></i> -9 vs yesterday</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">🚫</div>
+                            <div>
+                                <div class="value">19</div>
+                                <div class="label">Absences</div>
+                                <small class="text-danger d-block mt-1"><i class="fa-solid fa-arrow-down"></i> -3 this week</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Charts Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-8">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Daily Organization Attendance</div>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm" style="width:auto" id="attendanceMonth">
+                                        <option>Current Month</option>
+                                        <option>Last Month</option>
+                                        <option>Last 3 Months</option>
+                                    </select>
+                                    <select class="form-select form-select-sm" style="width:auto" id="attendanceDept">
+                                        <option>All Departments</option>
+                                        <option>IT</option>
+                                        <option>HR</option>
+                                        <option>Finance</option>
+                                        <option>Operations</option>
+                                        <option>HSE</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="orgDailyChart" height="120" class="ltr"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Department Distribution</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="deptStacked" height="200" class="ltr"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center">
+                                <span class="badge" style="background:#009879;">IT: 25</span>
+                                <span class="badge" style="background:#00c4a7;">HR: 10</span>
+                                <span class="badge" style="background:#10b981;">Finance: 15</span>
+                                <span class="badge" style="background:#24c1d9;">Ops: 35</span>
+                                <span class="badge" style="background:#f59e0b;">HSE: 15</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Three Equal Charts Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Attendance Rate Breakdown</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="attendanceRateChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 text-center">
+                                <small class="text-muted">85% Present | 10% Late | 5% Absent</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Department Performance</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="deptPerformanceChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 text-center">
+                                <small class="text-muted">Average: 92% | Best: IT (96%)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Weekly Trend</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="weeklyTrendChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 text-center">
+                                <small class="text-muted">Peak: Thursday (95%) | Low: Sunday (85%)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Overview & Top Performers -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-8">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Monthly Attendance Overview</div>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm" style="width:auto" id="monthSelect">
+                                        <option value="current">Current Month</option>
+                                        <option value="last">Last Month</option>
+                                        <option value="3months">Last 3 Months</option>
+                                    </select>
+                                    <button class="btn btn-outline btn-sm" id="exportMonthlyCsv"><i class="fa-solid fa-download"></i> CSV</button>
+                                    <button class="btn btn-gradient btn-sm" id="exportMonthlyPdf"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="monthlyOverviewChart" height="120"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex justify-content-between">
+                                <small class="text-muted"><i class="fa-solid fa-circle" style="color:#10b981;"></i> Present: 312</small>
+                                <small class="text-muted"><i class="fa-solid fa-circle" style="color:#f59e0b;"></i> Late: 27</small>
+                                <small class="text-muted"><i class="fa-solid fa-circle" style="color:#ef4444;"></i> Absent: 19</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Top Performers</div>
+                            <div class="d-flex flex-column gap-2 flex-grow-1">
+                                <div class="d-flex align-items-center justify-content-between p-2" style="background:rgba(16,185,129,0.1); border-radius:8px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="">
+                                        <div>
+                                            <div class="fw-semibold">Dalia</div>
+                                            <div class="text-muted small">IT Department</div>
+                                        </div>
+                                    </div>
+                                    <span class="chip" style="background:rgba(16,185,129,0.2);">98%</span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between p-2" style="background:rgba(16,185,129,0.1); border-radius:8px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="">
+                                        <div>
+                                            <div class="fw-semibold">Yousef</div>
+                                            <div class="text-muted small">Finance</div>
+                                        </div>
+                                    </div>
+                                    <span class="chip" style="background:rgba(16,185,129,0.2);">96%</span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between p-2" style="background:rgba(16,185,129,0.1); border-radius:8px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="">
+                                        <div>
+                                            <div class="fw-semibold">Mahmoud</div>
+                                            <div class="text-muted small">Operations</div>
+                                        </div>
+                                    </div>
+                                    <span class="chip" style="background:rgba(16,185,129,0.2);">94%</span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between p-2" style="background:rgba(36,193,217,0.1); border-radius:8px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="">
+                                        <div>
+                                            <div class="fw-semibold">Mostafa</div>
+                                            <div class="text-muted small">IT Department</div>
+                                        </div>
+                                    </div>
+                                    <span class="chip" style="background:rgba(36,193,217,0.2);">93%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Company Report & Activity -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="section-title">Company Monthly Report</div>
+                                <div class="d-flex gap-2">
+                                    <input type="month" id="reportMonth" class="form-control" style="width:auto">
+                                    <button class="btn btn-outline btn-sm" id="dlCsv">CSV</button>
+                                    <button class="btn btn-gradient btn-sm" id="dlPdf">PDF</button>
+                                </div>
+                            </div>
+                            <div class="text-muted small mb-2">Download comprehensive timesheet for all employees for the selected month.</div>
+                            <div class="mt-auto">
+                                <div class="d-flex gap-3">
+                                    <div class="flex-grow-1 p-2" style="background:rgba(16,185,129,0.1); border-radius:8px;">
+                                        <div class="fw-semibold small">Total Hours</div>
+                                        <div class="h5 m-0">24,960</div>
+                                    </div>
+                                    <div class="flex-grow-1 p-2" style="background:rgba(36,193,217,0.1); border-radius:8px;">
+                                        <div class="fw-semibold small">Avg per Employee</div>
+                                        <div class="h5 m-0">160h</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Recent Activity</div>
+                            <div class="d-flex flex-column gap-2 flex-grow-1">
+                                <div class="d-flex align-items-center gap-2 p-2" style="background:rgba(16,185,129,0.1); border-radius:8px;">
+                                    <i class="fa-solid fa-user-check text-success"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small">Dalia checked in</div>
+                                        <div class="text-muted" style="font-size:0.75rem;">07:54 AM - IT Department</div>
+                                    </div>
+                                    <span class="chip small">Just now</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 p-2" style="background:rgba(245,158,11,0.1); border-radius:8px;">
+                                    <i class="fa-solid fa-clock text-warning"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small">Mahmoud late arrival</div>
+                                        <div class="text-muted" style="font-size:0.75rem;">08:19 AM - Operations</div>
+                                    </div>
+                                    <span class="chip small">5m ago</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 p-2" style="background:rgba(36,193,217,0.1); border-radius:8px;">
+                                    <i class="fa-solid fa-file-invoice text-primary"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small">Payroll processed</div>
+                                        <div class="text-muted" style="font-size:0.75rem;">January 2025 - 156 employees</div>
+                                    </div>
+                                    <span class="chip small">1h ago</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 p-2" style="background:rgba(16,185,129,0.1); border-radius:8px;">
+                                    <i class="fa-solid fa-calendar-check text-success"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small">Monthly report generated</div>
+                                        <div class="text-muted" style="font-size:0.75rem;">Attendance summary for December 2024</div>
+                                    </div>
+                                    <span class="chip small">2h ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Heatmap & Alerts -->
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Activity Heatmap</div>
+                            <div class="calendar flex-grow-1" id="activityCalendar"></div>
+                            <div class="mt-2 d-flex justify-content-center gap-3">
+                                <small><span style="display:inline-block;width:12px;height:12px;background:#10b981;border-radius:3px;margin-right:4px;"></span> Good</small>
+                                <small><span style="display:inline-block;width:12px;height:12px;background:#f59e0b;border-radius:3px;margin-right:4px;"></span> Late</small>
+                                <small><span style="display:inline-block;width:12px;height:12px;background:#ef4444;border-radius:3px;margin-right:4px;"></span> Absent</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Alerts & Notifications</div>
+                            <ul class="list-group flex-grow-1">
+                                <li class="list-group-item d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-bell text-warning"></i>
+                                    <span class="flex-grow-1">3 pending approvals require your review</span>
+                                    <span class="chip">Today</span>
+                                </li>
+                                <li class="list-group-item d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-shield-halved text-success"></i>
+                                    <span class="flex-grow-1">Security backup completed successfully</span>
+                                    <span class="chip">1h ago</span>
+                                </li>
+                                <li class="list-group-item d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-user-clock text-primary"></i>
+                                    <span class="flex-grow-1">5 employees late today vs 9 yesterday</span>
+                                    <span class="chip">Stats</span>
+                                </li>
+                                <li class="list-group-item d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+                                    <span class="flex-grow-1">Incident reported at Field Site B</span>
+                                    <span class="chip">HSE</span>
+                                </li>
+                                <li class="list-group-item d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-graduation-cap text-info"></i>
+                                    <span class="flex-grow-1">12 training certificates expiring this month</span>
+                                    <span class="chip">Training</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .notification-bell {
+            position: relative;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        /* Fix for clickable buttons */
+        .card.custom-card .btn,
+        .card.custom-card a.btn {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 10;
+            cursor: pointer;
+            opacity: 1 !important;
+        }
+        .card.custom-card {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+    <script>
+        (function(){
+            function build(monthStr, fmt){
+                if(!monthStr){ return null; }
+                const [y,m] = monthStr.split('-');
+                return `/export_company_month?year=${y}&month=${m}&format=${fmt}`;
+            }
+            const inp = document.getElementById('reportMonth');
+            const csv = document.getElementById('dlCsv');
+            const pdf = document.getElementById('dlPdf');
+            const now = new Date();
+            const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            if(inp) inp.value = ym;
+            if(csv) csv.addEventListener('click', ()=>{ const u = build(inp.value,'csv'); if(u) window.location = u; });
+            if(pdf) pdf.addEventListener('click', ()=>{ const u = build(inp.value,'pdf'); if(u) window.location = u; });
+
+            // Daily Attendance Chart with consistent colors
+            const orgDaily = document.getElementById('orgDailyChart');
+            if(orgDaily) {
+                new Chart(orgDaily, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 30}, (_, i) => `Day ${i+1}`),
+                        datasets: [{
+                            label: 'Present',
+                            data: Array.from({length: 30}, () => Math.floor(Math.random() * 20) + 130),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }, {
+                            label: 'Late',
+                            data: Array.from({length: 30}, () => Math.floor(Math.random() * 10) + 5),
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }, {
+                            label: 'Absent',
+                            data: Array.from({length: 30}, () => Math.floor(Math.random() * 5) + 2),
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        scales: { y: { ticks: { color: '#aaa' }, beginAtZero: true }, x: { ticks: { color: '#aaa', maxTicksLimit: 10 } } },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Department Stacked Chart with consistent colors
+            const deptStacked = document.getElementById('deptStacked');
+            if(deptStacked) {
+                new Chart(deptStacked, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['IT', 'HR', 'Finance', 'Operations', 'HSE'],
+                        datasets: [{
+                            data: [25, 10, 15, 35, 15],
+                            backgroundColor: ['#009879', '#00c4a7', '#10b981', '#24c1d9', '#f59e0b']
+                        }]
+                    },
+                    options: { 
+                        plugins: { legend: { display: false, labels: { color: '#ddd' } } },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Attendance Rate Chart with consistent colors
+            const ctx1 = document.getElementById('attendanceRateChart');
+            if(ctx1) {
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Present', 'Late', 'Absent'],
+                        datasets: [{
+                            data: [85, 10, 5],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                        }]
+                    },
+                    options: { 
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Department Performance Chart with consistent colors
+            const ctx2 = document.getElementById('deptPerformanceChart');
+            if(ctx2) {
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['IT', 'HR', 'Finance', 'Ops', 'HSE'],
+                        datasets: [{
+                            label: 'Attendance %',
+                            data: [96, 92, 94, 88, 90],
+                            backgroundColor: '#009879',
+                            borderColor: '#00c4a7',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, max: 100, ticks: { color: '#aaa' } }, x: { ticks: { color: '#aaa' } } },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Weekly Trend Chart with consistent colors
+            const ctx3 = document.getElementById('weeklyTrendChart');
+            if(ctx3) {
+                new Chart(ctx3, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Attendance',
+                            data: [92, 94, 93, 95, 91, 88, 85],
+                            borderColor: '#24c1d9',
+                            backgroundColor: 'rgba(36, 193, 217, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            pointBackgroundColor: '#24c1d9',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        scales: { y: { ticks: { color: '#aaa' }, beginAtZero: true }, x: { ticks: { color: '#aaa' } } },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Monthly Overview Chart with consistent colors
+            const ctx4 = document.getElementById('monthlyOverviewChart');
+            if(ctx4) {
+                new Chart(ctx4, {
+                    type: 'line',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [
+                            { label: 'Present', data: [88, 90, 92, 91], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.3, fill: true },
+                            { label: 'Late', data: [8, 7, 6, 7], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', tension: 0.3, fill: true },
+                            { label: 'Absent', data: [4, 3, 2, 2], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.3, fill: true }
+                        ]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        scales: { y: { ticks: { color: '#aaa' }, beginAtZero: true }, x: { ticks: { color: '#aaa' } } },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Activity Calendar
+            const cal = document.getElementById('activityCalendar');
+            if(cal) {
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                days.forEach(d => {
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'day';
+                    dayEl.textContent = d;
+                    cal.appendChild(dayEl);
+                });
+                for(let i=1; i<=28; i++) {
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'day ' + (Math.random() > 0.3 ? 'ok' : Math.random() > 0.5 ? 'late' : 'miss');
+                    dayEl.textContent = i;
+                    cal.appendChild(dayEl);
+                }
+            }
+
+            // Export handlers
+            const expCsv = document.getElementById('exportMonthlyCsv');
+            const expPdf = document.getElementById('exportMonthlyPdf');
+            if(expCsv) expCsv.addEventListener('click', () => {
+                const csv = 'Month,Present,Late,Absent\nCurrent,312,27,19';
+                const blob = new Blob([csv], {type:'text/csv'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'monthly_attendance.csv';
+                a.click();
+            });
+            if(expPdf) expPdf.addEventListener('click', () => window.print());
+
+            // Update last update time
+            function updateLastUpdate() {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const lastUpdateEl = document.getElementById('lastUpdate');
+                if (lastUpdateEl) {
+                    lastUpdateEl.textContent = timeStr;
+                }
+            }
+
+            // Refresh functionality
+            function handleRefresh() {
+                const btn = document.getElementById('refreshBtn');
+                if (!btn) return;
+                
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.style.animation = 'spin 0.6s ease-in-out';
+                }
+                
+                setTimeout(() => {
+                    // Reload charts or refresh data here
+                    updateLastUpdate();
+                    
+                    // Show success feedback
+                    btn.classList.add('btn-success');
+                    btn.classList.remove('btn-outline-success');
+                    setTimeout(() => {
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-outline-success');
+                        if (icon) {
+                            icon.style.animation = '';
+                        }
+                    }, 1000);
+                }, 600);
+            }
+
+            // Initialize refresh button
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', handleRefresh);
+            }
+
+            // Update time every minute
+            updateLastUpdate();
+            setInterval(updateLastUpdate, 60000);
+        })();
+    </script>
+</body>
+</html>

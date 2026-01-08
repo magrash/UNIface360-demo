@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evacuation System – UNIface360</title>
+  <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <style>
+    .multi-camera-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .zone-section {
+      margin-bottom: 2rem;
+    }
+
+    .zone-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .zone-title.evacuation {
+      background: rgba(249, 115, 22, 0.15);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      color: #fdba74;
+    }
+
+    .no-cameras-message {
+      text-align: center;
+      padding: 2rem;
+      color: #94a3b8;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px dashed rgba(148, 163, 184, 0.3);
+      border-radius: 12px;
+    }
+
+    .no-cameras-message a {
+      color: #22d3ee;
+      text-decoration: none;
+    }
+
+    .cameras-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1600px;
+      margin: 0 auto 1.5rem auto;
+      padding: 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+    }
+
+    .cameras-count {
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    .cameras-count strong {
+      color: #fb923c;
+    }
+
+    .total-head-count {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(34, 211, 238, 0.1));
+      border: 1px solid rgba(249, 115, 22, 0.4);
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .total-head-count .icon {
+      font-size: 2rem;
+    }
+
+    .total-head-count .count {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #fb923c;
+      font-family: 'Orbitron', monospace;
+    }
+
+    .total-head-count .label {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .head-count-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 0.5rem 1rem;
+      background: rgba(249, 115, 22, 0.9);
+      border-radius: 8px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      z-index: 10;
+    }
+
+    .head-count-badge .number {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.5rem;
+    }
+
+    .cam-status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      background: rgba(15, 23, 42, 0.8);
+      border-top: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .info-banner {
+      max-width: 1600px;
+      margin: 0 auto 1.5rem auto;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(34, 211, 238, 0.1));
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .info-banner .icon {
+      font-size: 1.5rem;
+    }
+
+    .info-banner .text {
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    .info-banner .text strong {
+      color: #60a5fa;
+    }
+  </style>
+</head>
+
+<body data-page="evacuation">
+  <div id="particles-js" style="position: fixed; inset: 0; z-index: -2;"></div>
+  <div class="uf-layout">
+    <header class="uf-header">
+      <a href="{{ url_for('demo_welcome') }}" style="text-decoration: none; color: inherit;">
+        <div class="uf-logo">
+          <img src="{{ url_for('static', filename='logo6.png') }}" alt="UNIface360 logo" />
+          <span class="uf-logo-text">UNIface360</span>
+        </div>
+      </a>
+      <nav class="uf-nav" aria-label="Primary" style="display: flex; gap: 0.75rem;">
+        <span class="uf-nav-item uf-nav-pill">Evacuation System</span>
+        <a href="{{ url_for('demo_live_tracking') }}" class="uf-btn uf-btn-secondary" style="text-decoration: none;">
+          🎯 Live Tracking
+        </a>
+      </nav>
+    </header>
+
+    <main class="uf-main">
+      <section class="uf-section">
+        <header class="uf-section-header">
+          <h2>🚨 Evacuation System - Head Count</h2>
+          <p>
+            Real-time person detection and counting for emergency evacuation scenarios.
+            Fast, reliable head count per camera zone.
+          </p>
+        </header>
+
+        <!-- Info Banner -->
+        <div class="info-banner">
+          <span class="icon">ℹ️</span>
+          <div class="text">
+            <strong>Evacuation Mode:</strong> This system focuses on fast, reliable person counting.
+            For face recognition and identification, use <a href="{{ url_for('demo_live_tracking') }}"
+              style="color: #22d3ee;">Live Tracking</a>.
+          </div>
+        </div>
+
+        <!-- Total Head Count -->
+        <div class="total-head-count">
+          <span class="icon">👥</span>
+          <div>
+            <div class="count" id="total-head-count">0</div>
+            <div class="label">Total Persons Detected</div>
+          </div>
+        </div>
+
+        <!-- Cameras Toolbar -->
+        <div class="cameras-toolbar">
+          <span class="cameras-count">
+            <strong id="camera-count">0</strong> cameras active
+          </span>
+          <div style="display: flex; gap: 0.75rem;">
+            <button id="refresh-cameras-btn" class="uf-btn uf-btn-secondary">⟳ Refresh</button>
+            <button id="start-all-btn" class="uf-btn uf-btn-primary">▶ Start Tracking</button>
+            <a href="/manage" class="uf-btn uf-btn-secondary" style="text-decoration: none;">⚙️ Manage</a>
+          </div>
+        </div>
+
+        <!-- Evacuation Cameras -->
+        <div class="zone-section">
+          <div class="zone-title evacuation">
+            <span>🏃</span> Evacuation Zone Cameras
+          </div>
+          <div class="multi-camera-grid" id="evacuation-cameras-container">
+            <!-- Cameras will be loaded here -->
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <section class="uf-alert-layer" aria-label="Realtime safety notifications" aria-live="assertive" id="alert-layer">
+  </section>
+
+  <script src="{{ url_for('static', filename='particles-init.js') }}"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      const MODEL_TYPE = 'evacuation';
+      let modelCameras = {};
+      let checkIntervals = {};
+      let isRunning = false;
+      let cameraHeadCounts = {};
+
+      async function loadModelCameras() {
+        try {
+          const res = await fetch(`/api/model-cameras/${MODEL_TYPE}`);
+          const data = await res.json();
+          if (data.ok) {
+            modelCameras = data.cameras || {};
+            renderCameras();
+          }
+        } catch (err) {
+          console.error('Failed to load cameras:', err);
+        }
+      }
+
+      function renderCameras() {
+        const container = document.getElementById('evacuation-cameras-container');
+        const activeCameras = Object.entries(modelCameras).filter(([id, cam]) => cam.enabled);
+
+        document.getElementById('camera-count').textContent = activeCameras.length;
+
+        if (activeCameras.length === 0) {
+          container.innerHTML = `
+            <div class="no-cameras-message" style="grid-column: 1 / -1;">
+              <p>No evacuation cameras configured. <a href="/manage">Add cameras</a> and enable them for Evacuation.</p>
+            </div>
+          `;
+        } else {
+          container.innerHTML = activeCameras.map(([camId, cam]) => `
+            <div class="uf-cam-card" data-camera-id="${camId}" style="position: relative;">
+              <div class="head-count-badge">
+                <span>👤</span>
+                <span class="number" id="head-count-${camId}">0</span>
+              </div>
+              <header class="uf-cam-header">
+                <span class="uf-pill uf-pill--warning">Evacuation Zone</span>
+                <span class="uf-cam-label">${cam.name || 'Camera ' + camId}</span>
+              </header>
+              <div class="uf-cam-body" style="position: relative;">
+                <img id="cam-feed-${camId}" style="width: 100%; height: auto; min-height: 200px; background: #0a0a0f; object-fit: cover;">
+              </div>
+              <div class="cam-status-bar">
+                <span id="cam-status-${camId}" class="uf-caption">Ready</span>
+                <span class="uf-caption" style="color: #fb923c;">Zone ${camId}</span>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      function updateTotalHeadCount() {
+        let total = 0;
+        for (const camId in cameraHeadCounts) {
+          total += cameraHeadCounts[camId] || 0;
+        }
+        document.getElementById('total-head-count').textContent = total;
+      }
+
+      function startAllCameras() {
+        const activeCameras = Object.entries(modelCameras).filter(([id, cam]) => cam.enabled);
+
+        activeCameras.forEach(([camId, cam], index) => {
+          const feedEl = document.getElementById(`cam-feed-${camId}`);
+          const statusEl = document.getElementById(`cam-status-${camId}`);
+
+          if (feedEl) {
+            feedEl.src = `/video_feed/${camId}`;
+            if (statusEl) statusEl.textContent = 'Connecting...';
+          }
+
+          if (checkIntervals[camId]) clearInterval(checkIntervals[camId]);
+
+          // Stagger start: each camera starts 500ms apart
+          setTimeout(() => {
+            if (statusEl) statusEl.textContent = 'Counting...';
+            // Check every 2 seconds for fast updates
+            checkIntervals[camId] = setInterval(() => performCheck(camId, cam.name), 2000);
+            performCheck(camId, cam.name);
+          }, index * 500);
+        });
+
+        isRunning = true;
+        document.getElementById('start-all-btn').textContent = '⏹ Stop Tracking';
+        document.getElementById('start-all-btn').onclick = stopAllCameras;
+      }
+
+      function stopAllCameras() {
+        Object.keys(checkIntervals).forEach(camId => {
+          clearInterval(checkIntervals[camId]);
+          delete checkIntervals[camId];
+        });
+
+        Object.entries(modelCameras).filter(([id, cam]) => cam.enabled).forEach(([camId]) => {
+          const feedEl = document.getElementById(`cam-feed-${camId}`);
+          const statusEl = document.getElementById(`cam-status-${camId}`);
+          const countEl = document.getElementById(`head-count-${camId}`);
+          if (feedEl) feedEl.src = '';
+          if (statusEl) statusEl.textContent = 'Stopped';
+          if (countEl) countEl.textContent = '0';
+          cameraHeadCounts[camId] = 0;
+        });
+
+        updateTotalHeadCount();
+        isRunning = false;
+        document.getElementById('start-all-btn').textContent = '▶ Start Tracking';
+        document.getElementById('start-all-btn').onclick = startAllCameras;
+      }
+
+      async function performCheck(camId, camName) {
+        try {
+          const res = await fetch('/api/demo/evacuation/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ camera_index: parseInt(camId) })
+          });
+
+          const data = await res.json();
+
+          const countEl = document.getElementById(`head-count-${camId}`);
+          const statusEl = document.getElementById(`cam-status-${camId}`);
+
+          if (data.ok) {
+            cameraHeadCounts[camId] = data.person_count;
+            if (countEl) countEl.textContent = data.person_count;
+            if (statusEl) statusEl.textContent = `${data.person_count} person(s) detected`;
+            updateTotalHeadCount();
+          } else {
+            if (statusEl) statusEl.textContent = 'Check failed';
+          }
+
+        } catch (err) {
+          console.error(`[EVACUATION CAM ${camId}] Check error:`, err);
+          const statusEl = document.getElementById(`cam-status-${camId}`);
+          if (statusEl) statusEl.textContent = 'Connection error';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadModelCameras();
+        document.getElementById('start-all-btn').addEventListener('click', startAllCameras);
+        document.getElementById('refresh-cameras-btn').addEventListener('click', loadModelCameras);
+      });
+    })();
+  </script>
+</body>
+
+</html>

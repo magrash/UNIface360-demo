@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin • Employees</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <style>
+        /* Ensure First-in and Last-out visuals render at identical size */
+        #track .live-img { width: 100%; height: 220px; object-fit: contain; }
+        #track .card-body { display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body class="dashboard">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background:transparent; border-bottom:1px solid rgba(255,255,255,0.12)">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('admin_dashboard') }}">
+                <img src="{{ url_for('static', filename='logo6.png') }}" alt="Logo" style="height:34px; margin-inline-end:6px;">
+                <span class="fw-semibold">Admin Dashboard</span>
+            </a>
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item me-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="themeToggleAdmin">
+                        <label class="form-check-label" for="themeToggleAdmin">Light/Dark</label>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="https://i.pravatar.cc/100?img=12" alt="avatar" class="avatar" />
+                        <span class="fw-semibold">Admin</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin_settings') }}">Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-2 sidebar p-3">
+                <h6 class="text-uppercase text-muted px-2">Navigation</h6>
+                <ul class="nav nav-pills flex-column gap-1 mt-2">
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard Overview</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_approvals') }}"><i class="fa-regular fa-file-lines"></i> Approvals</a></li>
+                    <li class="nav-item"><a class="nav-link active d-flex align-items-center gap-2" href="{{ url_for('admin_employees') }}"><i class="fa-solid fa-users"></i> Employees</a></li>
+                </ul>
+            </aside>
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+        <div class="glass-card p-3">
+            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+                <div class="section-title">كل الموظفين</div>
+                <div class="d-flex flex-wrap gap-2 align-items-center ms-auto">
+                    <select class="form-select" style="width: 200px;">
+                        <option selected>كل الأقسام</option>
+                        <option>IT</option>
+                        <option>HR</option>
+                        <option>Finance</option>
+                        <option>Ops</option>
+                    </select>
+                    <select class="form-select" style="width: 180px;">
+                        <option selected>الحالة: الجميع</option>
+                        <option>حاضر</option>
+                        <option>متأخر</option>
+                        <option>غائب</option>
+                    </select>
+                    <input class="form-control" style="width: 240px;" placeholder="ابحث بالاسم...">
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-darkish align-middle mb-0">
+                    <thead><tr><th>الموظف</th><th>الحضور</th><th>تأخير</th><th>آخر تسجيل</th><th>تصدير</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td class="d-flex align-items-center gap-2"><img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt=""> <a class="link-light" href="{{ url_for('admin_employee_timesheet', name='Dalia') }}">Dalia</a></td>
+                            <td>92%</td>
+                            <td>3</td>
+                            <td>08:03</td>
+                            <td class="text-nowrap">
+                                <button class="btn btn-sm btn-outline btn-ts" data-name="Dalia">CSV</button>
+                                <button class="btn btn-sm btn-gradient btn-ts" data-name="Dalia">PDF</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="d-flex align-items-center gap-2"><img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt=""> <a class="link-light" href="{{ url_for('admin_employee_timesheet', name='yousef') }}">Yousef</a></td>
+                            <td>95%</td>
+                            <td>1</td>
+                            <td>08:00</td>
+                            <td class="text-nowrap">
+                                <button class="btn btn-sm btn-outline btn-ts" data-name="yousef">CSV</button>
+                                <button class="btn btn-sm btn-gradient btn-ts" data-name="yousef">PDF</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-3">
+            <div class="col-lg-8">
+                <div class="glass-card p-3">
+                    <div class="section-title mb-2">Monthly Attendance Trend</div>
+                    <canvas id="empMonthlyChart" height="110" class="ltr"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card p-3 h-100">
+                    <div class="section-title mb-2">Breakdown</div>
+                    <canvas id="empBreakdown" height="220" class="ltr"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-3" id="track">
+            <div class="col-lg-6">
+                <div class="card glass-card">
+                    <div class="card-header card-header-transparent">أول دخول</div>
+                    <div class="card-body p-2">
+                        <img src="{{ url_for('static', filename='live.gif') }}" class="img-fluid rounded live-img" alt="first-in">
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card glass-card">
+                    <div class="card-header card-header-transparent">آخر خروج</div>
+                    <div class="card-body p-2">
+                        <img src="{{ url_for('static', filename='live (1).gif') }}" class="img-fluid rounded live-img" alt="last-out">
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="glass-card p-3 mt-2">
+                    <div class="table-responsive">
+                        <table class="table table-darkish align-middle mb-0">
+                            <thead><tr><th>التاريخ</th><th>دخول</th><th>خروج</th><th>الحالة</th></tr></thead>
+                            <tbody>
+                                <tr><td>2025-11-03</td><td>08:03</td><td>17:01</td><td><span class="status-dot dot-success"></span> طبيعي</td></tr>
+                                <tr><td>2025-11-04</td><td>08:19</td><td>16:55</td><td><span class="status-dot dot-warning"></span> متأخر</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end mt-2">
+                        <button class="btn btn-gradient">تصدير</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Timesheet Preview Modal -->
+    <div class="modal fade modal-wide" id="tsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content glass-card" style="background:rgba(0,0,0,0.6)">
+                <div class="modal-header">
+                    <h5 class="modal-title">Time Sheet Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe id="tsFrame" src="about:blank" style="width:100%; height:100%; border:0;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function(){
+            const modal = new bootstrap.Modal(document.getElementById('tsModal'));
+            const frame = document.getElementById('tsFrame');
+            document.querySelectorAll('.btn-ts').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const name = btn.getAttribute('data-name');
+                    frame.src = `/timesheet/preview/${name}`;
+                    modal.show();
+                });
+            });
+        })();
+    </script>
+    <script>
+        (function(){
+            const body = document.body;
+            const toggle = document.getElementById('themeToggleAdmin');
+            if (!toggle) return;
+            function applyTheme(){
+                if (toggle.checked) {
+                    body.classList.add('light-theme');
+                    document.documentElement.setAttribute('data-bs-theme', 'light');
+                } else {
+                    body.classList.remove('light-theme');
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                }
+            }
+            toggle.addEventListener('change', applyTheme);
+            // default to light for admin page
+            applyTheme();
+        })();
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Appraisal</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    {% include 'hr/_navbar.html' %}
+
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'hr/_sidebar.html' %}
+
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Performance Appraisal System</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="exportPerfCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" id="exportPerfPdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#goalModal"><i class="fa-solid fa-plus"></i> New Goal</button>
+                    </div>
+                </div>
+
+                <!-- Key Performance Indicators -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">🎯</div>
+                            <div>
+                                <div class="value">48</div>
+                                <div class="label">Active Goals</div>
+                                <small class="text-success d-block mt-1"><i class="fa-solid fa-arrow-up"></i> +12 this quarter</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon primary">⭐</div>
+                            <div>
+                                <div class="value">87%</div>
+                                <div class="label">Average Score</div>
+                                <small class="text-primary d-block mt-1">+3% vs last quarter</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">📊</div>
+                            <div>
+                                <div class="value">32</div>
+                                <div class="label">Pending Reviews</div>
+                                <small class="text-warning d-block mt-1">Due this month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">🏆</div>
+                            <div>
+                                <div class="value">12</div>
+                                <div class="label">Promotions This Year</div>
+                                <small class="text-danger d-block mt-1">Based on performance</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employee Goals & Reviews -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-8">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Employee Goals (KPIs / SMART Goals)</div>
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search..." style="width:200px;" id="goalSearch">
+                                    <select class="form-select form-select-sm" style="width:auto" id="periodFilter">
+                                        <option>All Periods</option>
+                                        <option>Q1 2025</option>
+                                        <option>Q2 2025</option>
+                                        <option>Q3 2025</option>
+                                        <option>Q4 2025</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0" id="goalsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Goal Description</th>
+                                            <th>Period</th>
+                                            <th>Progress</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Dalia</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-semibold">Complete HR system implementation by Q1 end</div>
+                                                    <div class="text-muted small">SMART Goal - IT Department</div>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">Q1 2025</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="progress flex-grow-1" style="height:8px;">
+                                                        <div class="progress-bar" style="width:85%; background:#10b981;"></div>
+                                                    </div>
+                                                    <small class="text-muted">85%</small>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">On Track</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#goalModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Yousef</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-semibold">Reduce financial processing time by 30%</div>
+                                                    <div class="text-muted small">SMART Goal - Finance Department</div>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">Q1 2025</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="progress flex-grow-1" style="height:8px;">
+                                                        <div class="progress-bar" style="width:70%; background:#24c1d9;"></div>
+                                                    </div>
+                                                    <small class="text-muted">70%</small>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">In Progress</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#goalModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Mahmoud</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-semibold">Improve site safety compliance to 95%</div>
+                                                    <div class="text-muted small">SMART Goal - Operations</div>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">Q1 2025</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="progress flex-grow-1" style="height:8px;">
+                                                        <div class="progress-bar" style="width:92%; background:#10b981;"></div>
+                                                    </div>
+                                                    <small class="text-muted">92%</small>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">On Track</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#goalModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Mostafa</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-semibold">Launch new AI features for attendance system</div>
+                                                    <div class="text-muted small">SMART Goal - IT Department</div>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip">Q1 2025</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="progress flex-grow-1" style="height:8px;">
+                                                        <div class="progress-bar" style="width:78%; background:#24c1d9;"></div>
+                                                    </div>
+                                                    <small class="text-muted">78%</small>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">In Progress</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#goalModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="text-muted small">Showing 1-4 of 48 goals</div>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Manager/Peer Reviews</div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Reviewer</th>
+                                            <th>Rating</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:20px;height:20px;">
+                                                    <span class="small">Dalia</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip small">Manager</span></td>
+                                            <td><span class="chip small" style="background:rgba(16,185,129,0.2);">4.5/5</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="" style="width:20px;height:20px;">
+                                                    <span class="small">Yousef</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip small">Manager</span></td>
+                                            <td><span class="chip small" style="background:rgba(16,185,129,0.2);">4.2/5</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="" style="width:20px;height:20px;">
+                                                    <span class="small">Mahmoud</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip small">Manager</span></td>
+                                            <td><span class="chip small" style="background:rgba(16,185,129,0.2);">4.7/5</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:20px;height:20px;">
+                                                    <span class="small">Mostafa</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip small">Manager</span></td>
+                                            <td><span class="chip small" style="background:rgba(16,185,129,0.2);">4.6/5</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-3 p-3" style="background:rgba(255,255,255,0.04); border-radius:8px;">
+                                <div class="section-title mb-2">Link to Rewards/Promotions</div>
+                                <div class="text-muted small">Performance results are automatically linked to compensation, bonuses, and promotion eligibility.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Performance Score Distribution</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="scoreChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center">
+                                <span class="badge" style="background:#009879;">Excellent: 45</span>
+                                <span class="badge" style="background:#00c4a7;">Very Good: 60</span>
+                                <span class="badge" style="background:#10b981;">Good: 35</span>
+                                <span class="badge" style="background:#f59e0b;">Average: 12</span>
+                                <span class="badge" style="background:#ef4444;">Needs Improvement: 4</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Quarterly Performance Trend</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="quarterlyChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex justify-content-between">
+                                <small class="text-muted">Average: 84.8%</small>
+                                <small class="text-muted">Trend: +5% over 5 quarters</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Reports -->
+                <div class="row g-3">
+                    <div class="col-lg-12">
+                        <div class="glass-card p-3">
+                            <div class="section-title mb-3">Performance Reports by Period</div>
+                            <div class="row g-3">
+                                <div class="col-lg-4">
+                                    <div class="p-4 h-100" style="background:rgba(16,185,129,0.1); border-radius:12px; border-left:3px solid #10b981;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="fw-semibold">Q1 2025 Report</div>
+                                            <i class="fa-solid fa-file-pdf" style="color:#10b981;"></i>
+                                        </div>
+                                        <div class="text-muted small mb-3">48 goals, 87% average score</div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Download PDF</button>
+                                            <button class="btn btn-sm btn-outline"><i class="fa-solid fa-chart-line"></i> View Analytics</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="p-4 h-100" style="background:rgba(36,193,217,0.1); border-radius:12px; border-left:3px solid #24c1d9;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="fw-semibold">Annual 2024 Report</div>
+                                            <i class="fa-solid fa-file-pdf" style="color:#24c1d9;"></i>
+                                        </div>
+                                        <div class="text-muted small mb-3">156 employees evaluated</div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Download PDF</button>
+                                            <button class="btn btn-sm btn-outline"><i class="fa-solid fa-chart-line"></i> View Analytics</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="p-4 h-100" style="background:rgba(245,158,11,0.1); border-radius:12px; border-left:3px solid #f59e0b;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="fw-semibold">Department Comparison</div>
+                                            <i class="fa-solid fa-file-pdf" style="color:#f59e0b;"></i>
+                                        </div>
+                                        <div class="text-muted small mb-3">Compare performance across departments</div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Download PDF</button>
+                                            <button class="btn btn-sm btn-outline"><i class="fa-solid fa-chart-line"></i> View Analytics</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Goal Modal -->
+    <div class="modal fade" id="goalModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Performance Goal</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-2">Goal Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Employee</label>
+                            <select class="form-select">
+                                <option>Select employee...</option>
+                                <option>Dalia</option>
+                                <option>Yousef</option>
+                                <option>Mahmoud</option>
+                                <option>Mostafa</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Department</label>
+                            <select class="form-select">
+                                <option>IT Department</option>
+                                <option>HR Department</option>
+                                <option>Finance Department</option>
+                                <option>Operations</option>
+                                <option>HSE Department</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Goal Description (SMART)</label>
+                            <textarea class="form-control" placeholder="Specific, Measurable, Achievable, Relevant, Time-bound goal..." rows="3"></textarea>
+                            <small class="text-muted">SMART: Specific, Measurable, Achievable, Relevant, Time-bound</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Period</label>
+                            <select class="form-select">
+                                <option>Q1 2025</option>
+                                <option>Q2 2025</option>
+                                <option>Q3 2025</option>
+                                <option>Q4 2025</option>
+                                <option>Annual 2025</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Target Value</label>
+                            <input type="number" class="form-control" placeholder="e.g., 100, 95%">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Save Goal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            // Charts with consistent colors
+            const ctx1 = document.getElementById('scoreChart');
+            if(ctx1) {
+                new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Excellent', 'Very Good', 'Good', 'Average', 'Needs Improvement'],
+                        datasets: [{
+                            label: 'Employees',
+                            data: [45, 60, 35, 12, 4],
+                            backgroundColor: ['#009879', '#00c4a7', '#10b981', '#f59e0b', '#ef4444']
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: '#aaa' } },
+                            x: { ticks: { color: '#aaa' } }
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('quarterlyChart');
+            if(ctx2) {
+                new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
+                        datasets: [{
+                            label: 'Average Score',
+                            data: [82, 84, 85, 86, 87],
+                            borderColor: '#009879',
+                            backgroundColor: 'rgba(0,152,121,0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        scales: {
+                            y: { ticks: { color: '#aaa' }, beginAtZero: true },
+                            x: { ticks: { color: '#aaa' } }
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Export functions
+            function exportCsv() {
+                const rows = [['Employee','Goal Description','Period','Progress','Status']];
+                document.querySelectorAll('#goalsTable tbody tr').forEach(tr => {
+                    const cells = tr.querySelectorAll('td');
+                    if(cells.length >= 5) {
+                        rows.push([
+                            cells[0].textContent.trim().replace(/\s+/g, ' '),
+                            cells[1].textContent.trim().replace(/\s+/g, ' '),
+                            cells[2].textContent.trim(),
+                            cells[3].textContent.trim().split('%')[0] + '%',
+                            cells[4].textContent.trim()
+                        ]);
+                    }
+                });
+                const csv = rows.map(r => r.join(',')).join('\n');
+                const blob = new Blob([csv], {type:'text/csv'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'performance_report.csv';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+
+            function exportPdf() {
+                window.print();
+            }
+
+            const btnCsv = document.getElementById('exportPerfCsv');
+            const btnPdf = document.getElementById('exportPerfPdf');
+            if(btnCsv) btnCsv.addEventListener('click', exportCsv);
+            if(btnPdf) btnPdf.addEventListener('click', exportPdf);
+
+            // Search functionality
+            const goalSearch = document.getElementById('goalSearch');
+            if(goalSearch) {
+                goalSearch.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    document.querySelectorAll('#goalsTable tbody tr').forEach(tr => {
+                        const text = tr.textContent.toLowerCase();
+                        tr.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

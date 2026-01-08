@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance & Shifts</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #timeSheetPrintArea, #timeSheetPrintArea * {
+                visibility: visible;
+            }
+            #timeSheetPrintArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: rgb(0, 0, 0);
+                color: black;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        .time-sheet-table {
+            font-size: 12px;
+        }
+        .time-sheet-table th, .time-sheet-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .time-sheet-table th {
+            background-color: #000000;
+            font-weight: bold;
+        }
+        .present { background-color: #000000 !important; }
+        .absent { background-color: #000000 !important; }
+        .leave { background-color: #000000 !important; }
+        .holiday { background-color: #000000 !important; }
+        .speed-gauge {
+            margin: 0 auto;
+        }
+        .gauge-circle {
+            transition: stroke-dashoffset 1s ease-in-out;
+        }
+        .time-sheet-table td {
+            vertical-align: middle;
+        }
+        .time-sheet-table .text-center {
+            padding: 8px 4px;
+        }
+        #timeSheetModal .modal-body {
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        #timeSheetPrintArea {
+            background: rgb(0, 0, 0);
+            color: #333;
+            padding: 20px;
+        }
+        @media print {
+            #timeSheetPrintArea {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body class="dashboard">
+    {% include 'hr/_navbar.html' %}
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'hr/_sidebar.html' %}
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Attendance & Shifts</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="exportAttCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" id="exportAttPdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#shiftModal"><i class="fa-solid fa-plus"></i> Add Shift</button>
+                    </div>
+                </div>
+
+                <!-- Key Performance Indicators -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">✅</div>
+                            <div>
+                                <div class="value">94.2%</div>
+                                <div class="label">Attendance Rate</div>
+                                <small class="text-success d-block mt-1"><i class="fa-solid fa-arrow-up"></i> +2.1% vs last month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon primary">👥</div>
+                            <div>
+                                <div class="value">147</div>
+                                <div class="label">Present Today</div>
+                                <small class="text-primary d-block mt-1">Out of 156 employees</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">⏰</div>
+                            <div>
+                                <div class="value">8</div>
+                                <div class="label">Active Shifts</div>
+                                <small class="text-warning d-block mt-1">3 Day, 4 Night, 1 On-call</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">📍</div>
+                            <div>
+                                <div class="value">5</div>
+                                <div class="label">Active Sites</div>
+                                <small class="text-danger d-block mt-1">3 Offices, 2 Field Sites</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shift Management & Site Attendance -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Shift Management</div>
+                                <select class="form-select form-select-sm" style="width:auto" id="shiftTypeFilter">
+                                    <option value="all">All Types</option>
+                                    <option>Day</option>
+                                    <option>Night</option>
+                                    <option>On-call</option>
+                                </select>
+                            </div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0" id="shiftsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Time</th>
+                                            <th>Site</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-sun" style="color:#f59e0b;"></i>
+                                                    <span class="fw-semibold">Day Shift A</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">Day</span></td>
+                                            <td><span class="text-muted">08:00 - 17:00</span></td>
+                                            <td><span class="badge" style="background:#24c1d9;">Cairo Office</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#shiftModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-moon" style="color:#24c1d9;"></i>
+                                                    <span class="fw-semibold">Night Shift B</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(36,193,217,0.2);">Night</span></td>
+                                            <td><span class="text-muted">20:00 - 05:00</span></td>
+                                            <td><span class="badge" style="background:#f59e0b;">Field Site A</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#shiftModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-phone" style="color:#10b981;"></i>
+                                                    <span class="fw-semibold">On-call Support</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">On-call</span></td>
+                                            <td><span class="text-muted">24/7</span></td>
+                                            <td><span class="badge" style="background:#24c1d9;">All Sites</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#shiftModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn btn-outline btn-sm" id="expShiftCsv">Export CSV</button>
+                                <button class="btn btn-gradient btn-sm" id="expShiftPdf">Export PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Site Attendance</div>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm" style="width:auto" id="siteFilter">
+                                        <option value="all">All Sites</option>
+                                        <option>Cairo Office</option>
+                                        <option>Field Site A</option>
+                                        <option>Field Site B</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <input type="date" class="form-control form-control-sm" id="attDate" value="">
+                                </div>
+                                <div class="col-6">
+                                    <select class="form-select form-select-sm" id="methodFilter">
+                                        <option value="all">All Methods</option>
+                                        <option>Fingerprint</option>
+                                        <option>GPS</option>
+                                        <option>Card</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0" id="attendanceTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Status</th>
+                                            <th>Time</th>
+                                            <th>Method</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span>Dalia</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Present</span></td>
+                                            <td><span class="text-muted">08:15</span></td>
+                                            <td><span class="badge" style="background:#009879;">Fingerprint</span></td>
+                                            <td><span class="text-muted small">On time</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span>Yousef</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Present</span></td>
+                                            <td><span class="text-muted">08:05</span></td>
+                                            <td><span class="badge" style="background:#24c1d9;">GPS</span></td>
+                                            <td><span class="text-muted small">Field site</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span>Mahmoud</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(239,68,68,0.2);">Absent</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="badge" style="background:#ef4444;">—</span></td>
+                                            <td><span class="text-muted small">On leave</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn btn-outline btn-sm" id="expAttCsv">Export CSV</button>
+                                <button class="btn btn-gradient btn-sm" id="expAttPdf">Export PDF</button>
+                            </div>
+                            <div class="text-muted mt-2 small">
+                                <i class="fa-solid fa-info-circle"></i> Offline capture supported at remote sites
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Reports -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-12">
+                        <div class="glass-card p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Attendance Reports</div>
+                                <div class="d-flex gap-2">
+                                    <input type="month" class="form-control" style="max-width:200px" id="reportMonth">
+                                    <button class="btn btn-outline btn-sm" id="exportReportCsv">Export CSV</button>
+                                    <button class="btn btn-gradient btn-sm" id="exportReportPdf">Export PDF</button>
+                                </div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <div class="p-3 text-center" style="background:rgba(255,255,255,0.04); border-radius:8px;">
+                                        <div class="h4 mb-0 text-primary">94.2%</div>
+                                        <div class="text-muted small">Monthly Average</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 text-center" style="background:rgba(255,255,255,0.04); border-radius:8px;">
+                                        <div class="h4 mb-0 text-success">3,456</div>
+                                        <div class="text-muted small">Total Hours Worked</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 text-center" style="background:rgba(255,255,255,0.04); border-radius:8px;">
+                                        <div class="h4 mb-0 text-warning">89</div>
+                                        <div class="text-muted small">Overtime Hours</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 text-center" style="background:rgba(255,255,255,0.04); border-radius:8px;">
+                                        <div class="h4 mb-0 text-danger">9</div>
+                                        <div class="text-muted small">Absences</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employee Time Sheets -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-12">
+                        <div class="glass-card p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Employee Time Sheets</div>
+                                <div class="d-flex gap-2">
+                                    <input type="month" class="form-control" style="max-width:200px" id="timeSheetMonth" value="">
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-darkish align-middle mb-0" id="timeSheetTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Department</th>
+                                            <th>Month</th>
+                                            <th>Total Days</th>
+                                            <th>Present Days</th>
+                                            <th>Absent Days</th>
+                                            <th>Total Hours</th>
+                                            <th>Overtime Hours</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr data-employee="Dalia" data-month="">
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:32px;height:32px;">
+                                                    <span class="fw-semibold">Dalia</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#24c1d9;">HR</span></td>
+                                            <td>
+                                                <input type="month" class="form-control form-control-sm employee-month-selector" style="width:150px;" value="">
+                                            </td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-gradient view-time-sheet" title="View Time Sheet"><i class="fa-solid fa-calendar-days"></i> View</button>
+                                                <button class="btn btn-sm btn-outline print-time-sheet" title="Print"><i class="fa-solid fa-print"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr data-employee="Yousef" data-month="">
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="" style="width:32px;height:32px;">
+                                                    <span class="fw-semibold">Yousef</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#f59e0b;">Finance</span></td>
+                                            <td>
+                                                <input type="month" class="form-control form-control-sm employee-month-selector" style="width:150px;" value="">
+                                            </td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-gradient view-time-sheet" title="View Time Sheet"><i class="fa-solid fa-calendar-days"></i> View</button>
+                                                <button class="btn btn-sm btn-outline print-time-sheet" title="Print"><i class="fa-solid fa-print"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr data-employee="Mahmoud" data-month="">
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="" style="width:32px;height:32px;">
+                                                    <span class="fw-semibold">Mahmoud</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#10b981;">IT</span></td>
+                                            <td>
+                                                <input type="month" class="form-control form-control-sm employee-month-selector" style="width:150px;" value="">
+                                            </td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td><span class="text-muted">—</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-gradient view-time-sheet" title="View Time Sheet"><i class="fa-solid fa-calendar-days"></i> View</button>
+                                                <button class="btn btn-sm btn-outline print-time-sheet" title="Print"><i class="fa-solid fa-print"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Daily Attendance Trend</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="attTrend" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex justify-content-between">
+                                <small class="text-muted">Week Average: 94.2%</small>
+                                <small class="text-muted">Best Day: Friday (98.5%)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Shifts by Type</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="shiftPie" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center">
+                                <span class="badge" style="background:#009879;">Day: 70%</span>
+                                <span class="badge" style="background:#00c4a7;">Night: 25%</span>
+                                <span class="badge" style="background:#10b981;">On-call: 5%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Shift Modal -->
+    <div class="modal fade" id="shiftModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Shift</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Shift Name</label>
+                            <input class="form-control" placeholder="e.g., Day Shift A">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Shift Type</label>
+                            <select class="form-select">
+                                <option>Day</option>
+                                <option>Night</option>
+                                <option>On-call</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Site</label>
+                            <select class="form-select">
+                                <option>Cairo Office</option>
+                                <option>Field Site A</option>
+                                <option>Field Site B</option>
+                                <option>All Sites</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Start Time</label>
+                            <input type="time" class="form-control" placeholder="From">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">End Time</label>
+                            <input type="time" class="form-control" placeholder="To">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" placeholder="Additional details..." rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Save Shift</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Sheet Modal -->
+    <div class="modal fade" id="timeSheetModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content" style="background:#1a1a2e; border:1px solid rgba(255,255,255,0.1);">
+                <div class="modal-header" style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                    <h5 class="modal-title text-light">Time Sheet - <span id="timeSheetEmployeeName" class="text-primary"></span></h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-gradient" id="printTimeSheetBtn"><i class="fa-solid fa-print"></i> Print</button>
+                        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                </div>
+                <div class="modal-body" id="timeSheetContent" style="background:#1a1a2e; color:#e2e8f0;">
+                    <!-- Time Sheet will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('attDate');
+            if(dateInput) dateInput.value = today;
+
+            // Set current month as default for time sheets
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const timeSheetMonthInput = document.getElementById('timeSheetMonth');
+            const employeeMonthSelectors = document.querySelectorAll('.employee-month-selector');
+            
+            if(timeSheetMonthInput) timeSheetMonthInput.value = currentMonth;
+            employeeMonthSelectors.forEach(selector => {
+                selector.value = currentMonth;
+            });
+
+            // Update time sheet month for all employees
+            if(timeSheetMonthInput) {
+                timeSheetMonthInput.addEventListener('change', function() {
+                    employeeMonthSelectors.forEach(selector => {
+                        selector.value = this.value;
+                    });
+                    updateTimeSheetStats();
+                });
+            }
+
+            // Update stats when individual month selector changes
+            employeeMonthSelectors.forEach(selector => {
+                selector.addEventListener('change', function() {
+                    const row = this.closest('tr');
+                    updateRowStats(row);
+                });
+            });
+
+            // Generate sample data for a month
+            function generateMonthData(employee, yearMonth) {
+                const [year, month] = yearMonth.split('-').map(Number);
+                const daysInMonth = new Date(year, month, 0).getDate();
+                const data = [];
+                
+                // Sample data - in real app, this would come from backend
+                const sampleData = {
+                    'Dalia': { present: 22, absent: 2, leave: 2, overtime: 8 },
+                    'Yousef': { present: 20, absent: 1, leave: 3, overtime: 12 },
+                    'Mahmoud': { present: 23, absent: 0, leave: 1, overtime: 5 }
+                };
+                
+                const empData = sampleData[employee] || { present: 20, absent: 2, leave: 2, overtime: 0 };
+                let presentCount = 0, absentCount = 0, leaveCount = 0;
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month - 1, day);
+                    const dayOfWeek = date.getDay();
+                    const isWeekend = dayOfWeek === 5 || dayOfWeek === 6; // Friday or Saturday
+                    
+                    let status = 'present';
+                    let checkIn = '08:00';
+                    let checkOut = '17:00';
+                    let hours = 8;
+                    let notes = '';
+                    
+                    if (isWeekend) {
+                        status = 'holiday';
+                        checkIn = '—';
+                        checkOut = '—';
+                        hours = 0;
+                        notes = 'Weekend';
+                    } else if (presentCount < empData.present) {
+                        status = 'present';
+                        presentCount++;
+                        // Random check-in time between 7:45 and 8:15
+                        const checkInMinutes = 7 * 60 + 45 + Math.floor(Math.random() * 30);
+                        checkIn = String(Math.floor(checkInMinutes / 60)).padStart(2, '0') + ':' + 
+                                  String(checkInMinutes % 60).padStart(2, '0');
+                        // Random check-out time between 16:45 and 17:30
+                        const checkOutMinutes = 16 * 60 + 45 + Math.floor(Math.random() * 45);
+                        checkOut = String(Math.floor(checkOutMinutes / 60)).padStart(2, '0') + ':' + 
+                                   String(checkOutMinutes % 60).padStart(2, '0');
+                        hours = ((checkOutMinutes - checkInMinutes) / 60).toFixed(1);
+                    } else if (absentCount < empData.absent) {
+                        status = 'absent';
+                        absentCount++;
+                        checkIn = '—';
+                        checkOut = '—';
+                        hours = 0;
+                        notes = 'Absent';
+                    } else if (leaveCount < empData.leave) {
+                        status = 'leave';
+                        leaveCount++;
+                        checkIn = '—';
+                        checkOut = '—';
+                        hours = 0;
+                        notes = 'On Leave';
+                    }
+                    
+                    data.push({
+                        date: day,
+                        dayName: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dayOfWeek],
+                        status: status,
+                        checkIn: checkIn,
+                        checkOut: checkOut,
+                        hours: parseFloat(hours),
+                        notes: notes
+                    });
+                }
+                
+                return {
+                    days: data,
+                    totalDays: daysInMonth,
+                    presentDays: empData.present,
+                    absentDays: empData.absent,
+                    leaveDays: empData.leave,
+                    totalHours: empData.present * 8 + empData.overtime,
+                    overtimeHours: empData.overtime
+                };
+            }
+
+            // Update row statistics
+            function updateRowStats(row) {
+                const employee = row.dataset.employee;
+                const monthInput = row.querySelector('.employee-month-selector');
+                const month = monthInput ? monthInput.value : '';
+                
+                if (!month) {
+                    row.querySelectorAll('td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7), td:nth-child(8)').forEach(td => {
+                        td.innerHTML = '<span class="text-muted">—</span>';
+                    });
+                    return;
+                }
+                
+                const data = generateMonthData(employee, month);
+                
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 8) {
+                    cells[3].innerHTML = `<span class="fw-semibold">${data.totalDays}</span>`;
+                    cells[4].innerHTML = `<span class="text-success fw-semibold">${data.presentDays}</span>`;
+                    cells[5].innerHTML = `<span class="text-danger fw-semibold">${data.absentDays}</span>`;
+                    cells[6].innerHTML = `<span class="text-primary fw-semibold">${data.totalHours}</span>`;
+                    cells[7].innerHTML = `<span class="text-warning fw-semibold">${data.overtimeHours}</span>`;
+                }
+                
+                row.dataset.month = month;
+            }
+
+            // Update all time sheet stats
+            function updateTimeSheetStats() {
+                document.querySelectorAll('#timeSheetTable tbody tr').forEach(row => {
+                    updateRowStats(row);
+                });
+            }
+
+            // Generate speed gauge SVG
+            function generateSpeedGauge(percentage, id) {
+                const size = 200;
+                const strokeWidth = 20;
+                const radius = (size - strokeWidth) / 2;
+                const circumference = 2 * Math.PI * radius;
+                const offset = circumference - (percentage / 100) * circumference;
+                
+                const color = percentage >= 90 ? '#10b981' : percentage >= 70 ? '#f59e0b' : '#ef4444';
+                
+                return `
+                    <style>.table>:not(caption)>*>* {
+                        padding: .5rem .5rem;
+                        color: var(--bs-table-color-state, var(--bs-table-color-type, var(--bs-table-color)));
+                        background-color: #000000;
+                        border-bottom-width: var(--bs-border-width);
+                        box-shadow: inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg)));
+                    }
+                    </style>
+                    <div class="text-center">
+                        <svg width="${size}" height="${size}" class="speed-gauge">
+                            <circle
+                                cx="${size/2}"
+                                cy="${size/2}"
+                                r="${radius}"
+                                fill="none"
+                                stroke="rgba(255,255,255,0.1)"
+                                stroke-width="${strokeWidth}"
+                            />
+                            <circle
+                                cx="${size/2}"
+                                cy="${size/2}"
+                                r="${radius}"
+                                fill="none"
+                                stroke="${color}"
+                                stroke-width="${strokeWidth}"
+                                stroke-linecap="round"
+                                stroke-dasharray="${circumference}"
+                                stroke-dashoffset="${offset}"
+                                transform="rotate(-90 ${size/2} ${size/2})"
+                                class="gauge-circle"
+                            />
+                            <text
+                                x="${size/2}"
+                                y="${size/2 - 10}"
+                                text-anchor="middle"
+                                fill="${color}"
+                                font-size="32"
+                                font-weight="bold"
+                                class="gauge-value"
+                            >${percentage}%</text>
+                            <text
+                                x="${size/2}"
+                                y="${size/2 + 15}"
+                                text-anchor="middle"
+                                fill="#aaa"
+                                font-size="14"
+                            >Attendance</text>
+                        </svg>
+                    </div>
+                `;
+            }
+
+            // Generate time sheet HTML
+            function generateTimeSheetHTML(employee, yearMonth, data) {
+                const [year, month] = yearMonth.split('-');
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                  'July', 'August', 'September', 'October', 'November', 'December'];
+                const monthName = monthNames[parseInt(month) - 1];
+                
+                let totalHours = 0;
+                let presentCount = 0, absentCount = 0, leaveCount = 0, holidayCount = 0;
+                
+                // Prepare data for horizontal calendar and charts
+                data.days.forEach((day, index) => {
+                    totalHours += day.hours;
+                    
+                    if (day.status === 'present') presentCount++;
+                    else if (day.status === 'absent') absentCount++;
+                    else if (day.status === 'leave') leaveCount++;
+                    else if (day.status === 'holiday') holidayCount++;
+                });
+                
+                const attendanceRate = Math.round((data.presentDays / (data.totalDays - holidayCount)) * 100) || 0;
+                const workingDays = data.totalDays - holidayCount;
+                
+                // Generate horizontal calendar (days in rows)
+                let calendarRows = '';
+                
+                // Group days by weeks properly
+                const weeks = [];
+                let currentWeek = [];
+                
+                // Get first day of month to know which day of week it starts on
+                const firstDay = new Date(year, month - 1, 1);
+                const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 6 = Saturday
+                
+                // Add empty cells for days before the first day of month
+                for (let i = 0; i < firstDayOfWeek; i++) {
+                    currentWeek.push(null);
+                }
+                
+                // Add all days of the month
+                data.days.forEach((day, index) => {
+                    currentWeek.push(day);
+                    
+                    // If we've filled 7 days or it's the last day, start a new week
+                    if (currentWeek.length === 7 || index === data.days.length - 1) {
+                        weeks.push([...currentWeek]);
+                        currentWeek = [];
+                    }
+                });
+                
+                // Fill the last week with empty cells if needed
+                if (currentWeek.length > 0) {
+                    while (currentWeek.length < 7) {
+                        currentWeek.push(null);
+                    }
+                    weeks.push(currentWeek);
+                }
+                
+                weeks.forEach((week, weekIndex) => {
+                    let weekRow = '<tr>';
+                    weekRow += `<td class="fw-bold text-center text-light" style="background:rgba(255,255,255,0.1); vertical-align:middle; width:100px;">Week ${weekIndex + 1}</td>`;
+                    
+                    // Render 7 days per week
+                    for (let i = 0; i < 7; i++) {
+                        const day = week[i];
+                        
+                        if (!day) {
+                            weekRow += '<td style="background:rgba(255,255,255,0.02); min-width:120px; height:100px;"></td>';
+                            continue;
+                        }
+                        
+                        const statusClass = {
+                            'present': 'present',
+                            'absent': 'absent',
+                            'leave': 'leave',
+                            'holiday': 'holiday'
+                        }[day.status] || '';
+                        
+                        const isWeekend = day.dayName === 'Fri' || day.dayName === 'Sat';
+                        const cellBg = isWeekend ? 'rgba(255,255,255,0.05)' : (statusClass === 'present' ? 'rgba(16,185,129,0.15)' : statusClass === 'absent' ? 'rgba(239,68,68,0.15)' : statusClass === 'leave' ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.05)');
+                        
+                        weekRow += `
+                            <td class="text-center ${statusClass}" style="min-width:120px; padding:10px 6px; background:${cellBg}; vertical-align:top; border:1px solid rgba(255,255,255,0.1);">
+                                <div class="fw-bold mb-1" style="font-size:16px; color:#e2e8f0;">${day.date}</div>
+                                <div class="small mb-2" style="color:#94a3b8; font-size:10px;">${day.dayName}</div>
+                                ${day.checkIn !== '—' ? `<div class="small mb-1" style="color:#10b981; font-size:11px;"><i class="fa-solid fa-arrow-down"></i> ${day.checkIn}</div>` : ''}
+                                ${day.checkOut !== '—' ? `<div class="small mb-1" style="color:#ef4444; font-size:11px;"><i class="fa-solid fa-arrow-up"></i> ${day.checkOut}</div>` : ''}
+                                ${day.hours > 0 ? `<div class="mt-2"><span class="badge bg-primary" style="font-size:11px; padding:4px 8px;">${day.hours}h</span></div>` : ''}
+                                ${day.notes ? `<div class="text-muted mt-1" style="font-size:9px; color:#6b7280;">${day.notes}</div>` : ''}
+                            </td>
+                        `;
+                    }
+                    
+                    weekRow += '</tr>';
+                    calendarRows += weekRow;
+                });
+                
+                // Generate chart data
+                const chartLabels = data.days.map(d => d.date);
+                const hoursData = data.days.map(d => d.hours);
+                const statusData = {
+                    present: presentCount,
+                    absent: absentCount,
+                    leave: leaveCount,
+                    holiday: holidayCount
+                };
+                
+                return `
+                    <div id="timeSheetPrintArea" style="background:rgba(0,0,0,1); color:#e2e8f0; padding:20px; border-radius:8px;">
+                       
+                        
+                        <!-- Stats Cards with Speed Gauge -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="p-3 border rounded text-center" style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.2)!important;">
+                                    <div class="text-light small mb-2">Total Days</div>
+                                    <div class="h3 mb-0 fw-bold text-light">${data.totalDays}</div>
+                                    <div class="small text-muted">${workingDays} Working</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border rounded text-center" style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.2)!important;">
+                                    <div class="text-light small mb-2">Present Days</div>
+                                    <div class="h3 mb-0 fw-bold text-success">${data.presentDays}</div>
+                                    <div class="small text-success">${Math.round((data.presentDays/workingDays)*100)}% Rate</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border rounded text-center" style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.2)!important;">
+                                    <div class="text-light small mb-2">Total Hours</div>
+                                    <div class="h3 mb-0 fw-bold text-primary">${data.totalHours}</div>
+                                    <div class="small text-primary">${(data.totalHours/workingDays).toFixed(1)}h/day</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border rounded text-center" style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.2)!important;">
+                                    <div class="text-light small mb-2">Overtime Hours</div>
+                                    <div class="h3 mb-0 fw-bold text-warning">${data.overtimeHours}</div>
+                                    <div class="small text-warning">Extra Work</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Speed Gauge and Charts Row -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded text-center" style="background:rgba(255,255,255,0.03);">
+                                    <h6 class="mb-3 text-light">Attendance Rate</h6>
+                                    ${generateSpeedGauge(attendanceRate, 'attendanceGauge')}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded" style="background:rgba(255,255,255,0.03);">
+                                    <h6 class="mb-3 text-center text-light">Daily Hours Trend</h6>
+                                    <div style="height:200px; position:relative;">
+                                        <canvas id="hoursChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded" style="background:rgba(255,255,255,0.03);">
+                                    <h6 class="mb-3 text-center text-light">Status Distribution</h6>
+                                    <div style="height:200px; position:relative;">
+                                        <canvas id="statusChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Horizontal Calendar -->
+                        <div class="mb-4">
+                            <h5 class="mb-3 text-light"><i class="fa-solid fa-calendar-days"></i> Monthly Calendar View</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered time-sheet-table" style="font-size:11px; border-collapse:separate; border-spacing:2px;">
+                                    <thead>
+                                        <tr style="background:rgba(255,255,255,0.1);">
+                                            <th class="text-light fw-bold" style="width:100px; padding:12px; border:1px solid rgba(255,255,255,0.2);">Week</th>
+                                            <th class="text-light fw-bold" style="padding:12px; border:1px solid rgba(255,255,255,0.2); min-width:120px;">Sun</th>
+                                            <th class="text-light fw-bold" style="padding:12px; border:1px solid rgba(255,255,255,0.2); min-width:120px;">Mon</th>
+                                            <th class="text-light fw-bold" style="padding:12px; border:1px solid rgba(255,255,255,0.2); min-width:120px;">Tue</th>
+                                            <th class="text-light fw-bold" style="padding:12px; border:1px solid rgba(255,255,255,0.2); min-width:120px;">Wed</th>
+                                            <th class="text-light fw-bold" style="padding:12px; border:1px solid rgba(255,255,255,0.2); min-width:120px;">Thu</th>
+                                            <th class="text-light fw-bold" style="padding:12px; border:1px solid rgba(255,255,255,0.2); min-width:120px;">Fri</th>
+                                            <th class="text-light fw-bold" style="padding:12px; border:1px solid rgba(255,255,255,0.2); min-width:120px;">Sat</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${calendarRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Summary Table -->
+                        <div class="mb-4">
+                            <h5 class="mb-3 text-light"><i class="fa-solid fa-list"></i> Summary</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-bordered time-sheet-table" style="color:#e2e8f0;">
+                                        <thead>
+                                            <tr style="background:rgba(255,255,255,0.1);">
+                                                <th class="text-light">Status</th>
+                                                <th class="text-light">Days</th>
+                                                <th class="text-light">Percentage</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="present">
+                                                <td class="text-light"><i class="fa-solid fa-check-circle text-success"></i> Present</td>
+                                                <td class="fw-bold text-light">${presentCount}</td>
+                                                <td class="text-light">${Math.round((presentCount/workingDays)*100)}%</td>
+                                            </tr>
+                                            <tr class="absent">
+                                                <td class="text-light"><i class="fa-solid fa-times-circle text-danger"></i> Absent</td>
+                                                <td class="fw-bold text-light">${absentCount}</td>
+                                                <td class="text-light">${Math.round((absentCount/workingDays)*100)}%</td>
+                                            </tr>
+                                            <tr class="leave">
+                                                <td class="text-light"><i class="fa-solid fa-calendar-xmark text-warning"></i> Leave</td>
+                                                <td class="fw-bold text-light">${leaveCount}</td>
+                                                <td class="text-light">${Math.round((leaveCount/workingDays)*100)}%</td>
+                                            </tr>
+                                            <tr class="holiday">
+                                                <td class="text-light"><i class="fa-solid fa-calendar-days text-secondary"></i> Holiday</td>
+                                                <td class="fw-bold text-light">${holidayCount}</td>
+                                                <td class="text-light">${Math.round((holidayCount/data.totalDays)*100)}%</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr style="background:rgba(255,255,255,0.05);">
+                                                <td class="fw-bold text-light">Total</td>
+                                                <td class="fw-bold text-light">${data.totalDays}</td>
+                                                <td class="fw-bold text-light">100%</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 border rounded h-100" style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.2)!important;">
+                                        <h6 class="mb-3 text-light">Time Summary</h6>
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="text-light">Total Hours:</span>
+                                                <span class="fw-bold text-primary">${totalHours.toFixed(1)}h</span>
+                                            </div>
+                                            <div class="progress" style="height:8px;">
+                                                <div class="progress-bar bg-primary" style="width:100%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="text-light">Regular Hours:</span>
+                                                <span class="fw-bold text-light">${(totalHours - data.overtimeHours).toFixed(1)}h</span>
+                                            </div>
+                                            <div class="progress" style="height:8px;">
+                                                <div class="progress-bar bg-success" style="width:${((totalHours - data.overtimeHours)/totalHours*100).toFixed(0)}%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="text-light">Overtime Hours:</span>
+                                                <span class="fw-bold text-warning">${data.overtimeHours}h</span>
+                                            </div>
+                                            <div class="progress" style="height:8px;">
+                                                <div class="progress-bar bg-warning" style="width:${(data.overtimeHours/totalHours*100).toFixed(0)}%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3 pt-3 border-top" style="border-color:rgba(255,255,255,0.2)!important;">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="fw-bold text-light">Average per Day:</span>
+                                                <span class="fw-bold text-primary">${(totalHours/workingDays).toFixed(1)}h</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Legend -->
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2 text-light"><strong><i class="fa-solid fa-info-circle"></i> Legend:</strong></p>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <span><span class="badge bg-success p-2"><i class="fa-solid fa-check"></i> Present</span></span>
+                                        <span><span class="badge bg-danger p-2"><i class="fa-solid fa-times"></i> Absent</span></span>
+                                        <span><span class="badge bg-warning p-2"><i class="fa-solid fa-calendar-xmark"></i> Leave</span></span>
+                                        <span><span class="badge bg-secondary p-2"><i class="fa-solid fa-calendar-days"></i> Holiday</span></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <p class="mb-0 text-muted"><small><i class="fa-solid fa-clock"></i> Generated on: ${new Date().toLocaleDateString()}</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // View time sheet
+            document.querySelectorAll('.view-time-sheet').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const employee = row.dataset.employee;
+                    const monthInput = row.querySelector('.employee-month-selector');
+                    const month = monthInput ? monthInput.value : '';
+                    
+                    if (!month) {
+                        alert('Please select a month first');
+                        monthInput.focus();
+                        return;
+                    }
+                    
+                    // Get employee info from table row
+                    let employeeImg = '';
+                    let employeeDept = '';
+                    let employeeRole = '';
+                    
+                    // Find the row for this employee
+                    const allRows = document.querySelectorAll('tr[data-employee]');
+                    for (let row of allRows) {
+                        if (row.dataset.employee === employee) {
+                            const imgElement = row.querySelector('img.avatar');
+                            if (imgElement) {
+                                employeeImg = imgElement.src;
+                            }
+                            const deptCell = row.querySelector('td:nth-child(2)');
+                            if (deptCell) {
+                                const badge = deptCell.querySelector('.badge');
+                                if (badge) {
+                                    employeeDept = badge.textContent.trim();
+                                }
+                            }
+                            // Role can be same as department or can be extracted from another source
+                            employeeRole = employeeDept; // You can modify this if role is stored separately
+                            break;
+                        }
+                    }
+                    
+                    const data = generateMonthData(employee, month);
+                    document.getElementById('timeSheetEmployeeName').textContent = employee;
+                    
+                    // Build header HTML for view
+                    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                      'July', 'August', 'September', 'October', 'November', 'December'];
+                    const [year, monthNum] = month.split('-');
+                    const monthName = monthNames[parseInt(monthNum) - 1];
+                    
+                    const viewHeaderHTML = '<div class="mb-4" style="background:linear-gradient(135deg, rgba(36,193,217,0.2) 0%, rgba(0,0,0,0.3) 100%);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:20px;display:flex;align-items:center;gap:20px;">' +
+                        '<div style="flex-shrink:0;">' +
+                        '<img src="' + (employeeImg || '') + '" alt="' + employee + '" style="width:80px;height:80px;border-radius:50%;border:3px solid rgba(36,193,217,0.5);object-fit:cover;background:rgba(255,255,255,0.1);">' +
+                        '</div>' +
+                        '<div style="flex:1;">' +
+                        '<h4 style="margin:0;color:#24c1d9;font-weight:bold;font-size:22px;margin-bottom:8px;">' + employee + '</h4>' +
+                        '<div style="display:flex;gap:15px;flex-wrap:wrap;margin-top:10px;">' +
+                        '<div style="display:flex;align-items:center;gap:8px;">' +
+                        '<i class="fa-solid fa-building" style="color:#24c1d9;font-size:16px;"></i>' +
+                        '<span style="color:#e2e8f0;font-size:14px;"><strong>Department:</strong> <span style="color:#24c1d9;">' + (employeeDept || 'N/A') + '</span></span>' +
+                        '</div>' +
+                        '<div style="display:flex;align-items:center;gap:8px;">' +
+                        '<i class="fa-solid fa-user-tie" style="color:#24c1d9;font-size:16px;"></i>' +
+                        '<span style="color:#e2e8f0;font-size:14px;"><strong>Role:</strong> <span style="color:#24c1d9;">' + (employeeRole || 'N/A') + '</span></span>' +
+                        '</div>' +
+                        '<div style="display:flex;align-items:center;gap:8px;">' +
+                        '<i class="fa-solid fa-calendar" style="color:#24c1d9;font-size:16px;"></i>' +
+                        '<span style="color:#e2e8f0;font-size:14px;"><strong>Period:</strong> <span style="color:#24c1d9;">' + monthName + ' ' + year + '</span></span>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                    
+                    // Combine header with time sheet content
+                    const timeSheetHTML = generateTimeSheetHTML(employee, month, data);
+                    document.getElementById('timeSheetContent').innerHTML = viewHeaderHTML + timeSheetHTML;
+                    
+                    // Store employee and month in modal for print button
+                    const modalElement = document.getElementById('timeSheetModal');
+                    modalElement.dataset.employee = employee;
+                    modalElement.dataset.month = month;
+                    
+                    const modal = new bootstrap.Modal(modalElement);
+                    
+                    // Draw charts after modal is fully shown
+                    modalElement.addEventListener('shown.bs.modal', function() {
+                        function waitForChartJS(callback, maxAttempts = 30) {
+                            let attempts = 0;
+                            const checkChart = setInterval(() => {
+                                attempts++;
+                                if (typeof Chart !== 'undefined') {
+                                    clearInterval(checkChart);
+                                    // Wait a bit more for DOM to be ready
+                                    setTimeout(() => {
+                                        callback();
+                                    }, 100);
+                                } else if (attempts >= maxAttempts) {
+                                    clearInterval(checkChart);
+                                    console.error('Chart.js failed to load');
+                                }
+                            }, 100);
+                        }
+                        
+                        waitForChartJS(() => {
+                            drawTimeSheetCharts(data);
+                        });
+                    }, { once: true });
+                    
+                    modal.show();
+                });
+            });
+
+            // Draw charts for time sheet
+            function drawTimeSheetCharts(data) {
+                const textColor = '#e2e8f0';
+                
+                // Check if Chart.js is available
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js is not loaded');
+                    return;
+                }
+                
+                // Hours Chart
+                const hoursCtx = document.getElementById('hoursChart');
+                if (!hoursCtx) {
+                    console.error('hoursChart canvas not found');
+                }
+                
+                if (hoursCtx) {
+                    // Destroy existing chart if it exists
+                    if (window.hoursChartInstance) {
+                        window.hoursChartInstance.destroy();
+                    }
+                    
+                    const chartLabels = data.days.map((d, i) => i + 1);
+                    const hoursData = data.days.map(d => d.hours);
+                    
+                    window.hoursChartInstance = new Chart(hoursCtx, {
+                        type: 'line',
+                        data: {
+                            labels: chartLabels,
+                            datasets: [{
+                                label: 'Hours',
+                                data: hoursData,
+                                borderColor: '#24c1d9',
+                                backgroundColor: 'rgba(36,193,217,0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 3,
+                                pointBackgroundColor: '#24c1d9',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            aspectRatio: 1.5,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                    titleColor: '#fff',
+                                    bodyColor: '#fff',
+                                    borderColor: '#24c1d9',
+                                    borderWidth: 1
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: { 
+                                        color: textColor, 
+                                        maxTicksLimit: 10,
+                                        font: { size: 11 }
+                                    },
+                                    grid: { 
+                                        color: 'rgba(255,255,255,0.1)',
+                                        drawBorder: false
+                                    }
+                                },
+                                y: {
+                                    ticks: { 
+                                        color: textColor,
+                                        font: { size: 11 }
+                                    },
+                                    grid: { 
+                                        color: 'rgba(255,255,255,0.1)',
+                                        drawBorder: false
+                                    },
+                                    beginAtZero: true,
+                                    max: Math.max(...hoursData) + 2
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // Status Distribution Chart
+                const statusCtx = document.getElementById('statusChart');
+                if (!statusCtx) {
+                    console.error('statusChart canvas not found');
+                }
+                
+                if (statusCtx) {
+                    // Destroy existing chart if it exists
+                    if (window.statusChartInstance) {
+                        window.statusChartInstance.destroy();
+                    }
+                    
+                    let presentCount = 0, absentCount = 0, leaveCount = 0, holidayCount = 0;
+                    data.days.forEach(day => {
+                        if (day.status === 'present') presentCount++;
+                        else if (day.status === 'absent') absentCount++;
+                        else if (day.status === 'leave') leaveCount++;
+                        else if (day.status === 'holiday') holidayCount++;
+                    });
+                    
+                    window.statusChartInstance = new Chart(statusCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Present', 'Absent', 'Leave', 'Holiday'],
+                            datasets: [{
+                                data: [presentCount, absentCount, leaveCount, holidayCount],
+                                backgroundColor: [
+                                    '#10b981',
+                                    '#ef4444',
+                                    '#f59e0b',
+                                    '#6b7280'
+                                ],
+                                borderWidth: 2,
+                                borderColor: 'rgba(0,0,0,0.3)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            aspectRatio: 1.5,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { 
+                                        color: textColor, 
+                                        padding: 12,
+                                        font: { size: 12 }
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                    titleColor: '#fff',
+                                    bodyColor: '#fff',
+                                    borderColor: '#24c1d9',
+                                    borderWidth: 1
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Print time sheet from modal button
+            document.getElementById('printTimeSheetBtn')?.addEventListener('click', function() {
+                const modalElement = document.getElementById('timeSheetModal');
+                const employeeName = modalElement.dataset.employee || document.getElementById('timeSheetEmployeeName').textContent;
+                const month = modalElement.dataset.month;
+                
+                if (!employeeName) {
+                    alert('No time sheet data available');
+                    return;
+                }
+                
+                if (!month) {
+                    alert('Month information not found. Please close and reopen the time sheet.');
+                    return;
+                }
+                
+                // Get employee info from table row by employee name
+                let employeeImg = '';
+                let employeeDept = '';
+                let employeeRole = '';
+                
+                // Find the row for this employee
+                const allRows = document.querySelectorAll('tr[data-employee]');
+                for (let row of allRows) {
+                    if (row.dataset.employee === employeeName) {
+                        const imgElement = row.querySelector('img.avatar');
+                        if (imgElement) {
+                            employeeImg = imgElement.src;
+                        }
+                        const deptCell = row.querySelector('td:nth-child(2)');
+                        if (deptCell) {
+                            const badge = deptCell.querySelector('.badge');
+                            if (badge) {
+                                employeeDept = badge.textContent.trim();
+                            }
+                        }
+                        // Role can be same as department or can be extracted from another source
+                        employeeRole = employeeDept; // You can modify this if role is stored separately
+                        break;
+                    }
+                }
+                
+                const data = generateMonthData(employeeName, month);
+                
+                // Function to convert charts to images and open print window
+                function convertChartsAndPrint() {
+                    let hoursChartImg = '';
+                    let statusChartImg = '';
+                    
+                    // Get chart images from modal
+                    const hoursCanvas = document.getElementById('hoursChart');
+                    const statusCanvas = document.getElementById('statusChart');
+                    
+                    if (hoursCanvas && window.hoursChartInstance) {
+                        try {
+                            hoursChartImg = hoursCanvas.toDataURL('image/png');
+                        } catch(e) {
+                            console.error('Error converting hours chart to image:', e);
+                        }
+                    }
+                    
+                    if (statusCanvas && window.statusChartInstance) {
+                        try {
+                            statusChartImg = statusCanvas.toDataURL('image/png');
+                        } catch(e) {
+                            console.error('Error converting status chart to image:', e);
+                        }
+                    }
+                    
+                    // Replace canvas elements with images in HTML
+                    let html = generateTimeSheetHTML(employeeName, month, data);
+                    
+                    // Replace canvas elements with img tags
+                    if (hoursChartImg) {
+                        html = html.replace(
+                            /<canvas id="hoursChart"><\/canvas>/g,
+                            '<img src="' + hoursChartImg + '" alt="Daily Hours Trend" style="max-width:100%;height:auto;display:block;">'
+                        );
+                    }
+                    
+                    if (statusChartImg) {
+                        html = html.replace(
+                            /<canvas id="statusChart"><\/canvas>/g,
+                            '<img src="' + statusChartImg + '" alt="Status Distribution" style="max-width:100%;height:auto;display:block;">'
+                        );
+                    }
+                    
+                    // Build header HTML
+                    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                      'July', 'August', 'September', 'October', 'November', 'December'];
+                    const [year, monthNum] = month.split('-');
+                    const monthName = monthNames[parseInt(monthNum) - 1];
+                    
+                    const headerHTML = '<div class="print-header" style="background:linear-gradient(135deg, rgba(36,193,217,0.2) 0%, rgba(0,0,0,0.3) 100%);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:20px;margin-bottom:30px;display:flex;align-items:center;gap:20px;">' +
+                        '<div style="flex-shrink:0;">' +
+                        '<img src="' + (employeeImg || '') + '" alt="' + employeeName + '" style="width:80px;height:80px;border-radius:50%;border:3px solid rgba(36,193,217,0.5);object-fit:cover;background:rgba(255,255,255,0.1);">' +
+                        '</div>' +
+                        '<div style="flex:1;">' +
+                        '<h3 style="margin:0;color:#24c1d9;font-weight:bold;font-size:24px;margin-bottom:8px;">' + employeeName + '</h3>' +
+                        '<div style="display:flex;gap:15px;flex-wrap:wrap;margin-top:10px;">' +
+                        '<div style="display:flex;align-items:center;gap:8px;">' +
+                        '<i class="fa-solid fa-building" style="color:#24c1d9;font-size:16px;"></i>' +
+                        '<span style="color:#e2e8f0;font-size:14px;"><strong>Department:</strong> <span style="color:#24c1d9;">' + (employeeDept || 'N/A') + '</span></span>' +
+                        '</div>' +
+                        '<div style="display:flex;align-items:center;gap:8px;">' +
+                        '<i class="fa-solid fa-user-tie" style="color:#24c1d9;font-size:16px;"></i>' +
+                        '<span style="color:#e2e8f0;font-size:14px;"><strong>Role:</strong> <span style="color:#24c1d9;">' + (employeeRole || 'N/A') + '</span></span>' +
+                        '</div>' +
+                        '<div style="display:flex;align-items:center;gap:8px;">' +
+                        '<i class="fa-solid fa-calendar" style="color:#24c1d9;font-size:16px;"></i>' +
+                        '<span style="color:#e2e8f0;font-size:14px;"><strong>Period:</strong> <span style="color:#24c1d9;">' + monthName + ' ' + year + '</span></span>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                    
+                    // Build print document (no Chart.js needed since we use images)
+                    const bodyClose = '<\/body><\/html>';
+                    
+                    const printDocParts = [
+                        '<!DOCTYPE html><html><head><title>Time Sheet - ',
+                        employeeName,
+                        '</title>',
+                        '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">',
+                        '<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">',
+                        '<style>',
+                        'body{padding:20px;background:#000;color:#e2e8f0;}',
+                        '.print-header{page-break-inside:avoid;}',
+                        '.time-sheet-table{font-size:11px;}',
+                        '.time-sheet-table th,.time-sheet-table td{padding:6px;border:1px solid rgba(255,255,255,0.2);}',
+                        '.time-sheet-table th{background-color:rgba(255,255,255,0.1);font-weight:bold;color:#e2e8f0;}',
+                        '.present{background-color:rgba(16,185,129,0.15)!important;}',
+                        '.absent{background-color:rgba(239,68,68,0.15)!important;}',
+                        '.leave{background-color:rgba(245,158,11,0.15)!important;}',
+                        '.holiday{background-color:rgba(255,255,255,0.05)!important;}',
+                        '.speed-gauge{max-width:200px;}',
+                        'img{max-width:100%!important;height:auto!important;display:block!important;}',
+                        '@media print{',
+                        'body{background:#000!important;}',
+                        '.print-header{page-break-inside:avoid;margin-bottom:20px;}',
+                        'img{visibility:visible!important;display:block!important;page-break-inside:avoid;}',
+                        '.no-print{display:none!important;}',
+                        '}',
+                        '</style></head><body style="background:#000;color:#e2e8f0;">',
+                        headerHTML
+                    ];
+                    const printDoc = printDocParts.join('') + html + bodyClose;
+                    
+                    // Create print window
+                    const printWindow = window.open('', '_blank');
+                    printWindow.document.open();
+                    printWindow.document.write(printDoc);
+                    printWindow.document.close();
+                    printWindow.onload = function() {
+                        setTimeout(function() { 
+                            printWindow.print(); 
+                        }, 500);
+                    };
+                }
+                
+                // Wait for charts to be ready, then convert and print
+                const hoursCanvas = document.getElementById('hoursChart');
+                const statusCanvas = document.getElementById('statusChart');
+                
+                if (hoursCanvas && statusCanvas && window.hoursChartInstance && window.statusChartInstance) {
+                    // Charts are ready, convert immediately
+                    setTimeout(() => {
+                        convertChartsAndPrint();
+                    }, 300);
+                } else {
+                    // Wait for charts to be drawn
+                    let attempts = 0;
+                    const checkInterval = setInterval(() => {
+                        attempts++;
+                        if (hoursCanvas && statusCanvas && window.hoursChartInstance && window.statusChartInstance) {
+                            clearInterval(checkInterval);
+                            setTimeout(() => {
+                                convertChartsAndPrint();
+                            }, 300);
+                        } else if (attempts >= 20) {
+                            clearInterval(checkInterval);
+                            // Print without charts if they don't load
+                            convertChartsAndPrint();
+                        }
+                    }, 200);
+                }
+            });
+
+            // Print time sheet from table button
+            document.querySelectorAll('.print-time-sheet').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const employee = row.dataset.employee;
+                    const monthInput = row.querySelector('.employee-month-selector');
+                    const month = monthInput ? monthInput.value : '';
+                    
+                    if (!month) {
+                        alert('Please select a month first');
+                        monthInput.focus();
+                        return;
+                    }
+                    
+                    const data = generateMonthData(employee, month);
+                    const html = generateTimeSheetHTML(employee, month, data);
+                    
+                    // Create print window - simplified version without charts in print
+                    const printWindow = window.open('', '_blank');
+                    printWindow.document.write('<!DOCTYPE html><html><head><title>Time Sheet - ' + employee + '</title>');
+                    printWindow.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">');
+                    printWindow.document.write('<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">');
+                    printWindow.document.write('<style>body{padding:20px;background:white;color:black;}.time-sheet-table{font-size:11px;}');
+                    printWindow.document.write('.time-sheet-table th,.time-sheet-table td{padding:6px;border:1px solid #ddd;}');
+                    printWindow.document.write('.time-sheet-table th{background-color:#000000;font-weight:bold;}');
+                    printWindow.document.write('.present{background-color:#000000!important;}.absent{background-color:#000000!important;}');
+                    printWindow.document.write('.leave{background-color:#fff3cd!important;}.holiday{background-color:#000000!important;}');
+                    printWindow.document.write('.speed-gauge{max-width:200px;}@media print{.no-print{display:none!important;}}</style>');
+                    printWindow.document.write('</head><body>');
+                    printWindow.document.write(html);
+                    printWindow.document.write('</body></html>');
+                    printWindow.document.close();
+                    printWindow.onload = function() {
+                        setTimeout(function() { printWindow.print(); }, 500);
+                    };
+                });
+            });
+
+            // Initialize stats on page load
+            updateTimeSheetStats();
+
+            // Charts with consistent colors
+            const c1 = document.getElementById('attTrend');
+            if (c1) {
+                new Chart(c1, {
+                    type:'line',
+                    data:{
+                        labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+                        datasets:[
+                            {
+                                label:'Present',
+                                data:[120,118,122,121,125,60,40],
+                                borderColor:'#009879',
+                                backgroundColor:'rgba(0,152,121,0.1)',
+                                tension:.25,
+                                fill: true
+                            },
+                            {
+                                label:'Absent',
+                                data:[5,7,6,6,4,3,2],
+                                borderColor:'#ef4444',
+                                backgroundColor:'rgba(239,68,68,0.1)',
+                                tension:.25,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options:{
+                        plugins:{legend:{labels:{color:'#ddd'}}},
+                        scales:{
+                            x:{ticks:{color:'#aaa'}},
+                            y:{ticks:{color:'#aaa'}, beginAtZero: true}
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            const c2 = document.getElementById('shiftPie');
+            if (c2) {
+                new Chart(c2, {
+                    type:'doughnut',
+                    data:{
+                        labels:['Day','Night','On-call'],
+                        datasets:[{
+                            data:[70,25,5],
+                            backgroundColor:['#009879','#00c4a7','#10b981']
+                        }]
+                    },
+                    options:{
+                        plugins:{legend:{labels:{color:'#ddd'}}},
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Export functions
+            function tableToCsv(tbl){
+                return Array.from(tbl.querySelectorAll('tr'))
+                    .map(tr => Array.from(tr.children).map(td => `"${(td.innerText||'').replace(/"/g,'""')}"`).join(','))
+                    .join('\n');
+            }
+            function dlCsv(name, csv){
+                const blob = new Blob([csv], {type:'text/csv'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = name;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+
+            const expShiftCsv = document.getElementById('expShiftCsv');
+            const expShiftPdf = document.getElementById('expShiftPdf');
+            const expAttCsv = document.getElementById('expAttCsv');
+            const expAttPdf = document.getElementById('expAttPdf');
+            const exportAttCsv = document.getElementById('exportAttCsv');
+            const exportAttPdf = document.getElementById('exportAttPdf');
+
+            if (expShiftCsv) expShiftCsv.addEventListener('click', ()=>{
+                const t = document.getElementById('shiftsTable');
+                if (!t) return;
+                dlCsv('shifts.csv', tableToCsv(t));
+            });
+            if (expShiftPdf) expShiftPdf.addEventListener('click', ()=>window.print());
+            if (expAttCsv) expAttCsv.addEventListener('click', ()=>{
+                const t = document.getElementById('attendanceTable');
+                if (!t) return;
+                dlCsv('attendance.csv', tableToCsv(t));
+            });
+            if (expAttPdf) expAttPdf.addEventListener('click', ()=>window.print());
+            if (exportAttCsv) exportAttCsv.addEventListener('click', ()=>{
+                const csv = 'Shifts\n' + tableToCsv(document.getElementById('shiftsTable')) + '\n\nAttendance\n' + tableToCsv(document.getElementById('attendanceTable'));
+                dlCsv('attendance_full_report.csv', csv);
+            });
+            if (exportAttPdf) exportAttPdf.addEventListener('click', ()=>window.print());
+        })();
+    </script>
+</body>
+</html>

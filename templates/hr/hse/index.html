@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health, Safety & Environment (HSE)</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background:transparent; border-bottom:1px solid rgba(255,255,255,0.12)">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="{{ url_for('static', filename='logo6.png') }}" alt="Logo" style="height:34px; margin-inline-end:6px;">
+                <span class="fw-semibold">Health, Safety & Environment (HSE)</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav2">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="nav2">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item me-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="themeToggle">
+                            <label class="form-check-label" for="themeToggle">Light/Dark</label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'hr/_sidebar.html' %}
+
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Health, Safety & Environment Management</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="exportHseCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" id="exportHsePdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#incidentModal"><i class="fa-solid fa-plus"></i> Record Incident</button>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi">
+                            <div class="icon danger">⚠️</div>
+                            <div>
+                                <div class="value">3</div>
+                                <div class="label">Open Incidents</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi">
+                            <div class="icon success">✅</div>
+                            <div>
+                                <div class="value">98%</div>
+                                <div class="label">Safety Compliance</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi">
+                            <div class="icon primary">📚</div>
+                            <div>
+                                <div class="value">156</div>
+                                <div class="label">HSE Training Records</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi">
+                            <div class="icon warning">📋</div>
+                            <div>
+                                <div class="value">12</div>
+                                <div class="label">Safety Procedures</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-8">
+                        <div class="glass-card p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Incidents & Injuries</div>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm" style="width:auto" id="statusFilter">
+                                        <option>All Status</option>
+                                        <option>Open</option>
+                                        <option>Under Investigation</option>
+                                        <option>Resolved</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-darkish align-middle mb-0" id="incidentsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Site</th>
+                                            <th>Description</th>
+                                            <th>Severity</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>2025-01-15</td>
+                                            <td>Field Site A</td>
+                                            <td>Minor equipment malfunction - no injuries</td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">Low</span></td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">Under Investigation</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>2025-01-10</td>
+                                            <td>Field Site B</td>
+                                            <td>Safety protocol violation - warning issued</td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">Medium</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Resolved</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>2025-01-05</td>
+                                            <td>Cairo Office</td>
+                                            <td>Fire drill conducted successfully</td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">None</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Resolved</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100">
+                            <div class="section-title mb-3">Safety Procedures by Site</div>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="p-2" style="background:rgba(16,185,129,0.1); border-radius:8px;">
+                                    <div class="fw-semibold">Field Site A Safety Plan</div>
+                                    <div class="text-muted small">Last updated: 2025-01-01</div>
+                                    <button class="btn btn-sm btn-outline mt-2"><i class="fa-solid fa-download"></i> View PDF</button>
+                                </div>
+                                <div class="p-2" style="background:rgba(16,185,129,0.1); border-radius:8px;">
+                                    <div class="fw-semibold">Field Site B Safety Plan</div>
+                                    <div class="text-muted small">Last updated: 2025-01-01</div>
+                                    <button class="btn btn-sm btn-outline mt-2"><i class="fa-solid fa-download"></i> View PDF</button>
+                                </div>
+                                <div class="p-2" style="background:rgba(16,185,129,0.1); border-radius:8px;">
+                                    <div class="fw-semibold">Cairo Office Safety Plan</div>
+                                    <div class="text-muted small">Last updated: 2025-01-01</div>
+                                    <button class="btn btn-sm btn-outline mt-2"><i class="fa-solid fa-download"></i> View PDF</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3">
+                            <div class="section-title mb-3">Incident Severity Distribution</div>
+                            <canvas id="severityChart" height="200"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3">
+                            <div class="section-title mb-3">Monthly Incident Trend</div>
+                            <canvas id="incidentTrendChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-lg-12">
+                        <div class="glass-card p-3">
+                            <div class="section-title mb-3">Compliance Reports (ISO / OSHA)</div>
+                            <div class="row g-3">
+                                <div class="col-lg-4">
+                                    <div class="p-3" style="background:rgba(16,185,129,0.1); border-radius:12px;">
+                                        <div class="fw-semibold mb-2">ISO 45001 Compliance</div>
+                                        <div class="text-muted small mb-2">Occupational Health & Safety</div>
+                                        <div class="mb-2"><span class="chip" style="background:rgba(16,185,129,0.2);">98% Compliant</span></div>
+                                        <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Download Report</button>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="p-3" style="background:rgba(36,193,217,0.1); border-radius:12px;">
+                                        <div class="fw-semibold mb-2">OSHA Compliance</div>
+                                        <div class="text-muted small mb-2">Monthly safety report</div>
+                                        <div class="mb-2"><span class="chip" style="background:rgba(16,185,129,0.2);">95% Compliant</span></div>
+                                        <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Download Report</button>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="p-3" style="background:rgba(245,158,11,0.1); border-radius:12px;">
+                                        <div class="fw-semibold mb-2">Monthly Safety Report</div>
+                                        <div class="text-muted small mb-2">January 2025</div>
+                                        <div class="mb-2"><span class="chip" style="background:rgba(16,185,129,0.2);">Ready</span></div>
+                                        <button class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Download Report</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal fade" id="incidentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Record Incident</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Site</label>
+                            <select class="form-select">
+                                <option>Select site...</option>
+                                <option>Field Site A</option>
+                                <option>Field Site B</option>
+                                <option>Cairo Office</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" placeholder="Detailed description of the incident..." rows="4"></textarea>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Severity</label>
+                            <select class="form-select">
+                                <option>Low</option>
+                                <option>Medium</option>
+                                <option>High</option>
+                                <option>Critical</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select">
+                                <option>Open</option>
+                                <option>Under Investigation</option>
+                                <option>Resolved</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            const body = document.body;
+            const toggle = document.getElementById('themeToggle');
+            if (toggle) {
+                function applyTheme(){
+                    if (toggle.checked) {
+                        body.classList.add('light-theme');
+                        document.documentElement.setAttribute('data-bs-theme', 'light');
+                    } else {
+                        body.classList.remove('light-theme');
+                        document.documentElement.setAttribute('data-bs-theme', 'dark');
+                    }
+                }
+                toggle.addEventListener('change', applyTheme);
+                applyTheme();
+            }
+
+            // Charts
+            const ctx1 = document.getElementById('severityChart');
+            if(ctx1) {
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['None', 'Low', 'Medium', 'High'],
+                        datasets: [{
+                            data: [85, 10, 4, 1],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#dc2626']
+                        }]
+                    },
+                    options: { plugins: { legend: { labels: { color: '#ddd' } } } }
+                });
+            }
+
+            const ctx2 = document.getElementById('incidentTrendChart');
+            if(ctx2) {
+                new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'],
+                        datasets: [{
+                            label: 'Incidents',
+                            data: [5, 4, 6, 3, 4, 2, 3],
+                            borderColor: '#ef4444',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        scales: { y: { beginAtZero: true, ticks: { color: '#aaa' } }, x: { ticks: { color: '#aaa' } } }
+                    }
+                });
+            }
+
+            // Export functions
+            function exportCsv() {
+                const rows = [['Date','Site','Description','Severity','Status']];
+                document.querySelectorAll('#incidentsTable tbody tr').forEach(tr => {
+                    const cells = tr.querySelectorAll('td');
+                    if(cells.length >= 5) {
+                        rows.push([
+                            cells[0].textContent.trim(),
+                            cells[1].textContent.trim(),
+                            cells[2].textContent.trim(),
+                            cells[3].textContent.trim(),
+                            cells[4].textContent.trim()
+                        ]);
+                    }
+                });
+                const csv = rows.map(r => r.join(',')).join('\n');
+                const blob = new Blob([csv], {type:'text/csv'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'hse_incidents_report.csv';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+
+            function exportPdf() {
+                window.print();
+            }
+
+            const btnCsv = document.getElementById('exportHseCsv');
+            const btnPdf = document.getElementById('exportHsePdf');
+            if(btnCsv) btnCsv.addEventListener('click', exportCsv);
+            if(btnPdf) btnPdf.addEventListener('click', exportPdf);
+        })();
+    </script>
+</body>
+</html>

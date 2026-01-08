@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style> .ltr { direction: ltr; }</style>
+    <script defer src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</head>
+<body class="dashboard">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background:transparent; border-bottom:1px solid rgba(255,255,255,0.12)">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('employee_dashboard') }}">
+                <img src="{{ url_for('static', filename='logo6.png') }}" alt="Logo" style="height:34px; margin-inline-end:6px;">
+                <span class="fw-semibold">Employee Portal</span>
+            </a>
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item me-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="themeToggleEmployee">
+                        <label class="form-check-label" for="themeToggleEmployee">Light/Dark</label>
+                    </div>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-2 sidebar p-3">
+                <h6 class="text-uppercase text-muted px-2">Navigation</h6>
+                <ul class="nav nav-pills flex-column gap-1 mt-2">
+                    <li class="nav-item"><a class="nav-link active d-flex align-items-center gap-2" href="{{ url_for('employee_dashboard') }}"><i class="fa-solid fa-gauge"></i> Overview</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('employee_timesheet') }}"><i class="fa-regular fa-calendar"></i> Timesheet</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('employee_requests') }}"><i class="fa-regular fa-file-lines"></i> Requests</a></li>
+                </ul>
+            </aside>
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="section-title">Employee Dashboard</h3>
+            <div class="chip">Current Month</div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-lg-3">
+                <div class="glass-card p-3 kpi">
+                    <div class="icon success">✅</div>
+                    <div>
+                        <div class="value" id="kpi-present">22</div>
+                        <div class="label">Present</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="glass-card p-3 kpi">
+                    <div class="icon warning">⏱️</div>
+                    <div>
+                        <div class="value" id="kpi-late">3</div>
+                        <div class="label">Late</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="glass-card p-3 kpi">
+                    <div class="icon danger">🚫</div>
+                    <div>
+                        <div class="value" id="kpi-absent">2</div>
+                        <div class="label">Absent</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="glass-card p-3 kpi">
+                    <div class="icon primary">⭐</div>
+                    <div>
+                        <div class="value" id="kpi-ontime">19</div>
+                        <div class="label">On-time</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-8">
+                <div class="glass-card p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="section-title">Monthly Attendance</div>
+                        <div class="chip">2025</div>
+                    </div>
+                    <canvas id="empMonthlyChart" height="90" class="ltr"></canvas>
+                </div>
+
+                <div class="glass-card p-3 mb-3" id="timesheet">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="section-title">Today Timesheet</div>
+                        <span class="chip">8:00 - 17:00</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-darkish align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Monday</td>
+                                    <td>08:12</td>
+                                    <td>16:58</td>
+                                    <td><span class="status-dot dot-warning"></span> Slight Delay</td>
+                                </tr>
+                                <tr>
+                                    <td>Tuesday</td>
+                                    <td>08:01</td>
+                                    <td>17:01</td>
+                                    <td><span class="status-dot dot-success"></span> On-time</td>
+                                </tr>
+                                <tr>
+                                    <td>Wednesday</td>
+                                    <td>—</td>
+                                    <td>—</td>
+                                    <td><span class="status-dot dot-danger"></span> Absent</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="glass-card p-3 mb-3">
+                    <div class="section-title mb-2">Attendance Breakdown</div>
+                    <canvas id="empBreakdown" height="220" class="ltr"></canvas>
+                </div>
+                <div class="glass-card p-3 mb-3">
+                    <div class="section-title mb-2">Monthly Calendar</div>
+                    <div class="calendar">
+                        <div class="day ok">1</div>
+                        <div class="day ok">2</div>
+                        <div class="day late">3</div>
+                        <div class="day ok">4</div>
+                        <div class="day miss">5</div>
+                        <div class="day ok">6</div>
+                        <div class="day ok">7</div>
+                        <div class="day ok">8</div>
+                        <div class="day late">9</div>
+                        <div class="day ok">10</div>
+                        <div class="day ok">11</div>
+                        <div class="day ok">12</div>
+                        <div class="day ok">13</div>
+                        <div class="day miss">14</div>
+                        <div class="day ok">15</div>
+                    </div>
+                </div>
+
+                <div id="requests" class="glass-card p-3 mb-3">
+                    <div class="section-title mb-2">Request: Adjustment / Permission / Leave</div>
+                    <form>
+                        <div class="mb-2">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Type</label>
+                            <select class="form-select">
+                                <option>Attendance Adjustment</option>
+                                <option>Permission</option>
+                                <option>Leave</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Reason</label>
+                            <textarea class="form-control" rows="3" placeholder="Example: recorded late or arrived late"></textarea>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="reset" class="btn btn-outline">Clear</button>
+                            <button type="button" class="btn btn-gradient">Submit Request</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            const body = document.body;
+            const toggle = document.getElementById('themeToggleEmployee');
+            if (!toggle) return;
+            function applyTheme(){
+                if (toggle.checked) {
+                    body.classList.add('light-theme');
+                    document.documentElement.setAttribute('data-bs-theme', 'light');
+                } else {
+                    body.classList.remove('light-theme');
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                }
+            }
+            toggle.addEventListener('change', applyTheme);
+            // default to dark for employee page
+            applyTheme();
+        })();
+    </script>
+</body>
+</html>
+
+

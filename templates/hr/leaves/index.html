@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Management</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    {% include 'hr/_navbar.html' %}
+
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'hr/_sidebar.html' %}
+
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Leave Management</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="exportLeavesCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" id="exportLeavesPdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#leaveModal"><i class="fa-solid fa-plus"></i> Request Leave</button>
+                    </div>
+                </div>
+
+                <!-- Key Performance Indicators -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">📅</div>
+                            <div>
+                                <div class="value">12</div>
+                                <div class="label">Pending Requests</div>
+                                <small class="text-warning d-block mt-1"><i class="fa-solid fa-clock"></i> Awaiting approval</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">✅</div>
+                            <div>
+                                <div class="value">45</div>
+                                <div class="label">Approved This Month</div>
+                                <small class="text-success d-block mt-1"><i class="fa-solid fa-arrow-up"></i> +8 vs last month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon primary">📊</div>
+                            <div>
+                                <div class="value">78%</div>
+                                <div class="label">Average Approval Rate</div>
+                                <small class="text-primary d-block mt-1">+3% improvement</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">⏰</div>
+                            <div>
+                                <div class="value">5</div>
+                                <div class="label">Urgent Requests</div>
+                                <small class="text-danger d-block mt-1">Require immediate action</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leave Requests & Balances -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-8">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Leave Requests</div>
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search..." style="width:200px;" id="leaveSearch">
+                                    <select class="form-select form-select-sm" style="width:auto" id="statusFilter">
+                                        <option value="all">All Status</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="approved">Approved</option>
+                                        <option value="rejected">Rejected</option>
+                                    </select>
+                                    <select class="form-select form-select-sm" style="width:auto" id="typeFilter">
+                                        <option value="all">All Types</option>
+                                        <option value="annual">Annual</option>
+                                        <option value="sick">Sick</option>
+                                        <option value="emergency">Emergency</option>
+                                        <option value="field">Field</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0" id="leavesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Type</th>
+                                            <th>Start Date</th>
+                                            <th>End Date</th>
+                                            <th>Days</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Dalia</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(36,193,217,0.2);">Annual</span></td>
+                                            <td>2025-01-15</td>
+                                            <td>2025-01-20</td>
+                                            <td><span class="chip">5</span></td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">Pending</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" onclick="approveLeave(1)" title="Approve"><i class="fa-solid fa-check"></i></button>
+                                                <button class="btn btn-sm btn-outline" onclick="rejectLeave(1)" title="Reject"><i class="fa-solid fa-x"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Yousef</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(239,68,68,0.2);">Sick</span></td>
+                                            <td>2025-01-10</td>
+                                            <td>2025-01-12</td>
+                                            <td><span class="chip">2</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Approved</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Mahmoud</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">Emergency</span></td>
+                                            <td>2025-01-18</td>
+                                            <td>2025-01-18</td>
+                                            <td><span class="chip">1</span></td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">Pending</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" onclick="approveLeave(3)" title="Approve"><i class="fa-solid fa-check"></i></button>
+                                                <button class="btn btn-sm btn-outline" onclick="rejectLeave(3)" title="Reject"><i class="fa-solid fa-x"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Ahmed</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Field</span></td>
+                                            <td>2025-01-20</td>
+                                            <td>2025-01-25</td>
+                                            <td><span class="chip">5</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Approved</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="text-muted small">Showing 1-4 of 57 requests</div>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Leave Balances</div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Annual</th>
+                                            <th>Sick</th>
+                                            <th>Emergency</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:20px;height:20px;">
+                                                    <span class="small">Dalia</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip small">15/21</span></td>
+                                            <td><span class="chip small">8/10</span></td>
+                                            <td><span class="chip small">2/3</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="" style="width:20px;height:20px;">
+                                                    <span class="small">Yousef</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip small">18/21</span></td>
+                                            <td><span class="chip small">9/10</span></td>
+                                            <td><span class="chip small">3/3</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="" style="width:20px;height:20px;">
+                                                    <span class="small">Mahmoud</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip small">12/21</span></td>
+                                            <td><span class="chip small">7/10</span></td>
+                                            <td><span class="chip small">2/3</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:20px;height:20px;">
+                                                    <span class="small">Ahmed</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip small">20/21</span></td>
+                                            <td><span class="chip small">10/10</span></td>
+                                            <td><span class="chip small">1/3</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-muted mt-3 small">
+                                <i class="fa-solid fa-info-circle"></i> Balances are calculated automatically based on leave policies.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Leave Type Distribution</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="leaveTypeChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center">
+                                <span class="badge" style="background:#009879;">Annual: 45</span>
+                                <span class="badge" style="background:#00c4a7;">Sick: 20</span>
+                                <span class="badge" style="background:#10b981;">Emergency: 10</span>
+                                <span class="badge" style="background:#f59e0b;">Field: 5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Monthly Trend</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="leaveTrendChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex justify-content-between">
+                                <small class="text-muted">Average: 41 requests/month</small>
+                                <small class="text-muted">Peak: June (48)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Approval Workflow -->
+                <div class="row g-3">
+                    <div class="col-lg-12">
+                        <div class="glass-card p-3">
+                            <div class="section-title mb-3">Approval Workflow</div>
+                            <div class="d-flex align-items-center justify-content-between p-4" style="background:rgba(255,255,255,0.04); border-radius:12px;">
+                                <div class="d-flex align-items-center gap-4">
+                                    <div class="text-center p-3" style="background:rgba(36,193,217,0.1); border-radius:8px; min-width:120px;">
+                                        <div class="h3 mb-1 text-primary">1</div>
+                                        <div class="fw-semibold">Employee</div>
+                                        <div class="text-muted small">Submit Request</div>
+                                    </div>
+                                    <i class="fa-solid fa-arrow-right text-muted fa-2x"></i>
+                                    <div class="text-center p-3" style="background:rgba(245,158,11,0.1); border-radius:8px; min-width:120px;">
+                                        <div class="h3 mb-1 text-warning">2</div>
+                                        <div class="fw-semibold">Manager</div>
+                                        <div class="text-muted small">Review & Approve</div>
+                                    </div>
+                                    <i class="fa-solid fa-arrow-right text-muted fa-2x"></i>
+                                    <div class="text-center p-3" style="background:rgba(16,185,129,0.1); border-radius:8px; min-width:120px;">
+                                        <div class="h3 mb-1 text-success">3</div>
+                                        <div class="fw-semibold">HR</div>
+                                        <div class="text-muted small">Final Approval</div>
+                                    </div>
+                                </div>
+                                <div class="text-muted small text-end" style="max-width:200px;">
+                                    <i class="fa-solid fa-info-circle"></i> Workflow is customizable based on employee level or site location.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Leave Modal -->
+    <div class="modal fade" id="leaveModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Request Leave</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Leave Type</label>
+                            <select class="form-select">
+                                <option>Annual</option>
+                                <option>Sick</option>
+                                <option>Emergency</option>
+                                <option>Field</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">End Date</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" placeholder="Additional information..." rows="3"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-info small mb-0">
+                                <i class="fa-solid fa-info-circle"></i> Your remaining balance will be calculated automatically after submission.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Submit Request</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            // Charts with consistent colors
+            const ctx1 = document.getElementById('leaveTypeChart');
+            if(ctx1) {
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Annual', 'Sick', 'Emergency', 'Field'],
+                        datasets: [{
+                            data: [45, 20, 10, 5],
+                            backgroundColor: ['#009879', '#00c4a7', '#10b981', '#f59e0b']
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('leaveTrendChart');
+            if(ctx2) {
+                new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Leave Requests',
+                            data: [35, 42, 38, 45, 40, 48],
+                            borderColor: '#009879',
+                            backgroundColor: 'rgba(0,152,121,0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        scales: {
+                            y: { ticks: { color: '#aaa' }, beginAtZero: true },
+                            x: { ticks: { color: '#aaa' } }
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Export functions
+            function exportCsv() {
+                const rows = [['Employee','Type','Start Date','End Date','Days','Status']];
+                document.querySelectorAll('#leavesTable tbody tr').forEach(tr => {
+                    const cells = tr.querySelectorAll('td');
+                    if(cells.length >= 6) {
+                        rows.push([
+                            cells[0].textContent.trim().replace(/\s+/g, ' '),
+                            cells[1].textContent.trim(),
+                            cells[2].textContent.trim(),
+                            cells[3].textContent.trim(),
+                            cells[4].textContent.trim(),
+                            cells[5].textContent.trim()
+                        ]);
+                    }
+                });
+                const csv = rows.map(r => r.join(',')).join('\n');
+                const blob = new Blob([csv], {type:'text/csv'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'leaves_report.csv';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+
+            function exportPdf() {
+                window.print();
+            }
+
+            const btnCsv = document.getElementById('exportLeavesCsv');
+            const btnPdf = document.getElementById('exportLeavesPdf');
+            if(btnCsv) btnCsv.addEventListener('click', exportCsv);
+            if(btnPdf) btnPdf.addEventListener('click', exportPdf);
+
+            // Search and filter functionality
+            const leaveSearch = document.getElementById('leaveSearch');
+            const statusFilter = document.getElementById('statusFilter');
+            const typeFilter = document.getElementById('typeFilter');
+
+            function filterTable() {
+                const searchTerm = leaveSearch?.value.toLowerCase() || '';
+                const statusValue = statusFilter?.value || 'all';
+                const typeValue = typeFilter?.value || 'all';
+
+                document.querySelectorAll('#leavesTable tbody tr').forEach(tr => {
+                    const text = tr.textContent.toLowerCase();
+                    const statusCell = tr.querySelector('td:nth-child(6)');
+                    const typeCell = tr.querySelector('td:nth-child(2)');
+                    const status = statusCell?.textContent.toLowerCase() || '';
+                    const type = typeCell?.textContent.toLowerCase() || '';
+
+                    const matchesSearch = text.includes(searchTerm);
+                    const matchesStatus = statusValue === 'all' || status.includes(statusValue);
+                    const matchesType = typeValue === 'all' || type.includes(typeValue);
+
+                    tr.style.display = (matchesSearch && matchesStatus && matchesType) ? '' : 'none';
+                });
+            }
+
+            if(leaveSearch) leaveSearch.addEventListener('input', filterTable);
+            if(statusFilter) statusFilter.addEventListener('change', filterTable);
+            if(typeFilter) typeFilter.addEventListener('change', filterTable);
+
+            window.approveLeave = function(id) {
+                alert('Leave request ' + id + ' approved');
+            };
+            window.rejectLeave = function(id) {
+                alert('Leave request ' + id + ' rejected');
+            };
+        })();
+    </script>
+</body>
+</html>
+

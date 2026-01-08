@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Management</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    {% include 'hr/_navbar.html' %}
+
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'hr/_sidebar.html' %}
+
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Site Management</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="exportSitesCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" id="exportSitesPdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#siteModal"><i class="fa-solid fa-plus"></i> Add Site</button>
+                    </div>
+                </div>
+
+                <!-- Key Performance Indicators -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon primary">🏗️</div>
+                            <div>
+                                <div class="value">8</div>
+                                <div class="label">Total Sites</div>
+                                <small class="text-primary d-block mt-1"><i class="fa-solid fa-arrow-up"></i> +2 this year</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">👥</div>
+                            <div>
+                                <div class="value">95</div>
+                                <div class="label">Field Employees</div>
+                                <small class="text-success d-block mt-1">60.9% of workforce</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">🔄</div>
+                            <div>
+                                <div class="value">12</div>
+                                <div class="label">Pending Rotations</div>
+                                <small class="text-warning d-block mt-1">Scheduled this month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">🏠</div>
+                            <div>
+                                <div class="value">45</div>
+                                <div class="label">Accommodations</div>
+                                <small class="text-danger d-block mt-1">47% occupancy rate</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sites Table & Rotation -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-8">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="section-title">Sites</div>
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search..." style="width:200px;" id="siteSearch">
+                                    <select class="form-select form-select-sm" style="width:auto" id="typeFilter">
+                                        <option>All Types</option>
+                                        <option>Field</option>
+                                        <option>Factory</option>
+                                        <option>Office</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0" id="sitesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Site Name</th>
+                                            <th>Type</th>
+                                            <th>Address</th>
+                                            <th>Employees</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-map-marker-alt" style="color:#f59e0b;"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">Field Site A</div>
+                                                        <div class="text-muted small">Primary field location</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">Field</span></td>
+                                            <td>Western Desert, Egypt</td>
+                                            <td><span class="chip">35</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#siteModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="Employees"><i class="fa-solid fa-users"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-map-marker-alt" style="color:#f59e0b;"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">Field Site B</div>
+                                                        <div class="text-muted small">Secondary field location</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(245,158,11,0.2);">Field</span></td>
+                                            <td>Eastern Desert, Egypt</td>
+                                            <td><span class="chip">28</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#siteModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="Employees"><i class="fa-solid fa-users"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-building" style="color:#24c1d9;"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">Cairo Office</div>
+                                                        <div class="text-muted small">Headquarters</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(36,193,217,0.2);">Office</span></td>
+                                            <td>Cairo, Egypt</td>
+                                            <td><span class="chip">61</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#siteModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="Employees"><i class="fa-solid fa-users"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-industry" style="color:#10b981;"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">Processing Plant</div>
+                                                        <div class="text-muted small">Manufacturing facility</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Factory</span></td>
+                                            <td>Alexandria, Egypt</td>
+                                            <td><span class="chip">32</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#siteModal" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="View"><i class="fa-regular fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline" title="Employees"><i class="fa-solid fa-users"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="text-muted small">Showing 1-4 of 8 sites</div>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Site Rotation</div>
+                            <div class="mb-3">
+                                <label class="form-label small">Employee</label>
+                                <select class="form-select form-select-sm">
+                                    <option>Select employee...</option>
+                                    <option>Mahmoud</option>
+                                    <option>Ahmed</option>
+                                    <option>Ali</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Current Site</label>
+                                <input class="form-control form-control-sm" value="Field Site A" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Transfer To</label>
+                                <select class="form-select form-select-sm">
+                                    <option>Select site...</option>
+                                    <option>Field Site B</option>
+                                    <option>Cairo Office</option>
+                                    <option>Processing Plant</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Rotation Date</label>
+                                <input type="date" class="form-control form-control-sm">
+                            </div>
+                            <button class="btn btn-gradient w-100"><i class="fa-solid fa-rotate"></i> Rotate Employee</button>
+                            <div class="mt-3 p-2" style="background:rgba(255,255,255,0.04); border-radius:8px;">
+                                <div class="text-muted small">
+                                    <i class="fa-solid fa-info-circle"></i> Rotation history is automatically tracked and logged.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Employees by Site</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="empSiteChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center">
+                                <span class="badge" style="background:#009879;">Field A: 35</span>
+                                <span class="badge" style="background:#00c4a7;">Field B: 28</span>
+                                <span class="badge" style="background:#10b981;">Cairo: 61</span>
+                                <span class="badge" style="background:#f59e0b;">Plant: 32</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Site Type Distribution</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="siteTypeChart" height="200"></canvas>
+                            </div>
+                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center">
+                                <span class="badge" style="background:#009879;">Field: 2</span>
+                                <span class="badge" style="background:#00c4a7;">Factory: 1</span>
+                                <span class="badge" style="background:#10b981;">Office: 1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accommodation & Transportation -->
+                <div class="row g-3">
+                    <div class="col-lg-12">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Accommodation & Transportation</div>
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-darkish align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Site</th>
+                                            <th>Accommodation</th>
+                                            <th>Transportation</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Mahmoud</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#f59e0b;">Field Site A</span></td>
+                                            <td><span class="chip">Site Camp - Room 12</span></td>
+                                            <td><span class="chip" style="background:rgba(36,193,217,0.2);">Company Bus</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Ahmed</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#f59e0b;">Field Site B</span></td>
+                                            <td><span class="chip">Site Camp - Room 8</span></td>
+                                            <td><span class="chip" style="background:rgba(36,193,217,0.2);">Company Bus</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img class="avatar" src="{{ url_for('static', filename='logo.png') }}" alt="" style="width:24px;height:24px;">
+                                                    <span class="fw-semibold">Ali</span>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge" style="background:#f59e0b;">Field Site A</span></td>
+                                            <td><span class="chip">Site Camp - Room 15</span></td>
+                                            <td><span class="chip" style="background:rgba(36,193,217,0.2);">Company Bus</span></td>
+                                            <td><span class="chip" style="background:rgba(16,185,129,0.2);">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Site Modal -->
+    <div class="modal fade" id="siteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add/Edit Site</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-2">Site Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Site Name</label>
+                            <input class="form-control" placeholder="e.g., Field Site A">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Type</label>
+                            <select class="form-select">
+                                <option>Field</option>
+                                <option>Factory</option>
+                                <option>Office</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Address</label>
+                            <input class="form-control" placeholder="Full address">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select">
+                                <option>Active</option>
+                                <option>Inactive</option>
+                                <option>Under Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Capacity (employees)</label>
+                            <input type="number" class="form-control" placeholder="e.g., 50">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" placeholder="Additional details..." rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-gradient">Save Site</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            // Charts with consistent colors
+            const ctx1 = document.getElementById('empSiteChart');
+            if(ctx1) {
+                new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Field Site A', 'Field Site B', 'Cairo Office', 'Processing Plant'],
+                        datasets: [{
+                            label: 'Employees',
+                            data: [35, 28, 61, 32],
+                            backgroundColor: '#009879',
+                            borderColor: '#00c4a7',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: '#aaa' } },
+                            x: { ticks: { color: '#aaa' } }
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('siteTypeChart');
+            if(ctx2) {
+                new Chart(ctx2, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Field', 'Factory', 'Office'],
+                        datasets: [{
+                            data: [2, 1, 1],
+                            backgroundColor: ['#009879', '#00c4a7', '#10b981']
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#ddd' } } },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Export functions
+            function exportCsv() {
+                const rows = [['Site Name','Type','Address','Employees','Status']];
+                document.querySelectorAll('#sitesTable tbody tr').forEach(tr => {
+                    const cells = tr.querySelectorAll('td');
+                    if(cells.length >= 5) {
+                        rows.push([
+                            cells[0].textContent.trim().replace(/\s+/g, ' '),
+                            cells[1].textContent.trim(),
+                            cells[2].textContent.trim(),
+                            cells[3].textContent.trim(),
+                            cells[4].textContent.trim()
+                        ]);
+                    }
+                });
+                const csv = rows.map(r => r.join(',')).join('\n');
+                const blob = new Blob([csv], {type:'text/csv'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'sites_report.csv';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+
+            function exportPdf() {
+                window.print();
+            }
+
+            const btnCsv = document.getElementById('exportSitesCsv');
+            const btnPdf = document.getElementById('exportSitesPdf');
+            if(btnCsv) btnCsv.addEventListener('click', exportCsv);
+            if(btnPdf) btnPdf.addEventListener('click', exportPdf);
+
+            // Search functionality
+            const siteSearch = document.getElementById('siteSearch');
+            if(siteSearch) {
+                siteSearch.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    document.querySelectorAll('#sitesTable tbody tr').forEach(tr => {
+                        const text = tr.textContent.toLowerCase();
+                        tr.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

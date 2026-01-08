@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        #mapCanvas {
+            border: 2px solid #333;
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            display: block;
+            margin: 0 auto;
+        }
+        #tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 5px 10px;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
+            color: #333;
+        }
+        body {
+            background: #f5f5f5;
+        }
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .map-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 450px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Drilling Building Security</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('emergency_status') }}">Report</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('map') }}">Map</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <h1 class="mb-4">Security Dashboard</h1>
+        <!-- Counts Box -->
+        <div class="card shadow mb-4">
+            <div class="card-header">Attendance Overview</div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h5>Total Persons</h5>
+                        <p id="totalCount">0</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h5>Late</h5>
+                        <p id="lateCount">0</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h5>Left Early</h5>
+                        <p id="earlyCount">0</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h5>On Time</h5>
+                        <p id="onTimeCount">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header">Current Floor Status (Last Known)</div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for floor, data in floor_data.items() %}
+                            <li class="list-group-item">
+                                <strong>{{ floor }}</strong>: {{ data.count }} person(s)
+                                {% if data.names %}
+                                <br>Names: {{ data.names | join(", ") }}
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header">
+                        Attendance Analysis (8 AM - 4 PM, Last Active Day)
+                        <div class="float-end">
+                            <label for="statusFilter" class="me-2">Filter by Status:</label>
+                            <select id="statusFilter" class="form-select form-select-sm d-inline-block w-auto">
+                                <option value="">All Statuses</option>
+                                <option value="Late">Late</option>
+                                <option value="Left Early">Left Early</option>
+                                <option value="On Time">On Time</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered" id="attendanceTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Date</th>
+                                    <th>First Seen</th>
+                                    <th>Last Seen</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for person in attendance %}
+                                <tr data-late="{{ person.late | lower }}" data-early="{{ person.early_leave | lower }}">
+                                    <td>{{ person.name }}</td>
+                                    <td>{{ person.date }}</td>
+                                    <td>{{ person.first_seen }}</td>
+                                    <td>{{ person.last_seen }}</td>
+                                    <td>
+                                        {% if person.late %}
+                                        <span class="badge bg-warning">Late</span>
+                                        {% endif %}
+                                        {% if person.early_leave %}
+                                        <span class="badge bg-danger">Left Early</span>
+                                        {% endif %}
+                                        {% if not person.late and not person.early_leave %}
+                                        <span class="badge bg-success">On Time</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <button id="expandBtn" class="btn btn-primary">Expand</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Floor Map Section -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow mb-4">
+                    <div class="card-header">Floor Map</div>
+                    <div class="card-body">
+                        <div class="map-container">
+                            <canvas id="mapCanvas" width="450" height="450"></canvas>
+                            <div id="tooltip"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header">Room Distribution</div>
+                    <div class="card-body">
+                        <canvas id="roomDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Existing Charts and Recent Activity -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header">Detections per Person</div>
+                    <div class="card-body">
+                        <canvas id="personChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header">Detections per Floor</div>
+                    <div class="card-body">
+                        <canvas id="floorChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card shadow mb-4">
+            <div class="card-header">Recent Activity</div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for log in recent_logs %}
+                    <li class="list-group-item">
+                        {{ log.name }} detected on {{ log.floor }} at {{ log.time }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Chart.js scripts
+        const personLabels = JSON.parse('{{ person_counts.keys() | list | tojson | safe }}');
+        const personData = JSON.parse('{{ person_counts.values() | list | tojson | safe }}');
+        const floorLabels = JSON.parse('{{ floor_counts.keys() | list | tojson | safe }}');
+        const floorData = JSON.parse('{{ floor_counts.values() | list | tojson | safe }}');
+
+        const personCtx = document.getElementById('personChart').getContext('2d');
+        new Chart(personCtx, {
+            type: 'bar',
+            data: {
+                labels: personLabels,
+                datasets: [{
+                    label: 'Detections',
+                    data: personData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+
+        const floorCtx = document.getElementById('floorChart').getContext('2d');
+        new Chart(floorCtx, {
+            type: 'bar',
+            data: {
+                labels: floorLabels,
+                datasets: [{
+                    label: 'Detections',
+                    data: floorData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+
+        // Attendance Table Enhancements
+        const table = document.getElementById('attendanceTable');
+        const rows = table.querySelectorAll('tbody tr');
+        const expandBtn = document.getElementById('expandBtn');
+        const statusFilter = document.getElementById('statusFilter');
+
+        // Counts
+        const totalCount = document.getElementById('totalCount');
+        const lateCount = document.getElementById('lateCount');
+        const earlyCount = document.getElementById('earlyCount');
+        const onTimeCount = document.getElementById('onTimeCount');
+
+        let isExpanded = false;
+        const initialRows = 2;
+
+        function updateCounts(filteredRows) {
+            let late = 0, early = 0, onTime = 0;
+            filteredRows.forEach(row => {
+                const isLate = row.getAttribute('data-late') === 'true';
+                const isEarly = row.getAttribute('data-early') === 'true';
+                if (isLate) late++;
+                if (isEarly) early++;
+                if (!isLate && !isEarly) onTime++;
+            });
+            totalCount.textContent = filteredRows.length;
+            lateCount.textContent = late;
+            earlyCount.textContent = early;
+            onTimeCount.textContent = onTime;
+        }
+
+        function filterAndDisplay() {
+            const status = statusFilter.value;
+            let filteredRows = Array.from(rows).filter(row => {
+                const isLate = row.getAttribute('data-late') === 'true';
+                const isEarly = row.getAttribute('data-early') === 'true';
+                if (status === '') return true;
+                if (status === 'Late') return isLate;
+                if (status === 'Left Early') return isEarly;
+                if (status === 'On Time') return !isLate && !isEarly;
+                return false;
+            });
+
+            // Update counts based on filtered rows
+            updateCounts(filteredRows);
+
+            // Show/hide rows based on filter and expansion state
+            filteredRows.forEach((row, index) => {
+                if (!isExpanded && index >= initialRows) {
+                    row.style.display = 'none';
+                } else {
+                    row.style.display = '';
+                }
+            });
+
+            // Hide rows that don't match the filter
+            rows.forEach(row => {
+                if (!filteredRows.includes(row)) {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Update button text
+            expandBtn.textContent = isExpanded || filteredRows.length <= initialRows ? 'Collapse' : 'Expand';
+        }
+
+        // Initial setup: Show only first 3 rows
+        filterAndDisplay();
+
+        // Expand/Collapse button
+        expandBtn.addEventListener('click', () => {
+            isExpanded = !isExpanded;
+            filterAndDisplay();
+        });
+
+        // Status filter
+        statusFilter.addEventListener('change', () => {
+            isExpanded = false; // Reset expansion on filter change
+            filterAndDisplay();
+        });
+
+        // Floor Map Logic
+        const canvas = document.getElementById('mapCanvas');
+        const ctx = canvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip');
+
+        // Calculate scale to fit the canvas (26 feet wide, 32 feet tall into 450x450 canvas)
+        const layoutWidth = 26; // in feet
+        const layoutHeight = 32; // in feet
+        const scale = Math.min(450 / layoutWidth, 450 / layoutHeight); // ≈ 14.06 px per foot
+
+        let animationFrame;
+        let pulsePhase = 0;
+
+        // Room dimensions and layout, adjusted for new scale
+        const rooms = [
+            { name: 'Meeting Room', x: 0, y: 0, width: 12, height: 12, color: '#e6f3ff', icon: '📋' },
+            { name: 'Main Room', x: 12, y: 0, width: 14, height: 12, color: '#ffe6e6', icon: '🏛️' },
+            { name: 'Room 1', x: 0, y: 12, width: 12, height: 10, color: '#e6ffe6', icon: '🚪' },
+            { name: 'Room 4', x: 12, y: 12, width: 14, height: 10, color: '#fff5e6', icon: '🚪' },
+            { name: 'Kitchen', x: 0, y: 22, width: 12, height: 10, color: '#f5e6ff', icon: '🍳' },
+            { name: 'Room 2', x: 12, y: 22, width: 7, height: 10, color: '#e6f3ff', icon: '🚪' },
+            { name: 'Room 3', x: 19, y: 22, width: 7, height: 10, color: '#ffe6e6', icon: '🚪' },
+        ];
+
+        // People data from Flask (dynamic)
+        const people = JSON.parse('{{ (people | default([])) | tojson | safe }}');
+
+        // Group people by room
+        const roomPeople = rooms.reduce((acc, room) => {
+            acc[room.name] = people.filter(person => person.location === room.name);
+            return acc;
+        }, {});
+
+        // Prepare people dots, placing them below the text
+        const dots = [];
+        Object.keys(roomPeople).forEach(roomName => {
+            const room = rooms.find(r => r.name === roomName);
+            const peopleInRoom = roomPeople[roomName];
+            if (!room || !peopleInRoom || peopleInRoom.length === 0) return;
+
+            if (peopleInRoom.length === 1) {
+                const person = peopleInRoom[0];
+                dots.push({
+                    name: person.name,
+                    x: (room.x + room.width / 2) * scale,
+                    y: (room.y + room.height * 0.75) * scale, // Place below the text
+                    room: room.name
+                });
+            } else {
+                const padding = 1; // Padding inside room
+                const availableWidth = (room.width - 2 * padding) * scale;
+                const cols = Math.min(peopleInRoom.length, 3); // Limit to 3 dots per row
+                const rows = Math.ceil(peopleInRoom.length / cols);
+                const cellWidth = availableWidth / cols;
+
+                peopleInRoom.forEach((person, index) => {
+                    const col = index % cols;
+                    const row = Math.floor(index / cols);
+                    const x = (room.x + padding) * scale + col * cellWidth + cellWidth / 2;
+                    const y = (room.y + room.height * 0.65 + row * 1) * scale; // Start below text, stack vertically if needed
+                    dots.push({
+                        name: person.name,
+                        x: x,
+                        y: y,
+                        room: room.name
+                    });
+                });
+            }
+        });
+
+        // Draw the floor map with animations
+        function drawMap() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#f0f8ff');
+            gradient.addColorStop(1, '#e6e6fa');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw rooms with hover effect
+            let highlightedRoom = null;
+            rooms.forEach(room => {
+                const isHovered = mouseX >= room.x * scale && mouseX <= (room.x + room.width) * scale &&
+                                 mouseY >= room.y * scale && mouseY <= (room.y + room.height) * scale;
+                if (isHovered) highlightedRoom = room;
+
+                // Room fill with shadow
+                ctx.fillStyle = isHovered ? lightenColor(room.color, 10) : room.color;
+                ctx.fillRect(room.x * scale, room.y * scale, room.width * scale, room.height * scale);
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(room.x * scale, room.y * scale, room.width * scale, room.height * scale);
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+                ctx.shadowBlur = 5;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+
+                // Room names with icon
+                ctx.font = (room.width < 5 || room.height < 5) ? '10px Arial' : '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#333';
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                ctx.shadowBlur = 3;
+                ctx.fillText(`${room.icon} ${room.name}`, (room.x + room.width / 2) * scale, (room.y + room.height / 2) * scale);
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+            });
+
+            // Reset shadow for dots
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Draw people dots with pulsing animation
+            pulsePhase += 0.05;
+            dots.forEach(dot => {
+                const pulse = Math.sin(pulsePhase) * 2 + 5; // Radius between 3 and 7
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, pulse, 0, 2 * Math.PI);
+
+                // Gradient for glowing effect
+                const gradient = ctx.createRadialGradient(dot.x, dot.y, 0, dot.x, dot.y, pulse);
+                gradient.addColorStop(0, 'rgba(0, 191, 255, 0.8)');
+                gradient.addColorStop(1, 'rgba(0, 191, 255, 0.2)');
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Inner dot
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, 3, 0, 2 * Math.PI);
+                ctx.fillStyle = 'blue';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+
+            // Draw exit ("E") with glowing effect
+            const exitX = 26 * scale;
+            const exitY = 16 * scale;
+            ctx.beginPath();
+            ctx.moveTo(exitX, exitY);
+            ctx.lineTo(exitX + 10, exitY);
+            ctx.lineTo(exitX + 5, exitY - 5);
+            ctx.moveTo(exitX + 10, exitY);
+            ctx.lineTo(exitX + 5, exitY + 5);
+            ctx.strokeStyle = '#ff4500';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Glowing "E"
+            const glow = Math.sin(pulsePhase) * 5;
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#ff4500';
+            ctx.shadowColor = '#ff4500';
+            ctx.shadowBlur = glow;
+            ctx.fillText('  EXIT', exitX + 15, exitY + 15);
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+
+            // Fade-in animation
+            if (canvas.style.opacity < 1) {
+                canvas.style.opacity = parseFloat(canvas.style.opacity || 0) + 0.02;
+            }
+
+            animationFrame = requestAnimationFrame(drawMap);
+        }
+
+        // Utility to lighten a color
+        function lightenColor(color, percent) {
+            const num = parseInt(color.slice(1), 16),
+                  amt = Math.round(2.55 * percent),
+                  R = (num >> 16) + amt,
+                  G = (num >> 8 & 0x00FF) + amt,
+                  B = (num & 0x0000FF) + amt;
+            return `#${(0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1)}`;
+        }
+
+        // Mouse coordinates for hover effects
+        let mouseX = 0, mouseY = 0;
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+
+            let found = false;
+            dots.forEach(dot => {
+                const dx = mouseX - dot.x;
+                const dy = mouseY - dot.y;
+                if (Math.sqrt(dx * dx + dy * dy) < 7) {
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (e.clientX + 15) + 'px';
+                    tooltip.style.top = (e.clientY + 15) + 'px';
+                    tooltip.innerText = dot.name;
+                    found = true;
+                }
+            });
+
+            if (!found) {
+                tooltip.style.display = 'none';
+            }
+        });
+
+        // Click on person to open their logs
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            dots.forEach(dot => {
+                const dx = mouseX - dot.x;
+                const dy = mouseY - dot.y;
+                if (Math.sqrt(dx * dx + dy * dy) < 7) {
+                    window.location.href = `/logs/${dot.name}`;
+                }
+            });
+        });
+
+        // Start with fade-in
+        canvas.style.opacity = 0;
+        drawMap();
+
+        // Cleanup animation on page unload
+        window.addEventListener('beforeunload', () => {
+            cancelAnimationFrame(animationFrame);
+        });
+
+        // Room Distribution Pie Chart
+        const roomDistributionCtx = document.getElementById('roomDistributionChart').getContext('2d');
+        
+        // Calculate room distribution
+        const roomDistribution = {};
+        people.forEach(person => {
+            const room = person.location;
+            roomDistribution[room] = (roomDistribution[room] || 0) + 1;
+        });
+
+        // Prepare data for the pie chart
+        const roomLabels = Object.keys(roomDistribution);
+        const roomData = Object.values(roomDistribution);
+        const roomColors = [
+            '#e6f3ff', // Meeting Room
+            '#ffe6e6', // Main Room
+            '#e6ffe6', // Room 1
+            '#fff5e6', // Room 4
+            '#f5e6ff', // Kitchen
+            '#e6f3ff', // Room 2
+            '#ffe6e6'  // Room 3
+        ];
+
+        new Chart(roomDistributionCtx, {
+            type: 'pie',
+            data: {
+                labels: roomLabels,
+                datasets: [{
+                    data: roomData,
+                    backgroundColor: roomColors,
+                    borderColor: '#333',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

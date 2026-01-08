@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compliance Score - Unauthorized Area Dashboard</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    {% include 'unauthorized/_navbar.html' %}
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'unauthorized/_sidebar.html' %}
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Compliance Score</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="btnExportCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" id="btnExportPdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                    </div>
+                </div>
+
+                <!-- Overall Score -->
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-4">
+                        <div class="glass-card p-4 text-center">
+                            <div class="display-1 fw-bold text-primary mb-2">72%</div>
+                            <div class="h5 mb-0">Overall Compliance</div>
+                            <div class="progress mt-3" style="height:10px;">
+                                <div class="progress-bar bg-primary" style="width:72%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-4 text-center">
+                            <div class="display-1 fw-bold text-success mb-2">+5%</div>
+                            <div class="h5 mb-0">vs Last Month</div>
+                            <small class="text-success"><i class="fa-solid fa-arrow-up"></i> Improving</small>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="glass-card p-4 text-center">
+                            <div class="display-1 fw-bold text-warning mb-2">85%</div>
+                            <div class="h5 mb-0">Target Score</div>
+                            <small class="text-warning">13% to reach target</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Score by Department -->
+                <div class="glass-card p-3 mb-3">
+                    <div class="section-title mb-3">Score by Department</div>
+                    <div class="table-responsive">
+                        <table class="table table-darkish align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Score</th>
+                                    <th>Trend</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="fw-semibold">Operations</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="progress" style="height:8px;width:150px;">
+                                                <div class="progress-bar bg-danger" style="width:58%"></div>
+                                            </div>
+                                            <span class="badge bg-danger">58%</span>
+                                        </div>
+                                    </td>
+                                    <td><i class="fa-solid fa-arrow-up text-danger"></i> -2%</td>
+                                    <td><span class="badge bg-danger">Critical</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="fw-semibold">Maintenance</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="progress" style="height:8px;width:150px;">
+                                                <div class="progress-bar bg-warning" style="width:68%"></div>
+                                            </div>
+                                            <span class="badge bg-warning">68%</span>
+                                        </div>
+                                    </td>
+                                    <td><i class="fa-solid fa-arrow-up text-success"></i> +3%</td>
+                                    <td><span class="badge bg-warning">Needs Improvement</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="fw-semibold">Warehouse</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="progress" style="height:8px;width:150px;">
+                                                <div class="progress-bar bg-info" style="width:72%"></div>
+                                            </div>
+                                            <span class="badge bg-info">72%</span>
+                                        </div>
+                                    </td>
+                                    <td><i class="fa-solid fa-minus text-muted"></i> 0%</td>
+                                    <td><span class="badge bg-info">Good</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Score Trends -->
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Compliance Trend Over Time</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="complianceTrendChart" height="200" class="ltr"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Score by Location</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="locationScoreChart" height="200" class="ltr"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Get chart text color based on theme
+        function getChartTextColor() {
+            return document.body.classList.contains('light-theme') ? '#0f172a' : '#e2e8f0';
+        }
+        function getChartGridColor() {
+            return document.body.classList.contains('light-theme') ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+        }
+        
+        // Compliance Trend Chart
+        const complianceTrendCtx = document.getElementById('complianceTrendChart');
+        if(complianceTrendCtx) {
+            new Chart(complianceTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Compliance Score',
+                        data: [65, 67, 68, 70, 71, 72],
+                        borderColor: '#009879',  // Primary green
+                        backgroundColor: 'rgba(0, 152, 121, 0.1)',  // Primary green with opacity
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 50,
+                            max: 100,
+                            ticks: { color: getChartTextColor() },
+                            grid: { color: getChartGridColor() }
+                        },
+                        x: {
+                            ticks: { color: getChartTextColor() },
+                            grid: { color: getChartGridColor() }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Location Score Chart
+        const locationScoreCtx = document.getElementById('locationScoreChart');
+        if(locationScoreCtx) {
+            new Chart(locationScoreCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4', 'Zone 5'],
+                    datasets: [{
+                        label: 'Compliance Score',
+                        data: [85, 65, 45, 75, 80],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.8)',     // Success (emerald)
+                            'rgba(245, 158, 11, 0.8)',     // Warning (orange)
+                            'rgba(239, 68, 68, 0.8)',      // Danger (red)
+                            'rgba(0, 152, 121, 0.8)',      // Primary (green)
+                            'rgba(0, 196, 167, 0.8)'        // Primary-2 (teal)
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: getChartTextColor() },
+                            grid: { color: getChartGridColor() }
+                        },
+                        x: {
+                            ticks: { color: getChartTextColor() },
+                            grid: { color: getChartGridColor() }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

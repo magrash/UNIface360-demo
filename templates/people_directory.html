@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>People Directory</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            color: #fff;
+        }
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .navbar-brand, .nav-link {
+            color: #fff !important;
+        }
+        .person-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        .person-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+        }
+        .person-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 15px 15px 0 0;
+        }
+        .person-info {
+            padding: 1.5rem;
+        }
+        .person-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .person-role {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .person-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #6dd5ed;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .btn-download {
+            background: linear-gradient(45deg, #2193b0, #6dd5ed);
+            border: none;
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 147, 176, 0.4);
+        }
+        .search-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .search-box:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        .progress {
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        .progress-bar {
+            background: linear-gradient(45deg, #2193b0, #6dd5ed);
+        }
+        .filter-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .time-period-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .time-period-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .time-period-btn.active {
+            background: linear-gradient(45deg, #2193b0, #6dd5ed);
+        }
+        .calendar-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            width: 100%;
+        }
+        .hours-progress {
+            margin-top: 1rem;
+        }
+        .hours-progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+
+
+
+        .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    transition: width 0.3s ease;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    color: #fff;
+}
+
+.sidebar-header img {
+    height: 40px;
+}
+
+.sidebar-header span {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-left: 0rem;
+    white-space: nowrap;
+}
+
+#toggleSidebar {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+
+    flex: 1 1 auto; /* Allow this list to grow */
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-nav li {
+    width: 100%;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.3s ease, padding 0.3s ease;
+}
+
+.sidebar-nav a i {
+    margin-right: 12px;
+    font-size: 1.2rem;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    background: rgba(109, 213, 237, 0.2);
+    color: #6dd5ed;
+}
+
+/* Sidebar bottom section (e.g. logout link) */
+.sidebar-bottom {
+    flex-shrink: 0;
+    margin-bottom: 1rem;
+}
+
+.sidebar-bottom .sidebar-nav {
+    flex: none;
+    margin-top: 0;
+}
+
+/* Hide text but keep toggle button visible in collapsed mode */
+.sidebar.collapsed .sidebar-nav a span,
+.sidebar.collapsed .sidebar-header span {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-nav a {
+    justify-content: center;
+    padding: 14px 0;
+}
+
+.sidebar.collapsed .sidebar-nav a i {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.sidebar.collapsed .sidebar-header {
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar.collapsed .sidebar-header img {
+    margin: 0 auto;
+}
+
+.sidebar.collapsed #toggleSidebar {
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.content-wrapper {
+    margin-left: 240px;
+    transition: margin-left 0.3s ease;
+}
+
+.sidebar.collapsed ~ .content-wrapper {
+    margin-left: 70px;
+}
+
+.sidebar-divider {
+    border: 0;
+    height: 5px;
+    background: rgba(225, 248, 255, 0.858);
+    margin: 1rem 1.25rem;
+}
+
+@media (max-width: 768px) {
+  /* Make attendance table scrollable */
+  .card-body table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Responsive map container */
+  .map-container {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  #mapCanvas {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+  }
+
+  .card-header .float-end {
+    float: none !important;
+    margin-top: 0.5rem;
+    text-align: left;
+  }
+
+  /* Chart responsiveness */
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    
+       <div class="sidebar collapsed" id="sidebar">
+
+        <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='logo6.png') }}" alt="Logo">
+        <span>Uniface360</span>
+        <button id="toggleSidebar">☰</button>
+        </div>
+
+
+        <!-- <ul class="sidebar-nav">
+            <li><a href="{{ url_for('dashboard') }}" title="Dashboard"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+            <li><a href="{{ url_for('emergency_status') }}" title="Report"><i class="bi bi-exclamation-triangle"></i> <span>Report</span></a></li>
+            <li><a href="{{ url_for('map') }}" title="Map"><i class="bi bi-map"></i> <span>Map</span></a></li>
+            <li><a href="{{ url_for('live_stream') }}" title="Live Stream"><i class="bi bi-camera-video"></i> <span>Live Stream</span></a></li>
+            <li><a href="{{ url_for('people_directory') }}" title="Directory"><i class="bi bi-people"></i> <span>Directory</span></a></li>
+            <li><a href="{{ url_for('excuses') }}" title="Excuses"><i class="bi bi-journal-check"></i> <span>Excuses</span></a></li>
+        </ul>
+
+        <div class="sidebar-bottom">
+            <ul class="sidebar-nav">
+                <li><a href="{{ url_for('logout') }}" title="Logout"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a></li>
+
+
+            </ul>
+        </div> -->
+
+
+
+
+        <!-- Main navigation links -->
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('dashboard') }}" title="Dashboard"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+            <li><a href="{{ url_for('emergency_status') }}" title="Report"><i class="bi bi-exclamation-triangle"></i> <span>Report</span></a></li>
+            <li><a href="{{ url_for('map') }}" title="Map"><i class="bi bi-map"></i> <span>Map</span></a></li>
+            <li><a href="{{ url_for('live_stream') }}" title="Live Stream"><i class="bi bi-camera-video"></i> <span>Live Stream</span></a></li>
+            <li><a href="{{ url_for('people_directory') }}" title="Directory"><i class="bi bi-people"></i> <span>Directory</span></a></li>
+            <li><a href="{{ url_for('excuses') }}" title="Excuses"><i class="bi bi-journal-check"></i> <span>Excuses</span></a></li>
+        </ul>
+
+        <!-- Horizontal line separator -->
+        <hr class="sidebar-divider">
+
+        <!-- Bottom section with Support and Logout -->
+        <div class="sidebar-bottom">
+            <ul class="sidebar-nav">
+                <li><a href="/support" title="Support"><i class="bi bi-life-preserver"></i> <span>Support</span></a></li>
+                <li><a href="{{ url_for('logout') }}" title="Logout"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a></li>
+            </ul>
+        </div>
+
+
+
+
+        <!-- <div class="sidebar-footer">
+            <p class="text-center text-white">Uniface360 &copy; 2023</p>
+        </div> -->
+
+    </div>
+
+    <div class="content-wrapper">
+        <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
+                    <img src="{{ url_for('static', filename='logo2.png') }}" alt="Logo" style="height:40px; margin-right:10px;">
+                    Uniface360
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('emergency_status') }}">Report</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('map') }}">Map</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('people_directory') }}">Directory</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav> -->
+
+
+
+        <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
+                    <img src="{{ url_for('static', filename='logo2.png') }}" alt="Logo" style="height:40px; margin-right:10px;">
+                    Uniface360
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('dashboard') }}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('emergency_status') }}">Report</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('map') }}">Map</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('excuses') }}">Manage Excuses</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav> -->
+        <div class="container mt-4">
+            <h1 class="mb-4">People Directory</h1>
+            
+            <div class="filter-section">
+                <div class="time-period-selector">
+                    <button class="time-period-btn active" data-period="day">Day</button>
+                    <button class="time-period-btn" data-period="month">Month</button>
+                    <button class="time-period-btn" data-period="quarter">Quarter</button>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <input type="text" class="calendar-input" id="datePicker" placeholder="Select Date">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control search-box" id="searchInput" placeholder="Search by name or role...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" id="peopleGrid">
+                {% for person in people %}
+                <div class="col-md-4 mb-4 person-item">
+                    <div class="person-card">
+                        <img src="{{ url_for('serve_formal_photo', filename=person.image.split('/')[-1]) }}" alt="{{ person.name }}" class="person-image">
+                        <div class="person-info">
+                            <h3 class="person-name">{{ person.name }}</h3>
+                            <p class="person-role">{{ person.role }}</p>
+                            
+                            <div class="hours-progress">
+                                <div class="hours-progress-label">
+                                    <span>Daily Progress</span>
+                                    <span>{{ person.get('current_hours', 0) }}/<span class="target-hours">8</span> hours</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ (person.get('current_hours', 0) / 8) * 100 }}%"
+                                         aria-valuenow="{{ person.get('current_hours', 0) }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="8">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="person-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ person.attendance_rate }}%</div>
+                                    <div class="stat-label">Attendance</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ person.days_present }}</div>
+                                    <div class="stat-label">Days Present</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ person.average_hours }}</div>
+                                    <div class="stat-label">Avg Hours</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-download" onclick="generateReport('{{ person.id }}')">
+                                Download Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        // Initialize particles.js
+        particlesJS('particles-js', {
+            particles: {
+                number: {
+                    value: 300,
+                    density: {
+                        enable: true,
+                        value_area: 1000
+                    }
+                },
+                color: {
+                    value: '#ffffff'
+                },
+                shape: {
+                    type: 'circle',
+                    stroke: {
+                        width: 0,
+                        color: '#000000'
+                    }
+                },
+                opacity: {
+                    value: 0.3,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                size: {
+                    value: 2.5,
+                    random: true,
+                    anim: {
+                        enable: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#ffffff',
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: true,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'grab'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 140,
+                        line_linked: {
+                            opacity: 0.5
+                        }
+                    },
+                    push: {
+                        particles_nb: 3
+                    }
+                }
+            },
+            retina_detect: true
+        });
+
+        // Initialize date picker
+        // flatpickr("#datePicker", {
+        //     dateFormat: "Y-m-d",
+        //     defaultDate: "today",
+        //     onChange: function(selectedDates, dateStr, instance) {
+        //         filterByDate(dateStr);
+        //     }
+        // });
+            flatpickr("#datePicker", {
+                dateFormat: "Y-m-d",
+                defaultDate: "{{ selected_date or 'today' }}",
+                onChange: function(selectedDates, dateStr, instance) {
+                    filterByDate(dateStr);
+                }
+            });
+
+
+        // Time period selector functionality
+        document.querySelectorAll('.time-period-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.time-period-btn').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                updateDatePicker(this.dataset.period);
+                updateProgressBars(this.dataset.period);
+            });
+        });
+
+        function updateDatePicker(period) {
+            const picker = document.querySelector("#datePicker")._flatpickr;
+            switch(period) {
+                case 'day':
+                    picker.set('mode', 'single');
+                    picker.set('dateFormat', 'Y-m-d');
+                    break;
+                case 'month':
+                    picker.set('mode', 'single');
+                    picker.set('dateFormat', 'Y-m');
+                    break;
+                case 'quarter':
+                    picker.set('mode', 'single');
+                    picker.set('dateFormat', 'Y-Q');
+                    break;
+            }
+        }
+
+        function updateProgressBars(period) {
+            const progressBars = document.querySelectorAll('.progress-bar');
+            const targetHoursLabels = document.querySelectorAll('.target-hours');
+            
+            let targetHours;
+            switch(period) {
+                case 'day':
+                    targetHours = 8;
+                    break;
+                case 'month':
+                    // Assuming 5 working days per week, 4 weeks per month
+                    targetHours = 8 * 5 * 4;
+                    break;
+                case 'quarter':
+                    // Assuming 5 working days per week, 13 weeks per quarter
+                    targetHours = 8 * 5 * 13;
+                    break;
+            }
+
+            progressBars.forEach(bar => {
+                const currentHours = parseFloat(bar.getAttribute('aria-valuenow'));
+                const percentage = (currentHours / targetHours) * 100;
+                bar.style.width = `${Math.min(percentage, 100)}%`;
+                bar.setAttribute('aria-valuemax', targetHours);
+            });
+
+            targetHoursLabels.forEach(label => {
+                label.textContent = targetHours;
+            });
+        }
+
+        // Initialize progress bars with default day view
+        updateProgressBars('day');
+
+        function filterByDate(date) {
+            const period = document.querySelector('.time-period-btn.active').dataset.period;
+            window.location.href = `/people_directory?date=${date}&period=${period}`;
+        }
+
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const personItems = document.querySelectorAll('.person-item');
+            
+            personItems.forEach(item => {
+                const name = item.querySelector('.person-name').textContent.toLowerCase();
+                const role = item.querySelector('.person-role').textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || role.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // PDF report generation
+        function generateReport(personId) {
+            const date = document.getElementById('datePicker').value;
+            const period = document.querySelector('.time-period-btn.active').dataset.period;
+            // window.location.href = `/generate_report/${personId}?date=${date}&period=${period}`;
+            window.location.href = `/generate_report/${personId}?date=${date}&period=${period}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+        const selectedPeriod = "{{ selected_period }}";
+        if (selectedPeriod) {
+            document.querySelectorAll('.time-period-btn').forEach(btn => {
+                if (btn.dataset.period === selectedPeriod) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            updateProgressBars(selectedPeriod);
+            updateDatePicker(selectedPeriod);
+        }
+    });
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+ <script>
+        document.getElementById('toggleSidebar').addEventListener('click', function () {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        });
+    </script>
+
+
+</body>
+</html> 

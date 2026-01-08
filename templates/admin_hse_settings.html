@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HSE Settings</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <!-- Shared site dashboard styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+
+    <style>
+        :root { 
+            --brand-green: var(--primary, #009879);
+            --brand-teal: var(--primary-2, #00c4a7);
+        }
+        body { 
+            background: var(--bg); 
+            color: rgba(255, 255, 255, 0.85);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .navbar { background: transparent; border-bottom: 1px solid var(--card-border); }
+        .navbar-brand, .navbar-nav .nav-link { color: rgba(255, 255, 255, 0.9) !important; }
+        .brand-badge { background: var(--brand-green); color: #fff; font-weight: 700; padding: 6px 10px; border-radius: 8px; }
+        .sidebar { background: var(--card); border-right: 1px solid var(--card-border); min-height: calc(100vh - 56px); position: sticky; top: 56px; }
+        .card.custom-card { background: var(--card-bg, var(--card)); border: 1px solid var(--card-border) !important; }
+        .nav-pills .nav-link { color: rgba(255, 255, 255, 0.7) !important; }
+        .nav-pills .nav-link.active { background-color: var(--brand-green); color: #0b1324; }
+        .nav-pills .nav-link:hover { color: rgba(255, 255, 255, 0.9) !important; }
+        .avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+        /* Form controls */
+        .form-select, .form-control { 
+            background: rgba(255, 255, 255, 0.08) !important; 
+            border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+            color: rgba(255, 255, 255, 0.9) !important; 
+        }
+        .form-select:focus, .form-control:focus { 
+            background: rgba(255, 255, 255, 0.12) !important; 
+            border-color: var(--brand-green) !important; 
+            color: rgba(255, 255, 255, 0.95) !important; 
+            box-shadow: 0 0 0 0.2rem rgba(0,152,121,0.3) !important; 
+        }
+        .form-select option { background: var(--card-bg, var(--card)); color: var(--text); }
+        .form-label { color: rgba(255, 255, 255, 0.9) !important; font-weight: 600; }
+        .form-check-label { color: rgba(255, 255, 255, 0.85) !important; }
+        h4, h5, h6 { color: rgba(255, 255, 255, 0.9); }
+        .section-title { color: rgba(255, 255, 255, 0.9); }
+    </style>
+</head>
+<body class="dashboard">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('admin_hse_dashboard') }}">
+                <span class="brand-badge">HSE</span>
+                <span class="fw-semibold">Performance Dashboard</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="topNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item me-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="themeToggle">
+                            <label class="form-check-label" for="themeToggle">Light/Dark</label>
+                        </div>
+                    </li>
+                    <li class="nav-item me-2">
+                        <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
+                            <img src="https://i.pravatar.cc/100?img=12" alt="avatar" class="avatar" />
+                            <span class="fw-semibold">Admin User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_hse_settings') }}">Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <aside class="col-12 col-lg-2 sidebar p-3">
+                <h6 class="text-uppercase text-muted px-2">Navigation</h6>
+                <ul class="nav nav-pills flex-column gap-1 mt-2">
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard Overview</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_incidents') }}"><i class="fa-solid fa-triangle-exclamation"></i> Incidents & Accidents</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_inspections') }}"><i class="fa-solid fa-clipboard-check"></i> Inspections & Audits</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_risks') }}"><i class="fa-solid fa-shield-halved"></i> Risk Assessment</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_trainings') }}"><i class="fa-solid fa-chalkboard-user"></i> Training & Certification</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_ppe') }}"><i class="fa-solid fa-hard-hat"></i> PPE & Equipment</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_environmental') }}"><i class="fa-solid fa-leaf"></i> Environmental</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_medical') }}"><i class="fa-solid fa-user-doctor"></i> Occupational Health</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_reports') }}"><i class="fa-regular fa-file-lines"></i> Reports & Analytics</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_employees') }}"><i class="fa-solid fa-users"></i> Employees</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_tracking') }}"><i class="fa-solid fa-chart-line"></i> Tracking</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_hse_monthly_dashboard') }}"><i class="fa-solid fa-calendar-alt"></i> Monthly Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active d-flex align-items-center gap-2" href="{{ url_for('admin_hse_settings') }}"><i class="fa-solid fa-gear"></i> Core Settings</a></li>
+                </ul>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <h4 class="section-title mb-4"><i class="fa-solid fa-gear me-2"></i>Core Settings</h4>
+
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <div class="card custom-card shadow-sm rounded-3 p-3">
+                            <h5 class="mb-3"><i class="fa-solid fa-bell me-2"></i>Notifications</h5>
+                            <div class="mb-3">
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="notifIncidents" checked>
+                                    <label class="form-check-label" for="notifIncidents">New Incident Reports</label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="notifTraining" checked>
+                                    <label class="form-check-label" for="notifTraining">Training Reminders</label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="notifCertificates">
+                                    <label class="form-check-label" for="notifCertificates">Certificate Expiration</label>
+                                </div>
+                            </div>
+                            <button class="btn btn-success">Save Changes</button>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card custom-card shadow-sm rounded-3 p-3">
+                            <h5 class="mb-3"><i class="fa-solid fa-chart-line me-2"></i>Reporting</h5>
+                            <div class="mb-3">
+                                <label class="form-label">Report Frequency</label>
+                                <select class="form-select">
+                                    <option>Daily</option>
+                                    <option>Weekly</option>
+                                    <option>Monthly</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Auto-generate Reports</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="autoReports">
+                                    <label class="form-check-label" for="autoReports">Enable automatic report generation</label>
+                                </div>
+                            </div>
+                            <button class="btn btn-success">Save Changes</button>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card custom-card shadow-sm rounded-3 p-3">
+                            <h5 class="mb-3"><i class="fa-solid fa-shield-halved me-2"></i>Safety Thresholds</h5>
+                            <div class="mb-3">
+                                <label class="form-label">Critical Incident Threshold</label>
+                                <input type="number" class="form-control" value="5" min="1">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Training Completion Target (%)</label>
+                                <input type="number" class="form-control" value="90" min="0" max="100">
+                            </div>
+                            <button class="btn btn-success">Save Changes</button>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card custom-card shadow-sm rounded-3 p-3">
+                            <h5 class="mb-3"><i class="fa-solid fa-users-gear me-2"></i>User Management</h5>
+                            <div class="mb-3">
+                                <label class="form-label">Default Role for New Users</label>
+                                <select class="form-select">
+                                    <option>Employee</option>
+                                    <option>Supervisor</option>
+                                    <option>Manager</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Require Two-Factor Authentication</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="twoFactor">
+                                    <label class="form-check-label" for="twoFactor">Enable 2FA for all users</label>
+                                </div>
+                            </div>
+                            <button class="btn btn-success">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme toggle function
+        function setTheme(light) {
+            if (light) {
+                document.body.classList.add('light-theme');
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+            } else {
+                document.body.classList.remove('light-theme');
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Default: dark mode
+            setTheme(false);
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+            
+            const toggle = document.getElementById('themeToggle');
+            if (toggle) {
+                toggle.addEventListener('change', (e) => setTheme(e.target.checked));
+            }
+
+            // Save settings handlers
+            document.querySelectorAll('.btn-success').forEach(btn => {
+                if (btn.textContent.includes('Save')) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        alert('Settings saved successfully!');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

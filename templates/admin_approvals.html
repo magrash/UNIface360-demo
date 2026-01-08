@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin • Approvals</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script defer src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</head>
+<body class="dashboard">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background:transparent; border-bottom:1px solid rgba(255,255,255,0.12)">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('admin_dashboard') }}">
+                <img src="{{ url_for('static', filename='logo6.png') }}" alt="Logo" style="height:34px; margin-inline-end:6px;">
+                <span class="fw-semibold">Admin Dashboard</span>
+            </a>
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item me-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="themeToggleAdmin">
+                        <label class="form-check-label" for="themeToggleAdmin">Light/Dark</label>
+                    </div>
+                </li>
+                <li class="nav-item me-2">
+                    <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">Logout</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="https://i.pravatar.cc/100?img=12" alt="avatar" class="avatar" />
+                        <span class="fw-semibold">Admin</span>
+                    </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_settings') }}">Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid" id="approvals">
+        <div class="row">
+            <aside class="col-12 col-lg-2 sidebar p-3">
+                <h6 class="text-uppercase text-muted px-2">Navigation</h6>
+                <ul class="nav nav-pills flex-column gap-1 mt-2">
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard Overview</a></li>
+                    <li class="nav-item"><a class="nav-link active d-flex align-items-center gap-2" href="{{ url_for('admin_approvals') }}"><i class="fa-regular fa-file-lines"></i> Approvals</a></li>
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('admin_employees') }}"><i class="fa-solid fa-users"></i> Employees</a></li>
+                </ul>
+            </aside>
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+        <div class="page-title">
+            <h4 class="section-title m-0">Approvals</h4>
+            <div class="d-flex gap-2">
+                <span class="pill info">Pending: 2</span>
+                <span class="pill ok">Approved: 0</span>
+                <span class="pill warn">Rejected: 0</span>
+                <button class="btn btn-soft btn-sm">Refresh</button>
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6">
+                <div class="glass-card p-3 h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="section-title">Permission Requests</div>
+                        <span class="pill info">Pending</span>
+                    </div>
+                    <div class="table-responsive flex-grow-1">
+                        <table class="table table-darkish table-compact row-hover align-middle mb-0">
+                            <thead><tr><th>Employee</th><th>Date</th><th>Duration</th><th>Reason</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td class="d-flex align-items-center gap-2"><img class="avatar" src="{{ url_for('static', filename='Dalia.png') }}" alt=""> Dalia</td>
+                                    <td>2025-11-03</td>
+                                    <td>2 hours</td>
+                                    <td>Hospital</td>
+                                    <td data-status><span class="chip">Pending</span></td>
+                                    <td class="text-end text-nowrap">
+                                        <button class="btn btn-sm btn-gradient" data-approve>Approve</button>
+                                        <button class="btn btn-sm btn-soft" data-reject>Reject</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="section-hint mt-2">Approve or reject short-duration permissions such as errands or medical visits.</div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="glass-card p-3 h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="section-title">Leave Requests</div>
+                        <span class="pill info">Pending</span>
+                    </div>
+                    <div class="table-responsive flex-grow-1">
+                        <table class="table table-darkish table-compact row-hover align-middle mb-0">
+                            <thead><tr><th>Employee</th><th>Period</th><th>Type</th><th>Reason</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td class="d-flex align-items-center gap-2"><img class="avatar" src="{{ url_for('static', filename='logo22.png') }}" alt=""> Mahmoud</td>
+                                    <td>2025-11-10 → 2025-11-12</td>
+                                    <td>Annual</td>
+                                    <td>Travel</td>
+                                    <td data-status><span class="chip">Pending</span></td>
+                                    <td class="text-end text-nowrap">
+                                        <button class="btn btn-sm btn-gradient" data-approve>Approve</button>
+                                        <button class="btn btn-sm btn-soft" data-reject>Reject</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="section-hint mt-2">Longer absences like annual or sick leave should include clear reasons and dates.</div>
+                </div>
+            </div>
+            </main>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            const body = document.body;
+            const toggle = document.getElementById('themeToggleAdmin');
+            if (!toggle) return;
+            function applyTheme(){
+                if (toggle.checked) {
+                    body.classList.add('light-theme');
+                    document.documentElement.setAttribute('data-bs-theme', 'light');
+                } else {
+                    body.classList.remove('light-theme');
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                }
+            }
+            toggle.addEventListener('change', applyTheme);
+            // default to light for admin page
+            applyTheme();
+        })();
+    </script>
+</body>
+</html>
+
+

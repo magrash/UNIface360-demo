@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Violations Records - Unauthorized Area Dashboard</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    {% include 'unauthorized/_navbar.html' %}
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'unauthorized/_sidebar.html' %}
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Violations Records</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="btnExportCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" id="btnExportPdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                        <a href="{{ url_for('unauthorized_incident_reporting') }}" class="btn btn-gradient"><i class="fa-solid fa-plus"></i> Report Violation</a>
+                    </div>
+                </div>
+
+                <!-- Key Performance Indicators -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">🔥</div>
+                            <div>
+                                <div class="value">87</div>
+                                <div class="label">Total Violations</div>
+                                <small class="text-danger d-block mt-1">This month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">⏳</div>
+                            <div>
+                                <div class="value">23</div>
+                                <div class="label">Under Investigation</div>
+                                <small class="text-warning d-block mt-1">Pending</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon info">📋</div>
+                            <div>
+                                <div class="value">45</div>
+                                <div class="label">Open Cases</div>
+                                <small class="text-info d-block mt-1">Active</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">✅</div>
+                            <div>
+                                <div class="value">19</div>
+                                <div class="label">Closed</div>
+                                <small class="text-success d-block mt-1">This month</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Filters -->
+                <div class="glass-card p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="section-title">Filters</div>
+                        <button class="btn btn-sm btn-outline" id="btnResetFilters"><i class="fa-solid fa-rotate"></i> Reset All</button>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <label class="form-label small">Violation Type</label>
+                            <select class="form-select form-select-sm" id="filterType">
+                                <option value="">All Types</option>
+                                <option>Unauthorized Entry</option>
+                                <option>Unsafe Actions</option>
+                                <option>Hazardous Material Access</option>
+                                <option>Confined Space Entry</option>
+                                <option>Working at Height</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Department</label>
+                            <select class="form-select form-select-sm" id="filterDept">
+                                <option value="">All Departments</option>
+                                <option>Operations</option>
+                                <option>Maintenance</option>
+                                <option>Warehouse</option>
+                                <option>IT</option>
+                                <option>Security</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Person</label>
+                            <input type="text" class="form-control form-control-sm" id="filterPerson" placeholder="Search person...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Location</label>
+                            <select class="form-select form-select-sm" id="filterLocation">
+                                <option value="">All Locations</option>
+                                <option>Warehouse Zone A</option>
+                                <option>Chemical Storage</option>
+                                <option>Confined Space #3</option>
+                                <option>High Voltage Room</option>
+                                <option>Roof Access Point</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Severity</label>
+                            <select class="form-select form-select-sm" id="filterSeverity">
+                                <option value="">All Severities</option>
+                                <option>Low</option>
+                                <option>Medium</option>
+                                <option>High</option>
+                                <option>Critical</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Status</label>
+                            <select class="form-select form-select-sm" id="filterStatus">
+                                <option value="">All Status</option>
+                                <option>Open</option>
+                                <option>Under Investigation</option>
+                                <option>Closed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Date From</label>
+                            <input type="date" class="form-control form-control-sm" id="filterDateFrom">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Date To</label>
+                            <input type="date" class="form-control form-control-sm" id="filterDateTo">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Violations Table -->
+                <div class="glass-card p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="section-title">All Violations</div>
+                        <div class="text-muted small">Showing <strong id="violationCount">87</strong> violations</div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-darkish align-middle mb-0" id="violationsTable">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Type</th>
+                                    <th>Person</th>
+                                    <th>Department</th>
+                                    <th>Location</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div>2025-01-15</div>
+                                        <div class="text-muted small">10:23 AM</div>
+                                    </td>
+                                    <td><span class="chip">Unauthorized Entry</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar" style="width:32px;height:32px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:0.8rem;">AM</div>
+                                            <div>
+                                                <div class="fw-semibold small">Ahmed Mohamed</div>
+                                                <div class="text-muted" style="font-size:0.7rem;">ID-001234</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="chip">Operations</span></td>
+                                    <td>Warehouse Zone A</td>
+                                    <td><span class="badge bg-danger">Critical</span></td>
+                                    <td><span class="badge bg-warning">Under Investigation</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#violationDetailModal" onclick="loadViolationDetails(1)" title="View Details"><i class="fa-regular fa-eye"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div>2025-01-15</div>
+                                        <div class="text-muted small">09:45 AM</div>
+                                    </td>
+                                    <td><span class="chip">Unsafe Actions</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar" style="width:32px;height:32px;background:#f59e0b;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:0.8rem;">SK</div>
+                                            <div>
+                                                <div class="fw-semibold small">Sara Khaled</div>
+                                                <div class="text-muted" style="font-size:0.7rem;">ID-001567</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="chip">Maintenance</span></td>
+                                    <td>Chemical Storage</td>
+                                    <td><span class="badge bg-warning">High</span></td>
+                                    <td><span class="badge bg-info">Open</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#violationDetailModal" onclick="loadViolationDetails(2)" title="View Details"><i class="fa-regular fa-eye"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div>2025-01-15</div>
+                                        <div class="text-muted small">08:12 AM</div>
+                                    </td>
+                                    <td><span class="chip">Confined Space Entry</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar" style="width:32px;height:32px;background:#f59e0b;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:0.8rem;">MH</div>
+                                            <div>
+                                                <div class="fw-semibold small">Mohamed Hassan</div>
+                                                <div class="text-muted" style="font-size:0.7rem;">ID-001890</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="chip">Warehouse</span></td>
+                                    <td>Confined Space #3</td>
+                                    <td><span class="badge bg-warning">High</span></td>
+                                    <td><span class="badge bg-success">Closed</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#violationDetailModal" onclick="loadViolationDetails(3)" title="View Details"><i class="fa-regular fa-eye"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div>2025-01-15</div>
+                                        <div class="text-muted small">07:30 AM</div>
+                                    </td>
+                                    <td><span class="chip">Working at Height</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar" style="width:32px;height:32px;background:#3b82f6;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:0.8rem;">NA</div>
+                                            <div>
+                                                <div class="fw-semibold small">Nour Ali</div>
+                                                <div class="text-muted" style="font-size:0.7rem;">ID-002123</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="chip">IT</span></td>
+                                    <td>Roof Access Point</td>
+                                    <td><span class="badge bg-info">Medium</span></td>
+                                    <td><span class="badge bg-info">Open</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#violationDetailModal" onclick="loadViolationDetails(4)" title="View Details"><i class="fa-regular fa-eye"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div>2025-01-14</div>
+                                        <div class="text-muted small">06:15 AM</div>
+                                    </td>
+                                    <td><span class="chip">Hazardous Material</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar" style="width:32px;height:32px;background:#3b82f6;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:0.8rem;">YM</div>
+                                            <div>
+                                                <div class="fw-semibold small">Youssef Mostafa</div>
+                                                <div class="text-muted" style="font-size:0.7rem;">ID-002456</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="chip">Security</span></td>
+                                    <td>High Voltage Room</td>
+                                    <td><span class="badge bg-info">Medium</span></td>
+                                    <td><span class="badge bg-warning">Under Investigation</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#violationDetailModal" onclick="loadViolationDetails(5)" title="View Details"><i class="fa-regular fa-eye"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination -->
+                    <nav aria-label="Violations pagination" class="mt-3">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Violation Detail Modal -->
+    <div class="modal fade" id="violationDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content" style="background:var(--card);border:1px solid var(--card-border);">
+                <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
+                    <h5 class="modal-title">Violation Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="violationDetailsContent">
+                        <!-- Content will be loaded dynamically -->
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--card-border);">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-gradient" onclick="window.print()"><i class="fa-solid fa-print"></i> Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mock violation data
+        const violationsData = {
+            1: {
+                type: "Unauthorized Entry",
+                person: "Ahmed Mohamed",
+                personId: "ID-001234",
+                department: "Operations",
+                location: "Warehouse Zone A",
+                date: "2025-01-15",
+                time: "10:23 AM",
+                severity: "Critical",
+                status: "Under Investigation",
+                description: "Employee entered restricted warehouse area without proper authorization. No work permit was obtained and safety protocols were not followed.",
+                images: ["violation1.jpg", "violation2.jpg"],
+                videos: ["violation1.mp4"],
+                involved: ["Ahmed Mohamed (Primary)", "Security Guard (Witness)"],
+                actions: ["Security notified immediately", "Area secured", "Investigation initiated"],
+                rootCause: "Lack of awareness about restricted area policies. Employee was not properly trained on warehouse access procedures.",
+                correctiveActions: ["Mandatory safety training for Operations team", "Enhanced signage at warehouse entrance", "Review of access control system"],
+                managerNotes: "This is a serious violation that requires immediate attention. The employee will undergo additional safety training.",
+                attachments: ["incident_report.pdf", "witness_statement.pdf"]
+            },
+            2: {
+                type: "Unsafe Actions",
+                person: "Sara Khaled",
+                personId: "ID-001567",
+                department: "Maintenance",
+                location: "Chemical Storage",
+                date: "2025-01-15",
+                time: "09:45 AM",
+                severity: "High",
+                status: "Open",
+                description: "Employee was observed handling chemicals without proper PPE. Safety goggles and gloves were not worn during chemical transfer operation.",
+                images: ["violation3.jpg"],
+                videos: [],
+                involved: ["Sara Khaled (Primary)", "Maintenance Supervisor (Witness)"],
+                actions: ["Operation stopped immediately", "PPE provided", "Safety briefing conducted"],
+                rootCause: "Routine violation of PPE requirements. Employee was in a hurry and skipped safety procedures.",
+                correctiveActions: ["PPE compliance training", "Supervisor oversight increased", "Safety reminders posted"],
+                managerNotes: "Employee has been warned. Further violations will result in disciplinary action.",
+                attachments: ["safety_checklist.pdf"]
+            }
+        };
+
+        function loadViolationDetails(id) {
+            const violation = violationsData[id] || violationsData[1];
+            const content = `
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="m-0">${violation.type}</h6>
+                            <div>
+                                <span class="badge bg-${violation.severity === 'Critical' ? 'danger' : violation.severity === 'High' ? 'warning' : 'info'}">${violation.severity}</span>
+                                <span class="badge bg-${violation.status === 'Closed' ? 'success' : violation.status === 'Under Investigation' ? 'warning' : 'info'}">${violation.status}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="glass-card p-3">
+                            <h6 class="mb-3">Basic Information</h6>
+                            <div class="mb-2"><strong>Person:</strong> ${violation.person} (${violation.personId})</div>
+                            <div class="mb-2"><strong>Department:</strong> ${violation.department}</div>
+                            <div class="mb-2"><strong>Location:</strong> ${violation.location}</div>
+                            <div class="mb-2"><strong>Date & Time:</strong> ${violation.date} at ${violation.time}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="glass-card p-3">
+                            <h6 class="mb-3">Description</h6>
+                            <p>${violation.description}</p>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="glass-card p-3">
+                            <h6 class="mb-3">Images & Videos</h6>
+                            <div class="d-flex gap-2 flex-wrap">
+                                ${violation.images.map(img => `<img src="https://via.placeholder.com/150" alt="${img}" class="img-thumbnail" style="max-width:150px;">`).join('')}
+                                ${violation.videos.map(vid => `<video src="#" controls class="img-thumbnail" style="max-width:150px;"></video>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="glass-card p-3">
+                            <h6 class="mb-3">Involved Persons</h6>
+                            <ul>
+                                ${violation.involved.map(p => `<li>${p}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="glass-card p-3">
+                            <h6 class="mb-3">Actions Taken</h6>
+                            <ul>
+                                ${violation.actions.map(a => `<li>${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="glass-card p-3">
+                            <h6 class="mb-3">Root Cause Analysis (RCA)</h6>
+                            <p>${violation.rootCause}</p>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="glass-card p-3">
+                            <h6 class="mb-3">Corrective Actions</h6>
+                            <ul>
+                                ${violation.correctiveActions.map(a => `<li>${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="glass-card p-3">
+                            <h6 class="mb-3">Manager Notes</h6>
+                            <p>${violation.managerNotes}</p>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="glass-card p-3">
+                            <h6 class="mb-3">Attachments</h6>
+                            <div class="d-flex gap-2 flex-wrap">
+                                ${violation.attachments.map(att => `<a href="#" class="btn btn-sm btn-outline"><i class="fa-solid fa-file"></i> ${att}</a>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('violationDetailsContent').innerHTML = content;
+        }
+
+        // Filter functionality
+        document.getElementById('btnResetFilters')?.addEventListener('click', function() {
+            document.querySelectorAll('#filterType, #filterDept, #filterPerson, #filterLocation, #filterSeverity, #filterStatus, #filterDateFrom, #filterDateTo').forEach(el => {
+                if(el.tagName === 'SELECT') el.value = '';
+                else el.value = '';
+            });
+        });
+
+        // Export functions
+        document.getElementById('btnExportCsv')?.addEventListener('click', function() {
+            alert('CSV export functionality - to be implemented');
+        });
+        document.getElementById('btnExportPdf')?.addEventListener('click', function() {
+            alert('PDF export functionality - to be implemented');
+        });
+    </script>
+</body>
+</html>
+

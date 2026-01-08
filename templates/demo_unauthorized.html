@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unauthorized Person Demo – UNIface360</title>
+  <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <style>
+    .multi-camera-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    .multi-camera-grid .uf-cam-card {
+      margin: 0;
+    }
+    .no-cameras-message {
+      text-align: center;
+      padding: 3rem;
+      color: #94a3b8;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px dashed rgba(148, 163, 184, 0.3);
+      border-radius: 12px;
+      margin: 2rem auto;
+      max-width: 600px;
+    }
+    .no-cameras-message h3 {
+      color: #f59e0b;
+      margin-bottom: 1rem;
+    }
+    .no-cameras-message a {
+      color: #22d3ee;
+      text-decoration: none;
+    }
+    .no-cameras-message a:hover {
+      text-decoration: underline;
+    }
+    .cameras-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1600px;
+      margin: 0 auto 1.5rem auto;
+      padding: 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+    }
+    .cameras-count {
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+    .cameras-count strong {
+      color: #22d3ee;
+    }
+  </style>
+</head>
+<body data-page="unauthorized">
+  <div id="particles-js" style="position: fixed; inset: 0; z-index: -2;"></div>
+  <div class="uf-layout">
+    <header class="uf-header">
+      <a href="{{ url_for('demo_welcome') }}" style="text-decoration: none; color: inherit;">
+        <div class="uf-logo">
+          <img src="{{ url_for('static', filename='logo6.png') }}" alt="UNIface360 logo" />
+          <span class="uf-logo-text">UNIface360</span>
+        </div>
+      </a>
+      <nav class="uf-nav" aria-label="Primary">
+        <span class="uf-nav-item uf-nav-pill">Unauthorized Person</span>
+      </nav>
+    </header>
+
+    <main class="uf-main">
+      <section class="uf-section">
+        <header class="uf-section-header">
+          <h2>Unauthorized Person Detection</h2>
+          <p>
+            This page uses your existing face encodings to check whether the
+            person in front of the camera is known or unknown. Unknown faces
+            are treated as unauthorized and trigger critical alerts.
+          </p>
+        </header>
+
+        <!-- Cameras Toolbar -->
+        <div class="cameras-toolbar">
+          <span class="cameras-count">
+            <strong id="camera-count">0</strong> cameras configured for this model
+          </span>
+          <div style="display: flex; gap: 0.75rem;">
+            <button id="refresh-cameras-btn" class="uf-btn uf-btn-secondary" title="Refresh cameras">
+              ⟳ Refresh
+            </button>
+            <button id="start-all-btn" class="uf-btn uf-btn-primary">
+              ▶ Start All Cameras
+            </button>
+            <a href="/manage" class="uf-btn uf-btn-secondary" style="text-decoration: none;">
+              ⚙️ Manage Cameras
+            </a>
+          </div>
+        </div>
+
+        <!-- Dynamic Camera Grid -->
+        <div class="multi-camera-grid" id="cameras-container">
+          <!-- Cameras will be loaded here dynamically -->
+        </div>
+
+        <p id="unauth-last-result" class="uf-card-subtitle" style="margin-top: 20px; text-align: center;">
+          Click "Start All Cameras" to begin monitoring.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <section
+    class="uf-alert-layer"
+    aria-label="Realtime safety notifications"
+    aria-live="assertive"
+    id="alert-layer"
+  ></section>
+
+  <script src="{{ url_for('static', filename='particles-init.js') }}"></script>
+  <script>
+    (function() {
+      "use strict";
+      
+      const MODEL_TYPE = 'unauthorized';
+      let modelCameras = {};
+      let checkIntervals = {};
+      let isRunning = false;
+      
+      // Throttling
+      let lastEmergencySoundTime = 0;
+      const EMERGENCY_SOUND_COOLDOWN = 30000;
+      let emergencyAudio = null;
+      let lastEmailAlertTime = 0;
+      const EMAIL_ALERT_COOLDOWN = 60000;
+      
+      async function loadModelCameras() {
+        try {
+          const res = await fetch(`/api/model-cameras/${MODEL_TYPE}`);
+          const data = await res.json();
+          if (data.ok) {
+            modelCameras = data.cameras || {};
+            renderCameras();
+          }
+        } catch (err) {
+          console.error('Failed to load cameras:', err);
+        }
+      }
+      
+      function renderCameras() {
+        const container = document.getElementById('cameras-container');
+        const countEl = document.getElementById('camera-count');
+        
+        // Filter enabled cameras only
+        const enabledCameras = Object.entries(modelCameras).filter(([id, cam]) => cam.enabled);
+        countEl.textContent = enabledCameras.length;
+        
+        if (enabledCameras.length === 0) {
+          container.innerHTML = `
+            <div class="no-cameras-message" style="grid-column: 1 / -1;">
+              <h3>⚠️ No Cameras Configured</h3>
+              <p>No cameras are configured for Unauthorized Person detection.</p>
+              <p>Go to <a href="/manage">Manage → Unauthorized</a> to add cameras.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        container.innerHTML = enabledCameras.map(([camId, cam]) => `
+          <div class="uf-cam-card" data-camera-id="${camId}">
+            <header class="uf-cam-header">
+              <span class="uf-pill uf-pill--normal">Face check feed</span>
+              <span class="uf-cam-label">${cam.name || 'Camera ' + camId}</span>
+            </header>
+            <div class="uf-cam-body">
+              <img id="cam-feed-${camId}" alt="Camera ${camId}" style="width: 100%; height: auto; min-height: 250px; background: #0a0a0f; object-fit: cover;">
+            </div>
+            <footer class="uf-cam-footer">
+              <span id="cam-status-${camId}" class="uf-caption" aria-live="polite">
+                Ready - Click "Start All Cameras"
+              </span>
+            </footer>
+          </div>
+        `).join('');
+      }
+      
+      function startAllCameras() {
+        const enabledCameras = Object.entries(modelCameras).filter(([id, cam]) => cam.enabled);
+        
+        enabledCameras.forEach(([camId, cam], index) => {
+          const feedEl = document.getElementById(`cam-feed-${camId}`);
+          const statusEl = document.getElementById(`cam-status-${camId}`);
+          
+          if (feedEl) {
+            feedEl.src = `/video_feed/${camId}`;
+            if (statusEl) statusEl.textContent = 'Camera active - Starting detection...';
+          }
+          
+          // Start detection interval for this camera (staggered by 500ms per camera)
+          if (checkIntervals[camId]) clearInterval(checkIntervals[camId]);
+          
+          const staggerDelay = 2000 + (index * 500); // Stagger start times
+          setTimeout(() => {
+            console.log(`[CAM ${camId}] Starting detection interval`);
+            checkIntervals[camId] = setInterval(() => performCheck(camId, cam.name), 4000); // 4 second interval
+            performCheck(camId, cam.name);
+          }, staggerDelay);
+        });
+        
+        isRunning = true;
+        document.getElementById('start-all-btn').textContent = '⏹ Stop All Cameras';
+        document.getElementById('start-all-btn').onclick = stopAllCameras;
+        document.getElementById('unauth-last-result').textContent = `Monitoring ${enabledCameras.length} cameras...`;
+      }
+      
+      function stopAllCameras() {
+        Object.keys(checkIntervals).forEach(camId => {
+          clearInterval(checkIntervals[camId]);
+          delete checkIntervals[camId];
+          
+          const feedEl = document.getElementById(`cam-feed-${camId}`);
+          const statusEl = document.getElementById(`cam-status-${camId}`);
+          
+          if (feedEl) feedEl.src = '';
+          if (statusEl) statusEl.textContent = 'Stopped';
+        });
+        
+        isRunning = false;
+        document.getElementById('start-all-btn').textContent = '▶ Start All Cameras';
+        document.getElementById('start-all-btn').onclick = startAllCameras;
+        document.getElementById('unauth-last-result').textContent = 'Cameras stopped.';
+      }
+      
+      async function performCheck(camId, camName) {
+        const statusEl = document.getElementById(`cam-status-${camId}`);
+        
+        try {
+          console.log(`[CAM ${camId}] Checking...`);
+          const res = await fetch('/api/demo/unauthorized/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ camera_index: parseInt(camId) })
+          });
+          
+          const data = await res.json();
+          console.log(`[CAM ${camId}] Response:`, data);
+          
+          // Check for unauthorized person (API returns unauthorized: true)
+          if (data.unauthorized === true && data.reason !== 'no_face') {
+            if (statusEl) {
+              statusEl.textContent = '🚨 UNAUTHORIZED DETECTED!';
+              statusEl.style.color = '#ff4444';
+            }
+            
+            showAlert(`🚨 UNAUTHORIZED on ${camName}: Unknown Person`, 'critical');
+            playEmergencySound();
+            sendEmailAlert(camId);
+            
+            setTimeout(() => {
+              if (statusEl) {
+                statusEl.textContent = 'Camera active - Monitoring...';
+                statusEl.style.color = '';
+              }
+            }, 5000);
+          } else if (data.unauthorized === false && data.person_name) {
+            // Authorized person detected
+            if (statusEl) {
+              statusEl.textContent = `✓ Authorized: ${data.person_name}`;
+              statusEl.style.color = '#22c55e';
+            }
+            setTimeout(() => {
+              if (statusEl) {
+                statusEl.textContent = 'Camera active - Monitoring...';
+                statusEl.style.color = '';
+              }
+            }, 3000);
+          } else if (data.reason === 'no_face') {
+            // No face in frame - just monitoring
+            if (statusEl && !statusEl.textContent.includes('UNAUTHORIZED')) {
+              statusEl.textContent = 'Camera active - No face detected';
+              statusEl.style.color = '';
+            }
+          }
+        } catch (err) {
+          console.error(`[CAM ${camId}] Check error:`, err);
+          if (statusEl) {
+            statusEl.textContent = 'Error checking - Retrying...';
+          }
+        }
+      }
+      
+      function playEmergencySound() {
+        const now = Date.now();
+        if (now - lastEmergencySoundTime >= EMERGENCY_SOUND_COOLDOWN) {
+          try {
+            if (!emergencyAudio) {
+              emergencyAudio = new Audio('/static/emergency.mp3');
+              emergencyAudio.volume = 0.7;
+            }
+            emergencyAudio.currentTime = 0;
+            emergencyAudio.play().catch(() => {});
+            lastEmergencySoundTime = now;
+          } catch (e) {}
+        }
+      }
+      
+      async function sendEmailAlert(camId) {
+        const now = Date.now();
+        if (now - lastEmailAlertTime >= EMAIL_ALERT_COOLDOWN) {
+          try {
+            await fetch('/api/demo/unauthorized/send-alert-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ camera_index: parseInt(camId) })
+            });
+            lastEmailAlertTime = now;
+          } catch (e) {}
+        }
+      }
+      
+      function showAlert(message, type) {
+        const layer = document.getElementById('alert-layer');
+        if (!layer) return;
+        
+        const alert = document.createElement('div');
+        alert.className = `uf-alert uf-alert--${type}`;
+        alert.innerHTML = `
+          <div class="uf-alert-content">
+            <span class="uf-alert-icon">${type === 'critical' ? '🚨' : 'ℹ️'}</span>
+            <span class="uf-alert-message">${message}</span>
+          </div>
+        `;
+        layer.appendChild(alert);
+        
+        setTimeout(() => alert.remove(), 8000);
+      }
+      
+      // Initialize
+      document.addEventListener('DOMContentLoaded', () => {
+        loadModelCameras();
+        
+        document.getElementById('start-all-btn').addEventListener('click', startAllCameras);
+        document.getElementById('refresh-cameras-btn').addEventListener('click', () => {
+          loadModelCameras();
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

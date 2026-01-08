@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+.eggs/
+
+# Virtual environment
+venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+.history/
+*.swp
+*.swo
+
+# Large model files (download separately)
+*.pt
+*.weights
+*.onnx
+simple\ ppe/
+simple\ smoke/
+human_detection/weights/
+train_YOLO/
+
+# Database files
+*.db
+*.db.bak
+*.pkl
+
+# Sensitive files
+user_credentials.json
+rtsp_cameras.json
+rtsp_scan_settings.json
+model_cameras_config.json
+persons_config.json
+zones_config.json
+analytics_events.json
+person_tracking_logs.json
+
+# Media and docs
+*.docx
+*.pdf
+*.pptx
+*.png
+*.jpg
+*.jpeg
+Formal\ photos/
+evidence/
+test_images/
+temp_faces/
+debug_faces/
+known_faces/
+
+# Other
+.gitignore.bak
+*.log
+IP\ cam\ test/
+collect\ data/
+rig\ preparation/
+Mostafa&Obama\ model\ parm/
+version1/

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>    <title>Logs for {{ name }}</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <style>
+        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        img { max-width: 100px; height: auto; }
+        .back { margin: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Logs for {{ name }}</h1>
+    <p class="back"><a href="/">Back to Emergency Status</a></p>
+    <table>
+        <tr><th>Name</th><th>Floor</th><th>Time</th><th>Evidence</th></tr>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.name }}</td>
+            <td>{{ log.floor }}</td>
+            <td>{{ log.time }}</td>
+            <td>
+                {% if log.image_path %}
+                <img src="/evidence/{{ log.image_path | basename }}" alt="Evidence">
+                {% else %}
+                No Image
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

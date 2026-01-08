@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Violations by Person - Unauthorized Area Dashboard</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard">
+    {% include 'unauthorized/_navbar.html' %}
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'unauthorized/_sidebar.html' %}
+            <main class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Access Violations by Person</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline" id="btnExportCsv"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        <button class="btn btn-gradient" id="btnExportPdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                    </div>
+                </div>
+
+                <!-- KPIs -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon danger">👤</div>
+                            <div>
+                                <div class="value">45</div>
+                                <div class="label">Employees with Violations</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon warning">⚠️</div>
+                            <div>
+                                <div class="value">8</div>
+                                <div class="label">High-Risk Employees</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon info">📊</div>
+                            <div>
+                                <div class="value">2.1</div>
+                                <div class="label">Avg Violations/Person</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="glass-card p-3 kpi h-100">
+                            <div class="icon success">✅</div>
+                            <div>
+                                <div class="value">12</div>
+                                <div class="label">Training Assigned</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Violators Table -->
+                <div class="glass-card p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="section-title">Top Violators</div>
+                        <input type="text" class="form-control form-control-sm" style="width:250px;" placeholder="Search employee..." id="searchPerson">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-darkish align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Employee</th>
+                                    <th>Department</th>
+                                    <th>Total Violations</th>
+                                    <th>Risk Level</th>
+                                    <th>Training Needed</th>
+                                    <th>Trend</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-danger">1</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar" style="width:40px;height:40px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;">AM</div>
+                                            <div>
+                                                <div class="fw-semibold">Ahmed Mohamed</div>
+                                                <div class="text-muted small">ID-001234</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="chip">Operations</span></td>
+                                    <td><span class="badge bg-danger">8</span></td>
+                                    <td><span class="badge bg-danger">Critical</span></td>
+                                    <td><span class="badge bg-warning">Yes - Safety Training</span></td>
+                                    <td><i class="fa-solid fa-arrow-up text-danger"></i> Increasing</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#personDetailModal" title="View Details"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline" title="Assign Training"><i class="fa-solid fa-graduation-cap"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-warning">2</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar" style="width:40px;height:40px;background:#f59e0b;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;">SK</div>
+                                            <div>
+                                                <div class="fw-semibold">Sara Khaled</div>
+                                                <div class="text-muted small">ID-001567</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="chip">Maintenance</span></td>
+                                    <td><span class="badge bg-warning">6</span></td>
+                                    <td><span class="badge bg-warning">High</span></td>
+                                    <td><span class="badge bg-warning">Yes - PPE Training</span></td>
+                                    <td><i class="fa-solid fa-arrow-up text-warning"></i> Increasing</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#personDetailModal" title="View Details"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline" title="Assign Training"><i class="fa-solid fa-graduation-cap"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-warning">3</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar" style="width:40px;height:40px;background:#f59e0b;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;">MH</div>
+                                            <div>
+                                                <div class="fw-semibold">Mohamed Hassan</div>
+                                                <div class="text-muted small">ID-001890</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="chip">Warehouse</span></td>
+                                    <td><span class="badge bg-warning">5</span></td>
+                                    <td><span class="badge bg-warning">High</span></td>
+                                    <td><span class="badge bg-info">In Progress</span></td>
+                                    <td><i class="fa-solid fa-minus text-muted"></i> Stable</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" data-bs-toggle="modal" data-bs-target="#personDetailModal" title="View Details"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline" title="Assign Training"><i class="fa-solid fa-graduation-cap"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Violations Timeline</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="personTimelineChart" height="200" class="ltr"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card p-3 h-100 d-flex flex-column">
+                            <div class="section-title mb-3">Department Comparison</div>
+                            <div class="flex-grow-1 d-flex align-items-center">
+                                <canvas id="deptComparisonChart" height="200" class="ltr"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Person Detail Modal -->
+    <div class="modal fade" id="personDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content" style="background:var(--card);border:1px solid var(--card-border);">
+                <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
+                    <h5 class="modal-title">Employee Violation History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="glass-card p-3">
+                                <h6>Employee Info</h6>
+                                <div class="mb-2"><strong>Name:</strong> Ahmed Mohamed</div>
+                                <div class="mb-2"><strong>ID:</strong> ID-001234</div>
+                                <div class="mb-2"><strong>Department:</strong> Operations</div>
+                                <div class="mb-2"><strong>Risk Level:</strong> <span class="badge bg-danger">Critical</span></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="glass-card p-3">
+                                <h6>Statistics</h6>
+                                <div class="mb-2"><strong>Total Violations:</strong> 8</div>
+                                <div class="mb-2"><strong>This Month:</strong> 3</div>
+                                <div class="mb-2"><strong>Last 3 Months:</strong> 6</div>
+                                <div class="mb-2"><strong>Training Status:</strong> <span class="badge bg-warning">Required</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card p-3">
+                        <h6 class="mb-3">Violation History</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Location</th>
+                                        <th>Severity</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2025-01-15</td>
+                                        <td>Unauthorized Entry</td>
+                                        <td>Warehouse Zone A</td>
+                                        <td><span class="badge bg-danger">Critical</span></td>
+                                        <td><span class="badge bg-warning">Under Investigation</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025-01-10</td>
+                                        <td>Unsafe Actions</td>
+                                        <td>Chemical Storage</td>
+                                        <td><span class="badge bg-warning">High</span></td>
+                                        <td><span class="badge bg-success">Closed</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--card-border);">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-gradient"><i class="fa-solid fa-graduation-cap"></i> Assign Training</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Get chart text color based on theme
+        function getChartTextColor() {
+            return document.body.classList.contains('light-theme') ? '#0f172a' : '#e2e8f0';
+        }
+        function getChartGridColor() {
+            return document.body.classList.contains('light-theme') ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+        }
+        
+        // Person Timeline Chart
+        const personTimelineCtx = document.getElementById('personTimelineChart');
+        if(personTimelineCtx) {
+            new Chart(personTimelineCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Violations',
+                        data: [2, 1, 3, 2, 1, 2],
+                        borderColor: '#009879',  // Primary green
+                        backgroundColor: 'rgba(0, 152, 121, 0.1)',  // Primary green with opacity
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: getChartTextColor() },
+                            grid: { color: getChartGridColor() }
+                        },
+                        x: {
+                            ticks: { color: getChartTextColor() },
+                            grid: { color: getChartGridColor() }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Department Comparison Chart
+        const deptComparisonCtx = document.getElementById('deptComparisonChart');
+        if(deptComparisonCtx) {
+            new Chart(deptComparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Operations', 'Maintenance', 'Warehouse', 'IT', 'Security'],
+                    datasets: [{
+                        label: 'Avg Violations per Person',
+                        data: [2.5, 2.1, 1.8, 1.2, 0.8],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)',      // Danger (red)
+                            'rgba(245, 158, 11, 0.8)',     // Warning (orange)
+                            'rgba(0, 152, 121, 0.8)',      // Primary (green)
+                            'rgba(16, 185, 129, 0.8)',     // Success (emerald)
+                            'rgba(0, 196, 167, 0.8)'       // Primary-2 (teal)
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: getChartTextColor() },
+                            grid: { color: getChartGridColor() }
+                        },
+                        x: {
+                            ticks: { color: getChartTextColor() },
+                            grid: { color: getChartGridColor() }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
