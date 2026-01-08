@@ -51,6 +51,11 @@ person_tracking_logs.json
 *.png
 *.jpg
 *.jpeg
+*.gif
+*.mp3
+*.mp4
+*.wav
+*.svg
 Formal\ photos/
 evidence/
 test_images/

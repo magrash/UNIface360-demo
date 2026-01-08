@@ -1165,6 +1165,7 @@ def detect_hardhat(frame: np.ndarray, confidence_threshold: float = 0.5) -> tupl
         return False, 0.0
 
 
+
 # ---------------------------------------------------------------------------
 # Evacuation System (Person Detection Only - Head Count)
 # ---------------------------------------------------------------------------
