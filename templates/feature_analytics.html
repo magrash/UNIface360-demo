@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNIface360 - {{ config.title }} Analytics</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo6.png') }}" type="image/png" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-dark: #020408;
+            --bg-card: rgba(15, 25, 40, 0.95);
+            --bg-hover: rgba(20, 35, 55, 0.95);
+            --border: rgba(0, 217, 165, 0.15);
+            --border-medium: rgba(0, 217, 165, 0.3);
+            --text: #ffffff;
+            --text-muted: #94A3B8;
+            --primary: #00D9A5;
+            --primary-light: #4FFFCE;
+            --secondary: #00C4E0;
+            --green: #22C55E;
+            --orange: #F59E0B;
+            --red: #EF4444;
+            --purple: #6366F1;
+            --pink: #EC4899;
+
+            --accent: {
+                    {
+                    config.color
+                }
+            }
+
+            ;
+
+            --accent-glow: {
+                    {
+                    config.glow
+                }
+            }
+
+            ;
+
+            --accent-bg: {
+                    {
+                    config.bg
+                }
+            }
+
+            ;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 20% 30%, var(--accent-bg), transparent 50%),
+                radial-gradient(ellipse 60% 40% at 80% 70%, rgba(0, 217, 165, 0.05), transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 217, 165, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 217, 165, 0.015) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: -1;
+            pointer-events: none;
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(145deg, rgba(15, 25, 40, 0.98), rgba(10, 18, 30, 0.95));
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--primary), var(--accent));
+            opacity: 0.9;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .page-badge {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #ffffff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            padding: 0.6rem 1.2rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.25s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: #ffffff;
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Title */
+        .page-title {
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .title-icon {
+            font-size: 3rem;
+            filter: drop-shadow(0 0 20px var(--accent-glow));
+        }
+
+        .page-title h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .page-title p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1.25rem;
+            background: linear-gradient(160deg, rgba(15, 25, 40, 0.98), rgba(10, 18, 30, 0.95));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+        }
+
+        .date-filters {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .date-input {
+            padding: 0.6rem 1rem;
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .date-separator {
+            color: var(--text-muted);
+        }
+
+        .filter-btn {
+            padding: 0.6rem 1.2rem;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            border: none;
+            border-radius: 10px;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px var(--accent-glow);
+        }
+
+        .filter-btn.secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn.dummy {
+            background: linear-gradient(135deg, var(--purple), var(--pink));
+            color: white;
+            border-color: var(--purple);
+        }
+
+        .action-btn.refresh {
+            background: linear-gradient(135deg, var(--green), #10B981);
+            color: #ffffff;
+            border-color: var(--green);
+        }
+
+        .action-btn.export {
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Data Status Banner */
+        .data-status {
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.1));
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-icon {
+            font-size: 1.5rem;
+        }
+
+        .status-text {
+            flex: 1;
+            color: var(--orange);
+            font-weight: 500;
+        }
+
+        .status-close {
+            background: none;
+            border: none;
+            color: var(--orange);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: linear-gradient(160deg, rgba(15, 25, 40, 0.98), rgba(10, 18, 30, 0.95));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-medium);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px var(--accent-glow);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: var(--accent-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .stat-sublabel {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            opacity: 0.8;
+        }
+
+        /* Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: linear-gradient(160deg, rgba(15, 25, 40, 0.98), rgba(10, 18, 30, 0.95));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .chart-container {
+            height: 320px;
+        }
+
+        /* Analysis Cards */
+        .analysis-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .analysis-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .analysis-card {
+            background: linear-gradient(160deg, rgba(15, 25, 40, 0.98), rgba(10, 18, 30, 0.95));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .analysis-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-list {
+            list-style: none;
+        }
+
+        .analysis-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .analysis-item:last-child {
+            border-bottom: none;
+        }
+
+        .analysis-item-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .analysis-item-rank {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .analysis-item:nth-child(1) .analysis-item-rank {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+        }
+
+        .analysis-item:nth-child(2) .analysis-item-rank {
+            background: linear-gradient(135deg, #C0C0C0, #A0A0A0);
+            color: #000;
+        }
+
+        .analysis-item:nth-child(3) .analysis-item-rank {
+            background: linear-gradient(135deg, #CD7F32, #8B4513);
+            color: #fff;
+        }
+
+        .analysis-item-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .analysis-item-value {
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* Events Table */
+        .table-section {
+            background: linear-gradient(160deg, rgba(15, 25, 40, 0.98), rgba(10, 18, 30, 0.95));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .table-search {
+            padding: 0.6rem 1rem;
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: inherit;
+            width: 250px;
+        }
+
+        .table-search:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .table-btn {
+            padding: 0.6rem 1rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .table-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .events-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .events-table th {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .events-table td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .events-table tr:hover td {
+            background: var(--bg-hover);
+        }
+
+        .severity-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .severity-badge.high {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--red);
+        }
+
+        .severity-badge.medium {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--orange);
+        }
+
+        .severity-badge.low {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--green);
+        }
+
+        /* Pagination */
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .table-info {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .pagination-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .pagination-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .pagination-btn.active {
+            background: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Event Detail Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: linear-gradient(160deg, rgba(15, 25, 40, 0.98), rgba(10, 18, 30, 0.95));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(90deg, var(--accent-bg), transparent);
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            max-height: calc(90vh - 220px);
+        }
+
+        .event-image-container {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .event-image {
+            width: 100%;
+            height: auto;
+            max-height: 350px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .event-image-placeholder {
+            width: 100%;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            gap: 10px;
+        }
+
+        .event-image-placeholder span:first-child {
+            font-size: 3rem;
+            opacity: 0.5;
+        }
+
+        .event-details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .event-detail-item {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .event-detail-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .event-detail-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .event-detail-value.accent {
+            color: var(--accent);
+        }
+
+        .severity-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .severity-indicator.high {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--red);
+        }
+
+        .severity-indicator.medium {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--orange);
+        }
+
+        .severity-indicator.low {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--green);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: #ffffff;
+            border: none;
+        }
+
+        .modal-btn.secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-left">
+            <a href="{{ url_for('demo_welcome') }}" class="logo-link">
+                <img src="{{ url_for('static', filename='logo6.png') }}" alt="Logo" class="logo-img">
+                <span class="logo">UNIface360</span>
+            </a>
+            <span class="page-badge">{{ config.icon }} {{ config.title }}</span>
+        </div>
+        <div class="nav-links">
+            <a href="/analytics" class="nav-link">📊 Main Dashboard</a>
+            <a href="/analytics/unauthorized"
+                class="nav-link {% if feature_type == 'unauthorized' %}active{% endif %}">🚫 Unauthorized</a>
+            <a href="/analytics/restricted" class="nav-link {% if feature_type == 'restricted' %}active{% endif %}">⚠️
+                Restricted</a>
+            <a href="/analytics/ppe" class="nav-link {% if feature_type == 'ppe' %}active{% endif %}">🦺 PPE</a>
+            <a href="/analytics/evacuation" class="nav-link {% if feature_type == 'evacuation' %}active{% endif %}">�
+                Evacuation</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-title">
+            <span class="title-icon">{{ config.icon }}</span>
+            <div>
+                <h1>{{ config.title }} Analytics</h1>
+                <p>Detailed analytics and insights for {{ config.title.lower() }} detection events</p>
+            </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-controls">
+            <div class="date-filters">
+                <label class="filter-label">📅 Date Range:</label>
+                <input type="date" id="date-from" class="date-input">
+                <span class="date-separator">to</span>
+                <input type="date" id="date-to" class="date-input">
+                <button class="filter-btn" onclick="applyDateFilter()">🔍 Filter</button>
+                <button class="filter-btn secondary" onclick="clearDateFilter()">✖ Clear</button>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn dummy" onclick="fillDummyData()">🎲 Fill Dummy Data</button>
+                <button class="action-btn refresh" onclick="refreshData()">🔄 Refresh Real Data</button>
+                <button class="action-btn export" onclick="exportData()">📥 Export CSV</button>
+            </div>
+        </div>
+
+        <!-- Data Status Banner -->
+        <div class="data-status" id="data-status">
+            <span class="status-icon">⚠️</span>
+            <span class="status-text">Showing DUMMY data for demonstration. Click "Refresh Real Data" to load actual
+                data.</span>
+            <button class="status-close" onclick="hideStatus()">✖</button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">{{ config.icon }}</div>
+                </div>
+                <div class="stat-value" id="total-count">0</div>
+                <div class="stat-label">Total {{ config.event_name }} Events</div>
+                <div class="stat-sublabel">All time</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">📅</div>
+                </div>
+                <div class="stat-value" id="today-count">0</div>
+                <div class="stat-label">Today's Events</div>
+                <div class="stat-sublabel">Last 24 hours</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">📷</div>
+                </div>
+                <div class="stat-value" id="cameras-count">0</div>
+                <div class="stat-label">Active Cameras</div>
+                <div class="stat-sublabel">With detections</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">⚠️</div>
+                </div>
+                <div class="stat-value" id="high-severity">0</div>
+                <div class="stat-label">High Severity</div>
+                <div class="stat-sublabel">Critical alerts</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">📈 Events Timeline (Last 7 Days)</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">🎯 Hourly Distribution</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Row -->
+        <div class="analysis-row">
+            <div class="analysis-card">
+                <h3 class="analysis-title">📷 Top Cameras</h3>
+                <ul class="analysis-list" id="top-cameras">
+                    <li class="analysis-item"><span style="color: var(--text-muted);">No data</span></li>
+                </ul>
+            </div>
+            <div class="analysis-card">
+                <h3 class="analysis-title">👤 Detected Persons</h3>
+                <ul class="analysis-list" id="top-persons">
+                    <li class="analysis-item"><span style="color: var(--text-muted);">No data</span></li>
+                </ul>
+            </div>
+            <div class="analysis-card">
+                <h3 class="analysis-title">📅 Peak Hours</h3>
+                <ul class="analysis-list" id="peak-hours">
+                    <li class="analysis-item"><span style="color: var(--text-muted);">No data</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Events Table -->
+        <div class="table-section">
+            <div class="table-header">
+                <h3 class="table-title">📋 {{ config.title }} Events</h3>
+                <div class="table-actions">
+                    <input type="text" class="table-search" placeholder="🔍 Search events..." id="event-search"
+                        onkeyup="searchEvents()">
+                </div>
+            </div>
+            <table class="events-table">
+                <thead>
+                    <tr>
+                        <th>Camera</th>
+                        <th>Details</th>
+                        <th>Severity</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="events-tbody"></tbody>
+            </table>
+            <div class="table-footer">
+                <div class="table-info">
+                    Showing <span id="showing-start">0</span>-<span id="showing-end">0</span> of <span
+                        id="total-events">0</span> events
+                </div>
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </div>
+
+        <!-- Event Detail Modal -->
+        <div class="modal-overlay" id="event-modal" onclick="closeModalOnOverlay(event)">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        <span id="modal-icon">{{ config.icon }}</span>
+                        <span>Event Details</span>
+                    </h3>
+                    <button class="modal-close" onclick="closeModal()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="event-image-container" id="modal-image-container">
+                        <div class="event-image-placeholder" id="image-placeholder">
+                            <span>📷</span>
+                            <span>No image available</span>
+                        </div>
+                        <img class="event-image" id="modal-image" style="display: none;" alt="Event capture">
+                    </div>
+                    <div class="event-details-grid">
+                        <div class="event-detail-item">
+                            <div class="event-detail-label">📷 Camera</div>
+                            <div class="event-detail-value accent" id="modal-camera">-</div>
+                        </div>
+                        <div class="event-detail-item">
+                            <div class="event-detail-label">⏰ Time</div>
+                            <div class="event-detail-value" id="modal-time">-</div>
+                        </div>
+                        <div class="event-detail-item">
+                            <div class="event-detail-label">👤 Person Detected</div>
+                            <div class="event-detail-value" id="modal-person">-</div>
+                        </div>
+                        <div class="event-detail-item">
+                            <div class="event-detail-label">⚠️ Severity</div>
+                            <div class="event-detail-value" id="modal-severity">-</div>
+                        </div>
+                        <div class="event-detail-item" style="grid-column: span 2;">
+                            <div class="event-detail-label">📝 Event ID</div>
+                            <div class="event-detail-value" id="modal-id"
+                                style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn secondary" onclick="closeModal()">✕ Close</button>
+                    <button class="modal-btn primary" onclick="downloadEvent()">📥 Download Image</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const featureType = '{{ feature_type }}';
+            let allEvents = [];
+            let filteredEvents = [];
+            let currentPage = 1;
+            const eventsPerPage = 10;
+
+            const cameraNames = ['Entrance Camera', 'Loading Bay', 'Server Room', 'Parking Lot', 'Warehouse', 'Main Gate', 'Reception', 'Factory Floor'];
+            const personNames = ['Unknown Person', 'Ahmed', 'Mohamed', 'Sara', 'Ali', 'Fatma', 'Omar', 'Layla'];
+            const severities = ['high', 'medium', 'low'];
+
+            // Charts
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+            const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+
+            const timelineChart = new Chart(timelineCtx, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: '{{ config.title }}', data: [], borderColor: '{{ config.color }}', backgroundColor: '{{ config.bg }}', fill: true, tension: 0.4 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(0, 217, 165, 0.1)' }, ticks: { color: '#94A3B8' } },
+                        y: { grid: { color: 'rgba(0, 217, 165, 0.1)' }, ticks: { color: '#94A3B8' } }
+                    }
+                }
+            });
+
+            const hourlyChart = new Chart(hourlyCtx, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Events', data: [], backgroundColor: '{{ config.color }}', borderRadius: 6 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94A3B8' } },
+                        y: { grid: { color: 'rgba(0, 217, 165, 0.1)' }, ticks: { color: '#94A3B8' } }
+                    }
+                }
+            });
+
+            async function loadData() {
+                document.getElementById('data-status').style.display = 'none';
+                try {
+                    const response = await fetch('/api/analytics/events');
+                    const data = await response.json();
+                    allEvents = (data.events || []).filter(e => e.event_type === featureType);
+                    filteredEvents = [...allEvents];
+                    updateAll();
+                } catch (err) {
+                    console.error('Failed to load events:', err);
+                    allEvents = [];
+                    filteredEvents = [];
+                    updateAll();
+                }
+            }
+
+            function fillDummyData() {
+                document.getElementById('data-status').style.display = 'flex';
+                const dummyEvents = [];
+                const now = new Date();
+
+                for (let i = 0; i < 50; i++) {
+                    const daysAgo = Math.floor(Math.random() * 30);
+                    const hoursAgo = Math.floor(Math.random() * 24);
+                    const eventDate = new Date(now.getTime() - (daysAgo * 24 + hoursAgo) * 60 * 60 * 1000);
+
+                    dummyEvents.push({
+                        id: `dummy-${i}`,
+                        event_type: featureType,
+                        camera_name: cameraNames[Math.floor(Math.random() * cameraNames.length)],
+                        timestamp: eventDate.toISOString(),
+                        severity: severities[Math.floor(Math.random() * severities.length)],
+                        details: { person: personNames[Math.floor(Math.random() * personNames.length)] }
+                    });
+                }
+
+                dummyEvents.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                allEvents = dummyEvents;
+                filteredEvents = [...allEvents];
+                updateAll();
+            }
+
+            function applyDateFilter() {
+                const fromDate = document.getElementById('date-from').value;
+                const toDate = document.getElementById('date-to').value;
+
+                if (!fromDate && !toDate) {
+                    filteredEvents = [...allEvents];
+                } else {
+                    filteredEvents = allEvents.filter(event => {
+                        const eventDateStr = new Date(event.timestamp).toISOString().split('T')[0];
+                        if (fromDate && toDate) return eventDateStr >= fromDate && eventDateStr <= toDate;
+                        if (fromDate) return eventDateStr >= fromDate;
+                        return eventDateStr <= toDate;
+                    });
+                }
+                currentPage = 1;
+                updateAll();
+            }
+
+            function clearDateFilter() {
+                document.getElementById('date-from').value = '';
+                document.getElementById('date-to').value = '';
+                filteredEvents = [...allEvents];
+                currentPage = 1;
+                updateAll();
+            }
+
+            function hideStatus() {
+                document.getElementById('data-status').style.display = 'none';
+            }
+
+            function updateAll() {
+                updateStats();
+                updateCharts();
+                updateAnalysis();
+                renderEvents();
+                renderPagination();
+            }
+
+            function updateStats() {
+                const today = new Date().toDateString();
+                const todayCount = filteredEvents.filter(e => new Date(e.timestamp).toDateString() === today).length;
+                const cameras = new Set(filteredEvents.map(e => e.camera_name)).size;
+                const highSeverity = filteredEvents.filter(e => e.severity === 'high').length;
+
+                document.getElementById('total-count').textContent = filteredEvents.length;
+                document.getElementById('today-count').textContent = todayCount;
+                document.getElementById('cameras-count').textContent = cameras;
+                document.getElementById('high-severity').textContent = highSeverity;
+                document.getElementById('total-events').textContent = filteredEvents.length;
+            }
+
+            function updateCharts() {
+                const labels = [];
+                const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const now = new Date();
+                const dailyData = new Array(7).fill(0);
+
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                    labels.push(dayNames[date.getDay()]);
+                }
+
+                filteredEvents.forEach(event => {
+                    const daysAgo = Math.floor((now - new Date(event.timestamp)) / (24 * 60 * 60 * 1000));
+                    if (daysAgo >= 0 && daysAgo < 7) dailyData[6 - daysAgo]++;
+                });
+
+                timelineChart.data.labels = labels;
+                timelineChart.data.datasets[0].data = dailyData;
+                timelineChart.update();
+
+                // Hourly chart
+                const hourlyData = new Array(24).fill(0);
+                filteredEvents.forEach(e => hourlyData[new Date(e.timestamp).getHours()]++);
+
+                const hourLabels = [];
+                for (let i = 0; i < 24; i += 3) hourLabels.push(`${String(i).padStart(2, '0')}:00`);
+
+                const groupedHourly = [];
+                for (let i = 0; i < 24; i += 3) {
+                    groupedHourly.push(hourlyData[i] + hourlyData[i + 1] + hourlyData[i + 2]);
+                }
+
+                hourlyChart.data.labels = hourLabels;
+                hourlyChart.data.datasets[0].data = groupedHourly;
+                hourlyChart.update();
+            }
+
+            function updateAnalysis() {
+                // Top Cameras
+                const cameraCounts = {};
+                filteredEvents.forEach(e => {
+                    const name = e.camera_name || 'Unknown';
+                    cameraCounts[name] = (cameraCounts[name] || 0) + 1;
+                });
+                const topCameras = Object.entries(cameraCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+                document.getElementById('top-cameras').innerHTML = topCameras.map((c, i) => `
+                <li class="analysis-item">
+                    <div class="analysis-item-info">
+                        <span class="analysis-item-rank">${i + 1}</span>
+                        <span class="analysis-item-name">${c[0]}</span>
+                    </div>
+                    <span class="analysis-item-value">${c[1]}</span>
+                </li>
+            `).join('') || '<li class="analysis-item"><span style="color: var(--text-muted);">No data</span></li>';
+
+                // Top Persons
+                const personCounts = {};
+                filteredEvents.forEach(e => {
+                    const name = e.details?.person || 'Unknown';
+                    personCounts[name] = (personCounts[name] || 0) + 1;
+                });
+                const topPersons = Object.entries(personCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+                document.getElementById('top-persons').innerHTML = topPersons.map((p, i) => `
+                <li class="analysis-item">
+                    <div class="analysis-item-info">
+                        <span class="analysis-item-rank">${i + 1}</span>
+                        <span class="analysis-item-name">${p[0]}</span>
+                    </div>
+                    <span class="analysis-item-value">${p[1]}</span>
+                </li>
+            `).join('') || '<li class="analysis-item"><span style="color: var(--text-muted);">No data</span></li>';
+
+                // Peak Hours
+                const hourCounts = new Array(24).fill(0);
+                filteredEvents.forEach(e => hourCounts[new Date(e.timestamp).getHours()]++);
+                const peakHours = hourCounts.map((count, hour) => ({ hour, count })).sort((a, b) => b.count - a.count).slice(0, 5).filter(h => h.count > 0);
+
+                document.getElementById('peak-hours').innerHTML = peakHours.map((h, i) => `
+                <li class="analysis-item">
+                    <div class="analysis-item-info">
+                        <span class="analysis-item-rank">${i + 1}</span>
+                        <span class="analysis-item-name">${String(h.hour).padStart(2, '0')}:00 - ${String(h.hour + 1).padStart(2, '0')}:00</span>
+                    </div>
+                    <span class="analysis-item-value">${h.count}</span>
+                </li>
+            `).join('') || '<li class="analysis-item"><span style="color: var(--text-muted);">No data</span></li>';
+            }
+
+            function renderEvents() {
+                const tbody = document.getElementById('events-tbody');
+                const start = (currentPage - 1) * eventsPerPage;
+                const end = start + eventsPerPage;
+                const pageEvents = filteredEvents.slice(start, end);
+
+                if (pageEvents.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No events found</td></tr>';
+                    document.getElementById('showing-start').textContent = 0;
+                    document.getElementById('showing-end').textContent = 0;
+                    return;
+                }
+
+                tbody.innerHTML = pageEvents.map(event => {
+                    const time = new Date(event.timestamp);
+                    return `
+                    <tr>
+                        <td>${event.camera_name || 'Unknown'}</td>
+                        <td>${event.details?.person || '-'}</td>
+                        <td><span class="severity-badge ${event.severity}">${event.severity}</span></td>
+                        <td>${time.toLocaleString()}</td>
+                        <td><button class="table-btn" onclick="viewEvent('${event.id}')">View</button></td>
+                    </tr>
+                `;
+                }).join('');
+
+                document.getElementById('showing-start').textContent = start + 1;
+                document.getElementById('showing-end').textContent = Math.min(end, filteredEvents.length);
+            }
+
+            function renderPagination() {
+                const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
+                const pagination = document.getElementById('pagination');
+
+                let html = `<button class="pagination-btn" onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
+                for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+                    html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+                }
+                html += `<button class="pagination-btn" onclick="changePage(1)" ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}>→</button>`;
+                pagination.innerHTML = html;
+            }
+
+            function changePage(delta) {
+                const maxPage = Math.ceil(filteredEvents.length / eventsPerPage);
+                currentPage = Math.max(1, Math.min(maxPage, currentPage + delta));
+                renderEvents();
+                renderPagination();
+            }
+
+            function goToPage(page) {
+                currentPage = page;
+                renderEvents();
+                renderPagination();
+            }
+
+            function refreshData() { loadData(); }
+
+            let currentEventId = null;
+
+            function viewEvent(id) {
+                const event = filteredEvents.find(e => e.id === id);
+                if (!event) return;
+
+                currentEventId = id;
+
+                // Update modal content
+                document.getElementById('modal-camera').textContent = event.camera_name || 'Unknown';
+                document.getElementById('modal-time').textContent = new Date(event.timestamp).toLocaleString();
+                document.getElementById('modal-person').textContent = event.details?.person || 'N/A';
+                document.getElementById('modal-id').textContent = event.id;
+
+                // Severity with badge
+                const severityEl = document.getElementById('modal-severity');
+                const severityIcons = { high: '🔴', medium: '🟡', low: '🟢' };
+                severityEl.innerHTML = `<span class="severity-indicator ${event.severity}">${severityIcons[event.severity] || '⚪'} ${event.severity.toUpperCase()}</span>`;
+
+                // Image handling - check all possible image fields
+                const imageEl = document.getElementById('modal-image');
+                const placeholderEl = document.getElementById('image-placeholder');
+                const imageSrc = event.snapshot_path || event.image_url || event.thumbnail;
+
+                if (imageSrc) {
+                    imageEl.src = imageSrc;
+                    imageEl.style.display = 'block';
+                    placeholderEl.style.display = 'none';
+                } else {
+                    imageEl.style.display = 'none';
+                    placeholderEl.style.display = 'flex';
+                }
+
+                // Show modal
+                document.getElementById('event-modal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeModal() {
+                document.getElementById('event-modal').classList.remove('active');
+                document.body.style.overflow = '';
+                currentEventId = null;
+            }
+
+            function closeModalOnOverlay(e) {
+                if (e.target.id === 'event-modal') {
+                    closeModal();
+                }
+            }
+
+            function downloadEvent() {
+                const event = filteredEvents.find(e => e.id === currentEventId);
+                if (!event) return;
+
+                const imageSrc = event.snapshot_path || event.image_url || event.thumbnail;
+                if (imageSrc) {
+                    const a = document.createElement('a');
+                    a.href = imageSrc;
+                    a.download = `event_${event.id}_${Date.now()}.jpg`;
+                    a.click();
+                } else {
+                    alert('No image available for this event');
+                }
+            }
+
+            // Close modal on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+
+            function searchEvents() {
+                const query = document.getElementById('event-search').value.toLowerCase();
+                if (!query) {
+                    filteredEvents = [...allEvents];
+                } else {
+                    filteredEvents = allEvents.filter(e =>
+                        (e.camera_name || '').toLowerCase().includes(query) ||
+                        (e.details?.person || '').toLowerCase().includes(query)
+                    );
+                }
+                currentPage = 1;
+                updateAll();
+            }
+
+            function exportData() {
+                if (filteredEvents.length === 0) { alert('No data to export'); return; }
+                const headers = ['ID', 'Camera', 'Severity', 'Timestamp', 'Person'];
+                const rows = filteredEvents.map(e => [e.id, e.camera_name || 'Unknown', e.severity, new Date(e.timestamp).toLocaleString(), e.details?.person || '']);
+                const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${featureType}_analytics_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+            }
+
+            // Set default dates
+            const today = new Date();
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            document.getElementById('date-to').value = today.toISOString().split('T')[0];
+            document.getElementById('date-from').value = weekAgo.toISOString().split('T')[0];
+
+            loadData();
+        </script>
+</body>
+
+</html>

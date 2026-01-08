@@ -7034,11 +7034,6 @@ ANALYTICS_DASHBOARD_TEMPLATE = """
 """
 
 
-@app.route("/analytics")
-def analytics_dashboard() -> str:
-    """Render the analytics dashboard."""
-    return render_template_string(ANALYTICS_DASHBOARD_TEMPLATE)
-
 
 # ---------------------------------------------------------------------------
 # Individual Feature Dashboard Templates
@@ -8264,30 +8259,6 @@ FEATURE_CONFIGS = {
 }
 
 
-@app.route("/analytics/unauthorized")
-def analytics_unauthorized() -> str:
-    """Unauthorized person analytics dashboard."""
-    return generate_feature_dashboard("unauthorized", FEATURE_CONFIGS["unauthorized"])
-
-
-@app.route("/analytics/restricted")
-def analytics_restricted() -> str:
-    """Restricted area analytics dashboard."""
-    return generate_feature_dashboard("restricted", FEATURE_CONFIGS["restricted"])
-
-
-@app.route("/analytics/ppe")
-def analytics_ppe() -> str:
-    """PPE violations analytics dashboard."""
-    return generate_feature_dashboard("ppe", FEATURE_CONFIGS["ppe"])
-
-
-@app.route("/analytics/evacuation")
-def analytics_evacuation() -> str:
-    """Evacuation/Live Tracking analytics dashboard."""
-    return generate_feature_dashboard("evacuation", FEATURE_CONFIGS["evacuation"])
-
-
 # ---------------------------------------------------------------------------
 # Page routes for the four dedicated demos
 # ---------------------------------------------------------------------------
@@ -8321,7 +8292,85 @@ def demo_live_tracking() -> str:
 @app.route("/analytics/live-tracking")
 def analytics_live_tracking() -> str:
     """Live Tracking analytics dashboard."""
-    return generate_feature_dashboard("live_tracking", FEATURE_CONFIGS["live_tracking"])
+    config = {
+        "title": "Live Tracking",
+        "icon": "📍",
+        "event_name": "Detection",
+        "color": "#00D9A5",
+        "glow": "rgba(0, 217, 165, 0.15)",
+        "bg": "rgba(0, 217, 165, 0.1)"
+    }
+    return render_template("feature_analytics.html", feature_type="live_tracking", config=config)
+
+
+# ---------------------------------------------------------------------------
+# Feature Analytics Configuration
+# ---------------------------------------------------------------------------
+
+FEATURE_CONFIGS = {
+    "unauthorized": {
+        "title": "Unauthorized Person",
+        "icon": "🚫",
+        "event_name": "Unauthorized",
+        "color": "#EF4444",
+        "glow": "rgba(239, 68, 68, 0.15)",
+        "bg": "rgba(239, 68, 68, 0.1)"
+    },
+    "restricted": {
+        "title": "Restricted Area",
+        "icon": "⚠️",
+        "event_name": "Breach",
+        "color": "#F59E0B",
+        "glow": "rgba(245, 158, 11, 0.15)",
+        "bg": "rgba(245, 158, 11, 0.1)"
+    },
+    "ppe": {
+        "title": "PPE Violations",
+        "icon": "🦺",
+        "event_name": "Violation",
+        "color": "#22C55E",
+        "glow": "rgba(34, 197, 94, 0.15)",
+        "bg": "rgba(34, 197, 94, 0.1)"
+    },
+    "evacuation": {
+        "title": "Evacuation System",
+        "icon": "🚨",
+        "event_name": "Alert",
+        "color": "#6366F1",
+        "glow": "rgba(99, 102, 241, 0.15)",
+        "bg": "rgba(99, 102, 241, 0.1)"
+    }
+}
+
+
+@app.route("/analytics")
+def analytics_main() -> str:
+    """Main Analytics Dashboard."""
+    return render_template("analytics_dashboard.html")
+
+
+@app.route("/analytics/unauthorized")
+def analytics_unauthorized() -> str:
+    """Unauthorized person analytics dashboard."""
+    return render_template("feature_analytics.html", feature_type="unauthorized", config=FEATURE_CONFIGS["unauthorized"])
+
+
+@app.route("/analytics/restricted")
+def analytics_restricted() -> str:
+    """Restricted area analytics dashboard."""
+    return render_template("feature_analytics.html", feature_type="restricted", config=FEATURE_CONFIGS["restricted"])
+
+
+@app.route("/analytics/ppe")
+def analytics_ppe() -> str:
+    """PPE violations analytics dashboard."""
+    return render_template("feature_analytics.html", feature_type="ppe", config=FEATURE_CONFIGS["ppe"])
+
+
+@app.route("/analytics/evacuation")
+def analytics_evacuation() -> str:
+    """Evacuation system analytics dashboard."""
+    return render_template("feature_analytics.html", feature_type="evacuation", config=FEATURE_CONFIGS["evacuation"])
 
 
 # ---------------------------------------------------------------------------

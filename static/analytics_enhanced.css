@@ -1,0 +1,547 @@
+/* Analytics Dashboard Enhanced Styles */
+/* Animations & Premium Effects */
+
+/* Keyframe Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px rgba(0, 217, 165, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 25px rgba(0, 217, 165, 0.6);
+    }
+}
+
+@keyframes countUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes borderGlow {
+
+    0%,
+    100% {
+        border-color: rgba(0, 217, 165, 0.3);
+    }
+
+    50% {
+        border-color: rgba(0, 217, 165, 0.8);
+    }
+}
+
+/* Animated Elements */
+.animate-fadeInUp {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.animate-fadeInLeft {
+    animation: fadeInLeft 0.6s ease forwards;
+}
+
+.animate-fadeInRight {
+    animation: fadeInRight 0.6s ease forwards;
+}
+
+.animate-scaleIn {
+    animation: scaleIn 0.5s ease forwards;
+}
+
+.animate-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-glow {
+    animation: glow 2s ease-in-out infinite;
+}
+
+/* Staggered Animation Delays */
+.delay-1 {
+    animation-delay: 0.1s;
+}
+
+.delay-2 {
+    animation-delay: 0.2s;
+}
+
+.delay-3 {
+    animation-delay: 0.3s;
+}
+
+.delay-4 {
+    animation-delay: 0.4s;
+}
+
+.delay-5 {
+    animation-delay: 0.5s;
+}
+
+/* Enhanced Stat Cards */
+.stat-card {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.stat-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.stat-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.stat-card:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.stat-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 50px rgba(0, 217, 165, 0.2);
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.15) rotate(5deg);
+}
+
+.stat-icon {
+    transition: transform 0.3s ease;
+}
+
+.stat-value {
+    animation: countUp 0.8s ease forwards;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-value {
+    transform: scale(1.1);
+}
+
+/* Enhanced Chart Cards */
+.chart-card {
+    animation: fadeInUp 0.7s ease forwards;
+    opacity: 0;
+    transition: all 0.4s ease;
+}
+
+.chart-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 217, 165, 0.15);
+    border-color: var(--border-medium);
+}
+
+/* Enhanced Quick Actions */
+.quick-action {
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quick-action:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.quick-action:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.quick-action:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.quick-action:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.quick-action:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 15px 40px rgba(0, 217, 165, 0.2);
+    border-color: var(--primary);
+}
+
+.quick-action:hover .quick-action-icon {
+    transform: scale(1.2) rotate(-5deg);
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.quick-action-icon {
+    transition: all 0.4s ease;
+}
+
+/* Enhanced Analysis Cards */
+.analysis-card {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transition: all 0.35s ease;
+}
+
+.analysis-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.analysis-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.analysis-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.analysis-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--border-medium);
+    box-shadow: 0 12px 35px rgba(0, 217, 165, 0.12);
+}
+
+.analysis-item {
+    transition: all 0.25s ease;
+}
+
+.analysis-item:hover {
+    background: rgba(0, 217, 165, 0.05);
+    padding-left: 10px;
+    border-radius: 8px;
+}
+
+.analysis-item:hover .analysis-item-value {
+    transform: scale(1.15);
+}
+
+.analysis-item-value {
+    transition: transform 0.25s ease;
+}
+
+/* Enhanced Table */
+.table-section {
+    animation: fadeInUp 0.7s ease forwards;
+    opacity: 0;
+    animation-delay: 0.3s;
+}
+
+.events-table tr {
+    transition: all 0.25s ease;
+}
+
+.events-table tr:hover td {
+    background: rgba(0, 217, 165, 0.08);
+}
+
+.events-table tr:hover {
+    transform: scale(1.01);
+}
+
+/* Enhanced Buttons */
+.filter-btn,
+.action-btn,
+.table-btn,
+.nav-link {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-btn::after,
+.action-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.filter-btn:hover::after,
+.action-btn:hover::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Enhanced Badges */
+.event-type-badge,
+.severity-badge {
+    transition: all 0.25s ease;
+}
+
+.event-type-badge:hover,
+.severity-badge:hover {
+    transform: scale(1.08);
+}
+
+/* Enhanced Filter Controls */
+.filter-controls {
+    animation: slideDown 0.5s ease forwards;
+    transition: all 0.3s ease;
+}
+
+.filter-controls:hover {
+    border-color: var(--border-medium);
+}
+
+/* Loading Skeleton */
+.skeleton {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.05) 25%,
+            rgba(255, 255, 255, 0.1) 50%,
+            rgba(255, 255, 255, 0.05) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+}
+
+/* Tooltip Enhancement */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-5px);
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+    z-index: 100;
+}
+
+[data-tooltip]:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Enhanced Modal */
+.modal-content {
+    animation: scaleIn 0.35s ease forwards;
+}
+
+.modal-overlay.active {
+    animation: fadeIn 0.25s ease forwards;
+}
+
+/* Scroll Animations */
+.scroll-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease;
+}
+
+.scroll-reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Number Counter Animation */
+.counter {
+    display: inline-block;
+    animation: countUp 0.6s ease forwards;
+}
+
+/* Progress Bar Animation */
+.progress-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+    background-size: 200% 100%;
+}
+
+/* Enhanced Pagination */
+.pagination-btn {
+    transition: all 0.25s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    transform: scale(1.1);
+}
+
+.pagination-btn.active {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Live Indicator */
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(34, 197, 94, 0.15);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: var(--green);
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Glassmorphism Effect */
+.glass {
+    background: rgba(15, 25, 40, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Gradient Border */
+.gradient-border {
+    position: relative;
+    background: var(--bg-card);
+}
+
+.gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary), var(--purple));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gradient-border:hover::before {
+    opacity: 1;
+}
