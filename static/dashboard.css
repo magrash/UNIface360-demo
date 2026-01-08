@@ -1,0 +1,744 @@
+/* Shared dashboard styles (light/dark friendly) */
+:root {
+    --bg: #0f172a;
+    --card: rgba(255, 255, 255, 0.06);
+    --card-border: rgba(255, 255, 255, 0.12);
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    /* HSE green-leaning primary palette */
+    --primary: #009879;   /* brand green */
+    --primary-2: #00c4a7; /* teal gradient partner */
+    --success: #10b981;   /* emerald */
+    --warning: #f59e0b;
+    --danger: #ef4444;
+}
+
+/* Light mode tokens (apply by adding class "light" to html/body or data-theme="light") */
+html.light,
+body.light,
+:root[data-theme="light"] {
+    --bg: #f5f7fb;                 /* page background */
+    --card: #ffffff;               /* solid white cards */
+    --card-border: rgba(2, 6, 23, 0.08);
+    --text: #0f172a;               /* slate-900 */
+    --muted: #475569;              /* slate-600 */
+}
+
+body.dashboard {
+    background: radial-gradient(1200px 600px at 10% -10%, rgba(34, 211, 238, 0.12), transparent 60%),
+        radial-gradient(1000px 500px at 110% 10%, rgba(129, 140, 248, 0.12), transparent 60%),
+        var(--bg);
+    color: var(--text);
+}
+
+/* Light theme override to keep both Admin and HSE consistent */
+body.dashboard.light-theme {
+    --bg: #f4f6f8;
+    --card: #ffffff;
+    --card-border: #e5e7eb;
+    --text: #0f172a;
+    --muted: #64748b;
+}
+
+/* Lighter background accents in light mode */
+html.light body.dashboard,
+body.light.dashboard,
+[data-theme="light"] body.dashboard {
+    background: radial-gradient(1100px 520px at 12% -10%, rgba(0, 200, 170, 0.08), transparent 60%),
+        radial-gradient(900px 420px at 110% 8%, rgba(99, 102, 241, 0.06), transparent 60%),
+        var(--bg);
+}
+
+.navbar { backdrop-filter: saturate(140%) blur(6px); }
+.navbar { position: relative; z-index: 2000; }
+.navbar .dropdown-menu { z-index: 2050; }
+
+/* Fixed HR Navbar */
+.hr-navbar-fixed {
+    position: sticky !important;
+    top: 0;
+    z-index: 1030 !important;
+    width: 100%;
+}
+
+/* Light mode navbar background */
+body.dashboard.light-theme .hr-navbar-fixed {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-bottom: 1px solid rgba(2, 6, 23, 0.12) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+/* Ensure navbar text is visible in light mode */
+body.dashboard.light-theme .navbar-brand,
+body.dashboard.light-theme .navbar-brand *,
+body.dashboard.light-theme .navbar-nav .nav-link {
+    color: var(--text) !important;
+}
+
+/* Brand badge used on both Admin and HSE navbars */
+.brand-badge { display:inline-block; padding:6px 10px; border-radius:8px; background: var(--primary); color:#0b1324; font-weight:700; }
+
+.glass-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Card & shadow tuning for light mode */
+html.light .glass-card,
+body.light .glass-card,
+[data-theme="light"] .glass-card {
+    background: var(--card);
+    box-shadow: 0 6px 20px rgba(2, 6, 23, 0.06);
+    border-color: var(--card-border);
+}
+
+html.light .glass-card:hover,
+body.light .glass-card:hover,
+[data-theme="light"] .glass-card:hover {
+    box-shadow: 0 10px 28px rgba(2, 6, 23, 0.10);
+    border-color: rgba(2, 6, 23, 0.12);
+}
+
+.kpi {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.kpi .icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+}
+
+.icon.primary {
+    background: linear-gradient(135deg, rgba(0, 152, 121, 0.20), rgba(0, 196, 167, 0.20));
+    border: 1px solid rgba(0, 196, 167, 0.35);
+}
+
+.icon.success {
+    background: rgba(52, 211, 153, 0.18);
+    border: 1px solid rgba(52, 211, 153, 0.35);
+}
+
+.icon.warning {
+    background: rgba(245, 158, 11, 0.18);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.icon.danger {
+    background: rgba(239, 68, 68, 0.18);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.kpi .value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.kpi .label {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.section-title {
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.btn-gradient {
+    background: linear-gradient(90deg, var(--primary), var(--primary-2));
+    color: #0b1324;
+    border: none;
+    transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+.btn-outline {
+    border: 1px solid var(--card-border);
+    color: var(--text);
+    transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.btn-gradient:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 8px 20px rgba(129, 140, 248, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-outline:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(34, 211, 238, 0.15);
+}
+
+.btn-soft {
+    transition: transform .15s ease, box-shadow .2s ease;
+}
+
+.btn-soft:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(255, 255, 255, 0.08);
+}
+
+/* Buttons for light mode */
+html.light .btn-outline,
+body.light .btn-outline,
+[data-theme="light"] .btn-outline { background: #ffffff; }
+
+html.light .btn-soft,
+body.light .btn-soft,
+[data-theme="light"] .btn-soft { background: #f8fafc; border-color: var(--card-border); color: var(--text); }
+
+.table-darkish.table> :not(caption)>*>* {
+    background-color: transparent !important;
+    color: var(--text);
+    border-color: var(--card-border);
+}
+
+/* Tables & rows in light */
+html.light .row-hover tbody tr:hover,
+body.light .row-hover tbody tr:hover,
+[data-theme="light"] .row-hover tbody tr:hover { background: rgba(2, 6, 23, 0.04); }
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-inline-end: 6px;
+}
+
+.dot-success {
+    background: var(--success);
+}
+
+.dot-warning {
+    background: var(--warning);
+}
+
+.dot-danger {
+    background: var(--danger);
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--card-border);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.avatar:hover {
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+}
+
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.calendar .day {
+    padding: 10px;
+    text-align: center;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--card-border);
+}
+
+html.light .calendar .day,
+body.light .calendar .day,
+[data-theme="light"] .calendar .day { background: #f8fafc; }
+
+.calendar .day.miss {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+.calendar .day.late {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.35);
+}
+
+.calendar .day.ok {
+    background: rgba(52, 211, 153, 0.12);
+    border-color: rgba(52, 211, 153, 0.35);
+}
+
+.sticky-actions {
+    position: sticky;
+    bottom: 0;
+    background: var(--bg);
+    padding-top: 8px;
+}
+
+.card-header-transparent {
+    border-bottom: 1px solid var(--card-border);
+    color: var(--muted);
+    background: transparent;
+}
+
+.form-control,
+.form-select {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid var(--card-border);
+    color: var(--text) !important;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.form-control::placeholder,
+.form-select::placeholder {
+    color: var(--muted) !important;
+}
+
+.form-control option,
+.form-select option {
+    background: rgba(30, 41, 59, 0.95) !important;
+    color: var(--text) !important;
+}
+
+html.light .form-control,
+html.light .form-select,
+body.light .form-control,
+body.light .form-select,
+body.dashboard.light-theme .form-control,
+body.dashboard.light-theme .form-select,
+[data-theme="light"] .form-control,
+[data-theme="light"] .form-select { 
+    background: #ffffff !important; 
+    color: #0f172a !important;
+    border-color: rgba(2, 6, 23, 0.12) !important;
+}
+
+html.light .form-control option,
+html.light .form-select option,
+body.light .form-control option,
+body.light .form-select option,
+body.dashboard.light-theme .form-control option,
+body.dashboard.light-theme .form-select option,
+[data-theme="light"] .form-control option,
+[data-theme="light"] .form-select option {
+    background: #ffffff !important;
+    color: #0f172a !important;
+}
+
+html.light .form-control::placeholder,
+html.light .form-select::placeholder,
+body.light .form-control::placeholder,
+body.light .form-select::placeholder,
+body.dashboard.light-theme .form-control::placeholder,
+body.dashboard.light-theme .form-select::placeholder,
+[data-theme="light"] .form-control::placeholder,
+[data-theme="light"] .form-select::placeholder {
+    color: #64748b !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(34, 211, 238, 0.15);
+}
+
+.chip {
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--card-border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+html.light .chip,
+body.light .chip,
+[data-theme="light"] .chip { background: #f1f5f9; }
+
+@media (max-width: 992px) {
+    .kpi .value {
+        font-size: 1.2rem;
+    }
+}
+
+
+/* Approvals polish */
+.page-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.pill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    border: 1px solid var(--card-border);
+}
+
+.pill.info {
+    background: rgba(34, 211, 238, 0.12);
+    color: #7dd3fc;
+    border-color: rgba(34, 211, 238, 0.35);
+}
+
+.pill.warn {
+    background: rgba(245, 158, 11, 0.12);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.35);
+}
+
+.pill.ok {
+    background: rgba(52, 211, 153, 0.12);
+    color: #6ee7b7;
+    border-color: rgba(52, 211, 153, 0.35);
+}
+
+.btn-soft {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--card-border);
+    color: var(--text);
+}
+
+.btn-soft:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.table-compact.table> :not(caption)>*>* {
+    padding-top: .6rem;
+    padding-bottom: .6rem;
+}
+
+.row-hover tbody tr:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.section-hint {
+    color: var(--muted);
+    font-size: .85rem;
+}
+
+/* Links & nav */
+.navbar .nav-link {
+    position: relative;
+}
+
+.navbar .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 6px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-2));
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform .25s ease;
+}
+
+.navbar .nav-link:hover::after,
+.navbar .nav-link.active::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+/* HSE/Side navigation polish */
+.sidebar {
+    background: var(--card);
+    border-right: 1px solid var(--card-border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+/* Light mode sidebar - less transparent, solid background */
+body.dashboard.light-theme .sidebar {
+    background: #ffffff !important;
+    border-right: 1px solid rgba(2, 6, 23, 0.12) !important;
+}
+
+/* Sidebar toggle button styles */
+.sidebar-toggle-btn {
+    color: #ffffff !important;
+}
+
+body.dashboard.light-theme .sidebar-toggle-btn {
+    color: #0f172a !important;
+}
+
+body.dashboard.light-theme .sidebar-toggle-btn:hover {
+    color: #009879 !important;
+}
+
+/* Mobile sidebar styles */
+@media (max-width: 991.98px) {
+    .sidebar {
+        position: fixed;
+        left: -100%;
+        top: 56px;
+        width: 280px;
+        max-width: 85vw;
+        height: calc(100vh - 56px);
+        transition: left 0.3s ease;
+        z-index: 1040;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        background: var(--card) !important;
+    }
+    
+    /* Light mode sidebar - less transparent */
+    body.dashboard.light-theme .sidebar {
+        background: #ffffff !important;
+        border-right: 1px solid rgba(2, 6, 23, 0.12);
+        box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .sidebar.sidebar-open {
+        left: 0;
+    }
+    
+    .sidebar-overlay {
+        position: fixed;
+        top: 56px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 56px);
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1035;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+    }
+    
+    .sidebar-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* Ensure main content is not affected on mobile */
+    main.col-lg-10 {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+.sidebar .nav-link { color: var(--text); border-radius: 10px; }
+.sidebar .nav-link:hover { background: rgba(255, 255, 255, 0.04); }
+
+/* Sidebar hover in light */
+html.light .sidebar .nav-link:hover,
+body.light .sidebar .nav-link:hover,
+[data-theme="light"] .sidebar .nav-link:hover { background: #f1f5f9; }
+.nav-pills .nav-link.active { background-color: var(--primary); color: #0b1324; }
+
+/* Consistent card shells */
+.chart-card, .kpi-card, .table-card { border: 1px solid var(--card-border); border-radius: 14px; }
+.glass-card:hover { box-shadow: 0 14px 32px rgba(0, 0, 0, 0.32); }
+
+/* Tables */
+table.table thead th { color: var(--muted); font-weight: 600; }
+
+/* Reveal on scroll */
+.reveal {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity .6s ease, transform .6s ease;
+}
+
+.reveal.in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Keyframes */
+@keyframes pulseSoft {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.0);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.07);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -468px 0
+    }
+
+    100% {
+        background-position: 468px 0
+    }
+}
+
+/* Skeleton loader (optional hook) */
+.skeleton {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 25%, rgba(255, 255, 255, 0.12) 37%, rgba(255, 255, 255, 0.06) 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease infinite;
+    border-radius: 8px;
+}
+
+/* Tables hover */
+.row-hover tbody tr {
+    transition: background .2s ease;
+}
+
+.row-hover tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Bigger modals */
+.modal-wide .modal-dialog {
+    max-width: 96%;
+}
+
+.modal-wide .modal-content {
+    overflow: hidden;
+}
+
+.modal-wide .modal-body {
+    height: 82vh;
+    padding: 0;
+    overflow: hidden;
+}
+
+.modal-wide iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Page enter animation */
+@keyframes pageIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-animate {
+    animation: pageIn .45s ease both;
+}
+
+/* Modal Background Fix - Less Transparent */
+.modal-content {
+    background: rgba(30, 41, 59, 0.95) !important;
+    border: 1px solid var(--card-border) !important;
+    color: var(--text) !important;
+}
+
+body.dashboard.light-theme .modal-content {
+    background: #ffffff !important;
+    border: 1px solid rgba(2, 6, 23, 0.12) !important;
+    color: var(--text) !important;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--card-border) !important;
+    color: var(--text) !important;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--card-border) !important;
+}
+
+.modal-body {
+    color: var(--text) !important;
+}
+
+.modal-title {
+    color: var(--text) !important;
+}
+
+/* Chart Text Color Fix for Dark Mode */
+body.dashboard:not(.light-theme) canvas {
+    filter: brightness(1.1);
+}
+
+/* Ensure chart text is visible in dark mode */
+body.dashboard:not(.light-theme) .chartjs-render-monitor {
+    color: var(--text) !important;
+}
+
+/* Chart.js text color fix - ensure all chart text is visible */
+body.dashboard:not(.light-theme) .chartjs-chart {
+    color: #e2e8f0 !important;
+}
+
+/* Input and Select styling improvements - Dark Mode */
+body.dashboard:not(.light-theme) input[type="text"],
+body.dashboard:not(.light-theme) input[type="date"],
+body.dashboard:not(.light-theme) input[type="time"],
+body.dashboard:not(.light-theme) input[type="email"],
+body.dashboard:not(.light-theme) input[type="number"],
+body.dashboard:not(.light-theme) textarea,
+body.dashboard:not(.light-theme) select {
+    background: rgba(30, 41, 59, 0.9) !important;
+    color: #e2e8f0 !important;
+    border-color: var(--card-border) !important;
+}
+
+body.dashboard:not(.light-theme) input[type="text"]::placeholder,
+body.dashboard:not(.light-theme) input[type="date"]::placeholder,
+body.dashboard:not(.light-theme) input[type="time"]::placeholder,
+body.dashboard:not(.light-theme) textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+body.dashboard:not(.light-theme) select option {
+    background: rgba(30, 41, 59, 0.95) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Input and Select styling improvements - Light Mode */
+body.dashboard.light-theme input[type="text"],
+body.dashboard.light-theme input[type="date"],
+body.dashboard.light-theme input[type="time"],
+body.dashboard.light-theme input[type="email"],
+body.dashboard.light-theme input[type="number"],
+body.dashboard.light-theme textarea,
+body.dashboard.light-theme select {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: rgba(2, 6, 23, 0.12) !important;
+}
+
+body.dashboard.light-theme input[type="text"]::placeholder,
+body.dashboard.light-theme input[type="date"]::placeholder,
+body.dashboard.light-theme input[type="time"]::placeholder,
+body.dashboard.light-theme textarea::placeholder {
+    color: #64748b !important;
+}
+
+body.dashboard.light-theme select option {
+    background: #ffffff !important;
+    color: #0f172a !important;
+}
