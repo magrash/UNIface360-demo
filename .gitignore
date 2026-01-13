@@ -46,23 +46,23 @@ analytics_events.json
 person_tracking_logs.json
 
 # Media and docs
-*.docx
-*.pdf
-*.pptx
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.mp3
-*.mp4
-*.wav
-*.svg
-Formal\ photos/
-evidence/
-test_images/
-temp_faces/
-debug_faces/
-known_faces/
+# *.docx
+# *.pdf
+# *.pptx
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
+# *.mp3
+# *.mp4
+# *.wav
+# *.svg
+# Formal\ photos/
+# evidence/
+# test_images/
+# temp_faces/
+# debug_faces/
+# known_faces/
 
 # Other
 .gitignore.bak
