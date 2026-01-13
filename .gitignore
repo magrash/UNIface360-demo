@@ -45,24 +45,22 @@ zones_config.json
 analytics_events.json
 person_tracking_logs.json
 
-# Media and docs
-# *.docx
-# *.pdf
-# *.pptx
-# *.png
-# *.jpg
-# *.jpeg
-# *.gif
-# *.mp3
-# *.mp4
-# *.wav
-# *.svg
-# Formal\ photos/
-# evidence/
-# test_images/
-# temp_faces/
-# debug_faces/
-# known_faces/
+# Media and docs - excluding large image folders
+# Keep static/ folder for UI assets
+
+# Exclude face recognition data folders
+known_faces/
+test_images/
+temp_faces/
+debug_faces/
+evidence/
+Formal\ photos/
+
+# Exclude poster files
+poster*.png
+
+# Exclude diagram files
+*.svg
 
 # Other
 .gitignore.bak
